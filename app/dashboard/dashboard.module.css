@@ -1,0 +1,644 @@
+/* Cabañas La Campiña - Premium Dashboard CSS */
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.greeting {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: -0.5px;
+  background: linear-gradient(135deg, var(--text-primary) 0%, var(--brand-600) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.subtitle {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+.pulseContainer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--surface-2);
+  padding: 6px 14px;
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border-light);
+  box-shadow: var(--shadow-sm);
+}
+
+.pulseDot {
+  width: 8px;
+  height: 8px;
+  background-color: var(--brand-500);
+  border-radius: 50%;
+  position: relative;
+  display: inline-block;
+}
+
+.pulseDot::after {
+  content: '';
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  background-color: var(--brand-500);
+  border-radius: 50%;
+  top: 0;
+  left: 0;
+  animation: pulse 1.8s infinite ease-in-out;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); opacity: 0.8; }
+  100% { transform: scale(2.8); opacity: 0; }
+}
+
+.pulseText {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+/* KPI Cards */
+.kpiGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 18px;
+  margin-bottom: 28px;
+}
+
+.kpiCard {
+  transition: transform var(--transition), box-shadow var(--transition);
+  border: 1px solid var(--border-light);
+  position: relative;
+  overflow: hidden;
+  background: var(--surface-1);
+}
+
+.kpiCard:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--border);
+}
+
+.kpiHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.kpiIcon {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+.colorWarning { background: rgba(245, 158, 11, 0.12); color: #f59e0b; }
+.colorMuted { background: rgba(107, 114, 128, 0.12); color: #9ca3af; }
+.colorSuccess { background: rgba(16, 185, 129, 0.12); color: #10b981; }
+.colorInfo { background: rgba(59, 130, 246, 0.12); color: #3b82f6; }
+.colorGold { background: rgba(234, 179, 8, 0.12); color: #eab308; }
+.colorDanger { background: rgba(239, 68, 68, 0.12); color: #ef4444; }
+
+.kpiLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.kpiContent {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.kpiValue {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: -0.5px;
+}
+
+.currencyText {
+  font-size: 20px;
+}
+
+.dangerText {
+  color: #ef4444;
+}
+
+.kpiSubtext {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* Progress bar inside KPI */
+.progressBarBg {
+  width: 100%;
+  height: 6px;
+  background-color: var(--surface-3);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-top: 4px;
+  margin-bottom: 2px;
+}
+
+.progressBarFill {
+  height: 100%;
+  background-color: var(--brand-500);
+  border-radius: 3px;
+  transition: width 0.6s ease-in-out;
+}
+
+/* Quick Actions Section */
+.actionsSection {
+  margin-bottom: 32px;
+}
+
+.sectionTitle {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.actionsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 16px;
+}
+
+.actionButton {
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  background: var(--surface-1);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  text-decoration: none;
+  color: inherit;
+  transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
+  position: relative;
+}
+
+.actionButton:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--brand-500);
+}
+
+.actionIcon {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 14px;
+  color: #ffffff;
+  flex-shrink: 0;
+}
+
+.bgBrand { background-color: var(--brand-500); }
+.bgGold { background-color: #eab308; }
+.bgSuccess { background-color: #10b981; }
+.bgMuted { background-color: #6b7280; }
+
+.actionTitle {
+  display: block;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.actionDesc {
+  display: block;
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.actionArrow {
+  margin-left: auto;
+  color: var(--text-muted);
+  transition: transform var(--transition);
+}
+
+.actionButton:hover .actionArrow {
+  transform: translateX(4px);
+  color: var(--brand-500);
+}
+
+/* Two-column layout */
+.columnsGrid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+@media (max-width: 1024px) {
+  .columnsGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.leftColumn, .rightColumn {
+  display: flex;
+  flex-direction: column;
+}
+
+.dashboardCard {
+  background: var(--surface-1);
+  border: 1px solid var(--border-light);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.cardTitle {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+
+.badgeGroup {
+  display: flex;
+  gap: 8px;
+}
+
+.badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  text-transform: uppercase;
+}
+
+.badgeWarning { background: rgba(245, 158, 11, 0.12); color: #f59e0b; }
+.badgeMuted { background: rgba(107, 114, 128, 0.12); color: #6b7280; }
+
+/* Operational checklist list */
+.opSection {
+  padding: 16px;
+}
+
+.opSectionTitle {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.noDataText {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-style: italic;
+  padding: 8px 0;
+}
+
+.opList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.opItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  transition: background var(--transition);
+}
+
+.opItem:hover {
+  background: var(--surface-3);
+}
+
+.opItemCompleted {
+  opacity: 0.75;
+  background: var(--surface-2);
+  border-color: var(--border-light);
+}
+
+.opMain {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: var(--brand-500);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
+  text-transform: uppercase;
+}
+
+.smallAvatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: var(--brand-500);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  flex-shrink: 0;
+  text-transform: uppercase;
+}
+
+.opGuestName {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.opRoomDetails {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin: 2px 0 0 0;
+}
+
+.opActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Status Badges */
+.statusBadge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  display: inline-block;
+}
+
+.statusBooked { background: rgba(59, 130, 246, 0.12); color: #3b82f6; }
+.statusConfirmed { background: rgba(16, 185, 129, 0.12); color: #10b981; }
+.statusCheckedIn { background: rgba(245, 158, 11, 0.12); color: #f59e0b; }
+.statusCheckedOut { background: rgba(107, 114, 128, 0.12); color: #6b7280; }
+.statusBlocked { background: rgba(31, 41, 55, 0.12); color: #1f2937; }
+.statusCancelled { background: rgba(239, 68, 68, 0.12); color: #ef4444; }
+.statusNoShow { background: rgba(139, 92, 246, 0.12); color: #8b5cf6; }
+
+/* Dark mode adjustments for badges */
+[data-theme="dark"] .statusBlocked {
+  background: rgba(243, 244, 246, 0.12);
+  color: #f3f4f6;
+}
+
+/* Table */
+.tableContainer {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.table th {
+  background: var(--surface-2);
+  color: var(--text-secondary);
+  font-weight: 700;
+  text-align: left;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 0.05em;
+}
+
+.table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border-light);
+  color: var(--text-secondary);
+}
+
+.table tr:hover td {
+  background: var(--surface-2);
+}
+
+.boldCell {
+  font-weight: 700;
+  color: var(--text-primary) !important;
+}
+
+/* Recent list right column */
+.recentList {
+  display: flex;
+  flex-direction: column;
+}
+
+.recentItem {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border-light);
+  transition: background var(--transition);
+}
+
+.recentItem:last-child {
+  border-bottom: none;
+}
+
+.recentItem:hover {
+  background: var(--surface-2);
+}
+
+.recentHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.rsvNumber {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--brand-500);
+}
+
+.recentTime {
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-left: 8px;
+}
+
+.recentBody {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.recentGuest {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.recentRooms {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin: 2px 0 0 0;
+}
+
+.recentTotal {
+  text-align: right;
+}
+
+.recentPrice {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.recentPaid {
+  font-size: 10px;
+  color: #10b981;
+  margin: 2px 0 0 0;
+  font-weight: 600;
+}
+
+/* Extendible Report System Styles */
+.extendibleText {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin: 0;
+  padding: 0 4px;
+}
+
+.reportList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.reportItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  transition: transform var(--transition), border-color var(--transition);
+}
+
+.reportItem:hover {
+  transform: translateX(3px);
+  border-color: var(--border);
+}
+
+.reportMeta {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.reportIconBg {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.reportItemTitle {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.reportItemDesc {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin: 3px 0 0 0;
+  line-height: 1.4;
+}
+
+.reportLink {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--brand-500);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.reportLink:hover {
+  color: var(--brand-600);
+}
+
+.devBadge {
+  font-size: 10px;
+  font-weight: 700;
+  background-color: var(--surface-3);
+  color: var(--text-secondary);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+}
+
+.reportFooter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--surface-2);
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  border-left: 3px solid var(--brand-500);
+  font-size: 11px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}

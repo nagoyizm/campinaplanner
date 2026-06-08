@@ -1,0 +1,38 @@
+.headerActions { display: flex; align-items: center; gap: 12px; }
+.toggleLabel {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 13px; color: var(--text-secondary); cursor: pointer;
+}
+.toggleLabel input { accent-color: var(--brand-500); }
+
+.formPanel { border-left: 3px solid var(--brand-500); }
+.formTitle { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 14px;
+}
+
+.rowActions { display: flex; align-items: center; justify-content: center; gap: 4px; }
+.editingRow { background: rgba(45,125,70,0.05) !important; }
+.inactiveRow { opacity: 0.55; }
+
+.badgeActive {
+  display: inline-block; padding: 2px 8px; border-radius: 999px;
+  font-size: 10px; font-weight: 600; text-transform: uppercase;
+  background: #d1fae5; color: #065f46;
+}
+[data-theme="dark"] .badgeActive { background: rgba(16,185,129,0.15); color: #6ee7b7; }
+
+.badgeInactive {
+  display: inline-block; padding: 2px 8px; border-radius: 999px;
+  font-size: 10px; font-weight: 600; text-transform: uppercase;
+  background: #f3f4f6; color: #6b7280;
+}
+[data-theme="dark"] .badgeInactive { background: rgba(107,114,128,0.15); color: #9ca3af; }
+
+.loadingState, .emptyState {
+  display: flex; align-items: center; justify-content: center;
+  gap: 10px; padding: 48px 20px;
+  color: var(--text-muted); font-size: 14px;
+}

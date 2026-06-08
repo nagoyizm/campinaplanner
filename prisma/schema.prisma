@@ -1,0 +1,219 @@
+// This is your Prisma schema file
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String   @id @default(cuid())
+  name        String
+  email       String   @unique
+  password    String
+  role        String   @default("operator") // admin, operator, observer
+  roleName    String   @default("Recepción")
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  checkIns    Reservation[] @relation("CheckInStaff")
+  checkOuts   Reservation[] @relation("CheckOutStaff")
+  auditLogs   AuditLog[]
+}
+
+model Guest {
+  id          String   @id @default(cuid())
+  firstName   String
+  lastName    String
+  rut         String?
+  email       String?
+  phone       String?
+  nationality String?  @default("Chile")
+  address     String?
+  notes       String?
+  tags        String   @default("") // JSON array stored as string: ["VIP","ruidoso"]
+  totalStays  Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  reservations Reservation[]
+}
+
+model UnitType {
+  id           String   @id @default(cuid())
+  name         String   // "Cabaña 5P", "Suite Deluxe"
+  description  String?
+  maxOccupancy Int      @default(2)
+  sortOrder    Int      @default(0)
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  rooms        Room[]
+  rates        Rate[]
+}
+
+model Room {
+  id            String    @id @default(cuid())
+  code          String    @unique // "C1", "S1", "D1", "P1"
+  name          String    // "Cabaña 1", "Suite Std 1"
+  unitTypeId    String
+  defaultRateId String?
+  active        Boolean   @default(true)
+  sortOrder     Int       @default(0)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  unitType         UnitType          @relation(fields: [unitTypeId], references: [id])
+  defaultRate      Rate?             @relation("DefaultRate", fields: [defaultRateId], references: [id])
+  reservationRooms ReservationRoom[]
+}
+
+model Rate {
+  id                   String    @id @default(cuid())
+  name                 String    // "Cabaña 5P Temporada Alta"
+  unitTypeId           String?
+  rackRate             Float     @default(0) // tarifa por noche
+  extraPersonAdult     Float     @default(0)
+  extraPersonChild     Float     @default(0)
+  weekendSurcharge     Float     @default(0)
+  includedOccupants    Int       @default(2)
+  active               Boolean   @default(true)
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  unitType         UnitType?         @relation(fields: [unitTypeId], references: [id])
+  defaultForRooms  Room[]            @relation("DefaultRate")
+  reservationRooms ReservationRoom[]
+}
+
+model Reservation {
+  id                Int       @id @default(autoincrement())
+  guestId           String
+  status            String    @default("booked")
+  // booked | confirmed | checked_in | checked_out | blocked | cancelled | no_show
+
+  // Guest tags (stored as booleans for quick filtering)
+  isVip             Boolean   @default(false)
+  isNoisy           Boolean   @default(false)
+  isDirty           Boolean   @default(false)
+  isDifficult       Boolean   @default(false)
+  isNewPax          Boolean   @default(true)
+  isRecurring       Boolean   @default(false)
+  lateCheckoutHrs   Int?
+  earlyCheckinHrs   Int?
+
+  // PAX
+  adults            Int       @default(1)
+  children          Int       @default(0)
+  pets              Int       @default(0)
+
+  // Staff
+  checkInStaffId    String?
+  checkOutStaffId   String?
+
+  // Payment
+  paymentMethod     String?
+  accountCode       String?
+
+  // Financial summary (calculated and cached)
+  unitTotal         Float     @default(0)
+  extraPersonCharge Float     @default(0)
+  discounts         Float     @default(0)
+  additionalServices Float    @default(0)
+  tax               Float     @default(0)
+  totalPaid         Float     @default(0)
+
+  // Extra info
+  lostItems         String?
+  notes             String?
+
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  guest           Guest             @relation(fields: [guestId], references: [id])
+  checkInStaff    User?             @relation("CheckInStaff", fields: [checkInStaffId], references: [id])
+  checkOutStaff   User?             @relation("CheckOutStaff", fields: [checkOutStaffId], references: [id])
+  rooms           ReservationRoom[]
+  payments        Payment[]
+  extras          Extra[]
+  auditLogs       AuditLog[]
+}
+
+model ReservationRoom {
+  id            String    @id @default(cuid())
+  reservationId Int
+  roomId        String
+  rateId        String?
+
+  arrival       DateTime
+  departure     DateTime
+  nights        Int       @default(1)
+  adults        Int       @default(1)
+  children      Int       @default(0)
+  unitRate      Float     @default(0)
+  unitTotal     Float     @default(0)
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  reservation   Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
+  room          Room        @relation(fields: [roomId], references: [id])
+  rate          Rate?       @relation(fields: [rateId], references: [id])
+}
+
+model Payment {
+  id            String    @id @default(cuid())
+  reservationId Int
+  amount        Float
+  method        String    // efectivo | transferencia | tarjeta_debito | tarjeta_credito | cheque | otro
+  reference     String?
+  date          DateTime  @default(now())
+  notes         String?
+  createdAt     DateTime  @default(now())
+
+  reservation   Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
+}
+
+model Extra {
+  id            String    @id @default(cuid())
+  reservationId Int
+  amenityId     String?
+  name          String
+  quantity      Int       @default(1)
+  unitPrice     Float
+  total         Float
+  date          DateTime  @default(now())
+  notes         String?
+
+  reservation   Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
+  amenity       Amenity?    @relation(fields: [amenityId], references: [id])
+}
+
+model Amenity {
+  id          String    @id @default(cuid())
+  name        String
+  category    String?   // "Alimentos", "Servicios", "Equipamiento"
+  price       Float     @default(0)
+  unit        String?   // "por noche", "por persona", "unidad"
+  active      Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  extras      Extra[]
+}
+
+model AuditLog {
+  id            String    @id @default(cuid())
+  reservationId Int?
+  userId        String?
+  action        String    // created | updated | status_changed | payment_added | etc.
+  details       String?
+  timestamp     DateTime  @default(now())
+
+  reservation   Reservation? @relation(fields: [reservationId], references: [id])
+  user          User?        @relation(fields: [userId], references: [id])
+}

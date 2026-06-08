@@ -1,0 +1,269 @@
+.modal { display: flex; flex-direction: column; }
+
+/* Header */
+.headerLeft { display: flex; align-items: center; gap: 12px; }
+.headerRight { display: flex; align-items: center; gap: 8px; }
+
+.rsvBadge {
+  background: var(--brand-500);
+  color: #fff;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+.headerGuest {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.headerInfo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.headerDot { opacity: 0.4; }
+
+/* Tabs */
+.tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border-light);
+  padding: 0 24px;
+  gap: 0;
+  background: var(--surface-1);
+  flex-shrink: 0;
+}
+
+.tab {
+  padding: 10px 16px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition);
+  white-space: nowrap;
+  font-family: inherit;
+}
+.tab:hover { color: var(--text-primary); background: var(--surface-2); }
+.tabActive {
+  color: var(--brand-500);
+  border-bottom-color: var(--brand-500);
+  font-weight: 600;
+}
+
+/* Tab content */
+.tabContent { display: flex; flex-direction: column; gap: 0; }
+
+/* Section title */
+.sectionTitle {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+/* Divider */
+.divider {
+  height: 1px;
+  background: var(--border-light);
+  margin: 20px 0;
+}
+
+/* Two column layout */
+.twoCol {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 24px;
+  align-items: start;
+}
+
+.twoColSmall {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+/* Guest */
+.guestSearchWrapper { position: relative; margin-bottom: 16px; }
+.guestDropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  z-index: 100;
+  overflow: hidden;
+  max-height: 200px;
+  overflow-y: auto;
+}
+.guestOption {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 14px;
+  background: none;
+  border: none;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--transition);
+  font-family: inherit;
+  border-bottom: 1px solid var(--border-light);
+  font-size: 13px;
+  color: var(--text-primary);
+}
+.guestOption:hover { background: var(--surface-2); }
+.guestOption span { font-size: 11px; color: var(--text-muted); }
+
+.guestGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+/* Tags */
+.tagsRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 0;
+}
+.tagActive { opacity: 1; filter: saturate(1.2); outline: 2px solid currentColor; outline-offset: 1px; }
+.tagInactive { opacity: 0.45; }
+
+/* Special hours */
+.specialHours {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+/* PAX */
+.paxRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+}
+
+/* Booking Summary */
+.bookingSummary {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  position: sticky;
+  top: 80px;
+}
+
+.summaryTitle {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-secondary);
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.summaryRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+  border-bottom: 1px dashed var(--border-light);
+  gap: 8px;
+}
+.summaryRow:last-child { border-bottom: none; }
+
+.summaryTotal {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+  padding: 8px 0;
+  border-top: 2px solid var(--border);
+  border-bottom: none;
+  margin-top: 4px;
+}
+
+.summaryDue {
+  font-size: 15px;
+  font-weight: 800;
+  padding: 10px 0;
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+  margin-top: 6px;
+}
+.due { background: #fee2e2; color: #991b1b !important; }
+.paid { background: #d1fae5; color: #065f46 !important; }
+
+[data-theme="dark"] .due { background: #450a0a; color: #fca5a5 !important; }
+[data-theme="dark"] .paid { background: #064e3b; color: #6ee7b7 !important; }
+
+/* Billing Grid */
+.billingGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+.billingCard {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.billingCard span { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.billingCard strong { font-size: 1rem; color: var(--text-primary); }
+
+/* Audit log */
+.auditList { display: flex; flex-direction: column; gap: 0; }
+.auditItem {
+  display: flex;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border-light);
+  align-items: flex-start;
+}
+.auditItem:last-child { border-bottom: none; }
+.auditDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--brand-400);
+  margin-top: 5px;
+  flex-shrink: 0;
+}
+.auditAction { font-size: 13px; font-weight: 500; color: var(--text-primary); }
+.auditDetail { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+.auditTime { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
+
+@media (max-width: 768px) {
+  .twoCol { grid-template-columns: 1fr; }
+  .guestGrid { grid-template-columns: 1fr; }
+  .bookingSummary { position: static; }
+  .twoColSmall { grid-template-columns: 1fr; }
+}

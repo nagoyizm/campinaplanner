@@ -1,0 +1,253 @@
+/* Cabañas La Campiña - Reservas List Stylesheet */
+
+.filtersCard {
+  background: var(--surface-1);
+  border: 1px solid var(--border-light);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 20px;
+}
+
+.searchWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 280px;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 14px;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.searchInput {
+  width: 100%;
+  padding-left: 42px;
+  padding-right: 36px;
+  background: var(--surface-2);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  height: 40px;
+  font-size: 13.5px;
+  color: var(--text-primary);
+  transition: border-color var(--transition), background var(--transition);
+}
+
+.searchInput:focus {
+  border-color: var(--brand-500);
+  background: var(--surface-1);
+}
+
+.clearSearchBtn {
+  position: absolute;
+  right: 12px;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: 50%;
+  transition: background var(--transition), color var(--transition);
+}
+
+.clearSearchBtn:hover {
+  background: var(--surface-3);
+  color: var(--text-primary);
+}
+
+.filterGroup {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--surface-2);
+  padding: 0 14px;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  height: 40px;
+}
+
+.filterLabelIcon {
+  color: var(--text-muted);
+}
+
+.filterGroup select {
+  border: none;
+  background: transparent;
+  padding: 0;
+  height: 100%;
+  font-size: 13.5px;
+  color: var(--text-primary);
+  outline: none;
+  cursor: pointer;
+}
+
+.resultsCount {
+  font-size: 13px;
+  color: var(--text-muted);
+  font-weight: 500;
+  margin-left: auto;
+}
+
+@media (max-width: 768px) {
+  .resultsCount {
+    margin-left: 0;
+    width: 100%;
+    text-align: right;
+  }
+}
+
+/* Loading States */
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px;
+  color: var(--text-secondary);
+  gap: 14px;
+}
+
+.spinner {
+  color: var(--brand-500);
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Empty State */
+.emptyContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px;
+  text-align: center;
+  color: var(--text-secondary);
+  background: var(--surface-1);
+}
+
+.emptyIcon {
+  color: var(--text-muted);
+  margin-bottom: 16px;
+}
+
+.emptyContainer h3 {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 6px 0;
+}
+
+.emptyContainer p {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* Table Design */
+.tableContainer {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.table th {
+  background: var(--surface-2);
+  color: var(--text-secondary);
+  font-weight: 700;
+  text-align: left;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border-light);
+  color: var(--text-secondary);
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.table tr:hover td {
+  background: var(--surface-2);
+}
+
+.boldCell {
+  font-weight: 700;
+  color: var(--text-primary) !important;
+}
+
+.roomCodesBadge {
+  background: rgba(45, 125, 70, 0.08);
+  color: var(--brand-600);
+  border: 1px solid rgba(45, 125, 70, 0.16);
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.3px;
+}
+
+[data-theme="dark"] .roomCodesBadge {
+  background: rgba(45, 125, 70, 0.15);
+  color: #55c777;
+}
+
+/* Status Badges */
+.statusBadge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: var(--radius-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  display: inline-block;
+  text-align: center;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.statusBooked { background: rgba(59, 130, 246, 0.12); color: #3b82f6; }
+.statusConfirmed { background: rgba(16, 185, 129, 0.12); color: #10b981; }
+.statusCheckedIn { background: rgba(245, 158, 11, 0.12); color: #f59e0b; }
+.statusCheckedOut { background: rgba(107, 114, 128, 0.12); color: #6b7280; }
+.statusBlocked { background: rgba(31, 41, 55, 0.12); color: #1f2937; }
+.statusCancelled { background: rgba(239, 68, 68, 0.12); color: #ef4444; }
+.statusNoShow { background: rgba(139, 92, 246, 0.12); color: #8b5cf6; }
+
+[data-theme="dark"] .statusBlocked {
+  background: rgba(243, 244, 246, 0.12);
+  color: #f3f4f6;
+}
+
+/* Pagination Row */
+.pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  background: var(--surface-2);
+  border-top: 1px solid var(--border);
+}
+
+.pageIndicator {
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
