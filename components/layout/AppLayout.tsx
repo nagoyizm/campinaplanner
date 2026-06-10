@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { SessionProvider } from 'next-auth/react'
 import Sidebar from '@/components/layout/Sidebar'
 import Header from '@/components/layout/Header'
+import SessionTimeout from '@/components/layout/SessionTimeout'
 import styles from './AppLayout.module.css'
 
 interface AppLayoutProps {
@@ -31,6 +32,7 @@ export default function AppLayout({ children, title }: AppLayoutProps) {
 
   return (
     <SessionProvider>
+      <SessionTimeout />
       <div className={styles.appLayout}>
         <Sidebar theme={theme} onThemeToggle={toggleTheme} />
         <div className={styles.mainArea}>
