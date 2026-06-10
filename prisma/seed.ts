@@ -265,7 +265,9 @@ async function main() {
   const hashedPassword = await bcrypt.hash('admin123', 12)
   await prisma.user.upsert({
     where: { email: 'admin@capiña.cl' },
-    update: {},
+    update: {
+      password: hashedPassword,
+    },
     create: {
       email: 'admin@capiña.cl',
       name: 'Administrador',
@@ -275,7 +277,21 @@ async function main() {
     },
   })
 
-  console.log('✅ Usuario admin creado: admin@capiña.cl / admin123')
+  await prisma.user.upsert({
+    where: { email: 'admin@campina.cl' },
+    update: {
+      password: hashedPassword,
+    },
+    create: {
+      email: 'admin@campina.cl',
+      name: 'Administrador ASCII',
+      password: hashedPassword,
+      role: 'admin',
+      roleName: 'Administrador',
+    },
+  })
+
+  console.log('✅ Usuario admin creado: admin@capiña.cl / admin@campina.cl / admin123')
 
   // ──────────────────────────────────────────────
   // 5. AMENITIES BASE

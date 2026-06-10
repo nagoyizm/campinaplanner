@@ -21,7 +21,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="es" suppressHydrationWarning>
-      <body className={inter.variable}>
+      <body className={inter.variable} suppressHydrationWarning>
         {children}
         <Toaster
           position="top-right"
