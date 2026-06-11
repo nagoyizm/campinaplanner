@@ -62,6 +62,12 @@ interface CalendarioClientProps {
   fechaBase: string
 }
 
+// Convierte una fecha UTC ISO (YYYY-MM-DD...) a un objeto Date local sin desfase de zona horaria
+function parseUTCDate(dateStr: string): Date {
+  const [year, month, day] = dateStr.split('T')[0].split('-').map(Number)
+  return new Date(year, month - 1, day, 0, 0, 0, 0)
+}
+
 // ── Status config ─────────────────────────────────────────────────
 const STATUS_CONFIG: Record<string, { label: string; color: string; textColor: string }> = {
   booked:      { label: 'Reservado',   color: '#3b82f6', textColor: '#fff' },
@@ -95,7 +101,7 @@ function ReservationIcons({ rsv }: { rsv: ReservationRoom['reservation'] }) {
 // ── Main Component ────────────────────────────────────────────────
 export default function CalendarioClient({ rooms, reservas, fechaBase }: CalendarioClientProps) {
   const router = useRouter()
-  const [currentDate, setCurrentDate] = useState(() => new Date(fechaBase))
+  const [currentDate, setCurrentDate] = useState(() => parseUTCDate(fechaBase))
   const [modalOpen, setModalOpen] = useState(false)
   const [selectedCell, setSelectedCell] = useState<{
     roomId: string; arrival: Date; departure: Date
@@ -133,8 +139,8 @@ export default function CalendarioClient({ rooms, reservas, fechaBase }: Calenda
       return (
         reservas.find((r) => {
           if (r.roomId !== roomId) return false
-          const arr = new Date(r.arrival)
-          const dep = new Date(r.departure)
+          const arr = parseUTCDate(r.arrival)
+          const dep = parseUTCDate(r.departure)
           // Compare at day granularity (strip time)
           const dayStart = new Date(day); dayStart.setHours(0,0,0,0)
           const arrDay = new Date(arr); arrDay.setHours(0,0,0,0)
@@ -148,7 +154,7 @@ export default function CalendarioClient({ rooms, reservas, fechaBase }: Calenda
 
   // Is this the first day of a reservation block?
   const isFirstDay = (r: ReservationRoom, day: Date) => {
-    const arr = new Date(r.arrival)
+    const arr = parseUTCDate(r.arrival)
     arr.setHours(0,0,0,0)
     const d = new Date(day)
     d.setHours(0,0,0,0)
@@ -157,8 +163,8 @@ export default function CalendarioClient({ rooms, reservas, fechaBase }: Calenda
 
   // Calculate width (nights) of reservation block starting from this day
   const getBlockWidth = (r: ReservationRoom, day: Date, daysArr: Date[]) => {
-    const arr = new Date(r.arrival); arr.setHours(0,0,0,0)
-    const dep = new Date(r.departure); dep.setHours(0,0,0,0)
+    const arr = parseUTCDate(r.arrival); arr.setHours(0,0,0,0)
+    const dep = parseUTCDate(r.departure); dep.setHours(0,0,0,0)
     const dayN = new Date(day); dayN.setHours(0,0,0,0)
     const start = dayN < arr ? arr : dayN
     const end = dep
@@ -266,8 +272,8 @@ export default function CalendarioClient({ rooms, reservas, fechaBase }: Calenda
     return reservas.some(r => {
       if (r.reservationId === reservaId) return false
       if (r.roomId !== roomId) return false
-      const arr = new Date(r.arrival)
-      const dep = new Date(r.departure)
+      const arr = parseUTCDate(r.arrival)
+      const dep = parseUTCDate(r.departure)
       return arrival < dep && departure > arr
     })
   }, [reservas])
@@ -281,13 +287,13 @@ export default function CalendarioClient({ rooms, reservas, fechaBase }: Calenda
     if (e.button !== 0) return // Left click only
     e.stopPropagation()
     clickStartRef.current = { x: e.clientX, y: e.clientY }
-    const clickOffset = differenceInDays(day, new Date(rsv.arrival))
+    const clickOffset = differenceInDays(day, parseUTCDate(rsv.arrival))
 
     setActiveDrag({
       rsv,
       type,
       startRoomId: rsv.roomId,
-      startDate: new Date(rsv.arrival),
+      startDate: parseUTCDate(rsv.arrival),
       clickOffset,
       currentRoomId: rsv.roomId,
       currentDate: day,
@@ -311,8 +317,8 @@ export default function CalendarioClient({ rooms, reservas, fechaBase }: Calenda
     }
 
     const { rsv, type, clickOffset, currentRoomId, currentDate } = activeDrag
-    let newArrival = new Date(rsv.arrival)
-    let newDeparture = new Date(rsv.departure)
+    let newArrival = parseUTCDate(rsv.arrival)
+    let newDeparture = parseUTCDate(rsv.departure)
     let targetRoomId = rsv.roomId
 
     if (type === 'move') {
@@ -331,8 +337,8 @@ export default function CalendarioClient({ rooms, reservas, fechaBase }: Calenda
       }
     }
 
-    const originalArrival = new Date(rsv.arrival)
-    const originalDeparture = new Date(rsv.departure)
+    const originalArrival = parseUTCDate(rsv.arrival)
+    const originalDeparture = parseUTCDate(rsv.departure)
     const datesChanged = !isSameDay(originalArrival, newArrival) || 
                          !isSameDay(originalDeparture, newDeparture) || 
                          targetRoomId !== rsv.roomId
@@ -540,8 +546,8 @@ export default function CalendarioClient({ rooms, reservas, fechaBase }: Calenda
 
                       if (activeDrag) {
                         const { rsv: dragRsv, type: dragType, clickOffset } = activeDrag
-                        let newArrival = new Date(dragRsv.arrival)
-                        let newDeparture = new Date(dragRsv.departure)
+                        let newArrival = parseUTCDate(dragRsv.arrival)
+                        let newDeparture = parseUTCDate(dragRsv.departure)
                         let targetRoomId = dragRsv.roomId
 
                         if (dragType === 'move') {

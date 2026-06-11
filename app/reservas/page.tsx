@@ -116,18 +116,25 @@ export default function ReservasPage() {
     }).format(val)
   }
 
+  const formatUTCDateString = (dateStr: string) => {
+    if (!dateStr) return '—'
+    const parts = dateStr.split('T')[0].split('-')
+    if (parts.length !== 3) return '—'
+    return `${parts[2]}/${parts[1]}/${parts[0]}`
+  }
+
   const getReservationDates = (rsv: Reservation) => {
     if (!rsv.rooms || rsv.rooms.length === 0) return { arrival: '—', departure: '—', nights: 0 }
     
-    // Sort room lines to find first arrival and last departure
-    const sorted = [...rsv.rooms].sort((a, b) => new Date(a.arrival).getTime() - new Date(b.arrival).getTime())
-    const arrival = new Date(sorted[0].arrival)
-    const departure = new Date(sorted[sorted.length - 1].departure)
+    // Sort room lines to find first arrival and last departure (alphabetic sort works chronologically for YYYY-MM-DD)
+    const sorted = [...rsv.rooms].sort((a, b) => a.arrival.localeCompare(b.arrival))
+    const arrivalStr = sorted[0].arrival
+    const departureStr = sorted[sorted.length - 1].departure
     const nights = sorted.reduce((sum, r) => sum + r.nights, 0)
     
     return {
-      arrival: format(arrival, 'dd/MM/yyyy'),
-      departure: format(departure, 'dd/MM/yyyy'),
+      arrival: formatUTCDateString(arrivalStr),
+      departure: formatUTCDateString(departureStr),
       nights
     }
   }

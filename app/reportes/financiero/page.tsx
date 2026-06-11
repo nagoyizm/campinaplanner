@@ -37,8 +37,12 @@ interface ReportRow {
 const formatCLP = (n: number) =>
   new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 }).format(n)
 
-const fmtDate = (d: string) =>
-  format(new Date(d), 'dd/MM/yyyy', { locale: es })
+const fmtDate = (dateStr: string) => {
+  if (!dateStr) return '—'
+  const parts = dateStr.split('T')[0].split('-')
+  if (parts.length !== 3) return '—'
+  return `${parts[2]}/${parts[1]}/${parts[0]}`
+}
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
   booked:      { label: 'Reservado',   color: '#1d4ed8', bg: '#dbeafe' },

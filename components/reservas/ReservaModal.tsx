@@ -75,6 +75,7 @@ export default function ReservaModal({
   const [tab, setTab] = useState<'reserva' | 'billing' | 'historial' | 'huesped'>('reserva')
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [deleting, setDeleting] = useState(false)
   const [rooms, setRooms] = useState<Room[]>([])
   const [rates, setRates] = useState<Rate[]>([])
   const [guestSearch, setGuestSearch] = useState('')
@@ -199,8 +200,8 @@ export default function ReservaModal({
               id: r.id,
               roomId: r.roomId,
               rateId: r.rateId || '',
-              arrival: format(new Date(r.arrival), 'yyyy-MM-dd'),
-              departure: format(new Date(r.departure), 'yyyy-MM-dd'),
+              arrival: r.arrival.split('T')[0],
+              departure: r.departure.split('T')[0],
               nights: r.nights,
               adults: r.adults,
               children: r.children,
@@ -307,6 +308,23 @@ export default function ReservaModal({
   const unitTotal = roomLines.reduce((s, r) => s + r.unitTotal, 0)
   const postTaxTotal = unitTotal + additionalServices - discounts + tax
   const amountDue = postTaxTotal - totalPaid
+
+  const handleDelete = async () => {
+    if (!confirm('¿Estás seguro de que deseas eliminar esta reserva permanentemente?')) return
+
+    setDeleting(true)
+    try {
+      const res = await fetch(`/api/reservas/${reservaId}`, {
+        method: 'DELETE',
+      })
+      if (!res.ok) throw new Error('Error al eliminar reserva')
+      toast.success('Reserva eliminada exitosamente')
+      onSave()
+    } catch (e) {
+      toast.error('Error al eliminar la reserva')
+    }
+    setDeleting(false)
+  }
 
   // ── Save ──────────────────────────────────────────────────────
   const handleSave = async (newStatus?: string) => {
@@ -840,20 +858,38 @@ export default function ReservaModal({
         </div>
 
         {/* ── Modal Footer ── */}
-        <div className="modal-footer">
-          <button className="btn btn-secondary" onClick={onClose}>Cancelar</button>
-          <button
-            className="btn btn-primary"
-            onClick={() => handleSave()}
-            disabled={saving}
-            id="modal-save-reservation"
-          >
-            {saving ? (
-              <><Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} /> Guardando...</>
-            ) : (
-              <><Save size={14} /> {reservaId ? 'Actualizar Reserva' : 'Crear Reserva'}</>
+        <div className="modal-footer" style={{ justifyContent: 'space-between' }}>
+          <div>
+            {reservaId && (
+              <button
+                className="btn"
+                style={{ backgroundColor: '#ef4444', color: '#fff', display: 'flex', alignItems: 'center', gap: 6 }}
+                onClick={handleDelete}
+                disabled={deleting}
+              >
+                {deleting ? (
+                  <><Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} /> Eliminando...</>
+                ) : (
+                  <><Trash2 size={14} /> Eliminar Reserva</>
+                )}
+              </button>
             )}
-          </button>
+          </div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button className="btn btn-secondary" onClick={onClose}>Cancelar</button>
+            <button
+              className="btn btn-primary"
+              onClick={() => handleSave()}
+              disabled={saving}
+              id="modal-save-reservation"
+            >
+              {saving ? (
+                <><Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} /> Guardando...</>
+              ) : (
+                <><Save size={14} /> {reservaId ? 'Actualizar Reserva' : 'Crear Reserva'}</>
+              )}
+            </button>
+          </div>
         </div>
       </div>
     </div>

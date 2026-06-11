@@ -36,6 +36,8 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params
-  await prisma.reservation.delete({ where: { id: parseInt(id) } })
+  const reservationId = parseInt(id)
+  await prisma.auditLog.deleteMany({ where: { reservationId } })
+  await prisma.reservation.delete({ where: { id: reservationId } })
   return NextResponse.json({ ok: true })
 }

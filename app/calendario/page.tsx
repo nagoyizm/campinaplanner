@@ -1,8 +1,18 @@
 import { prisma } from '@/lib/prisma'
 import CalendarioClient from './CalendarioClient'
-import { startOfMonth, endOfMonth, addDays, format } from 'date-fns'
+import { addDays } from 'date-fns'
 
 export const dynamic = 'force-dynamic'
+
+function getTodayInSantiago(): string {
+  const formatter = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/Santiago',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  })
+  return formatter.format(new Date())
+}
 
 export default async function CalendarioPage({
   searchParams,
@@ -10,9 +20,12 @@ export default async function CalendarioPage({
   searchParams: Promise<{ fecha?: string }>
 }) {
   const params = await searchParams
-  const fechaBase = params.fecha ? new Date(params.fecha) : new Date()
-  const inicio = startOfMonth(fechaBase)
-  const fin = endOfMonth(fechaBase)
+  const fechaBaseStr = params.fecha || getTodayInSantiago()
+
+  const [year, month] = fechaBaseStr.split('-').map(Number)
+  const inicio = new Date(Date.UTC(year, month - 1, 1, 0, 0, 0, 0))
+  const lastDayVal = new Date(Date.UTC(year, month, 0)).getUTCDate()
+  const fin = new Date(Date.UTC(year, month - 1, lastDayVal, 23, 59, 59, 999))
 
   // Cargar rooms con su tipo de unidad
   const rooms = await prisma.room.findMany({
@@ -48,7 +61,7 @@ export default async function CalendarioPage({
     <CalendarioClient
       rooms={rooms}
       reservas={mappedReservas as any}
-      fechaBase={fechaBase.toISOString()}
+      fechaBase={fechaBaseStr}
     />
   )
 }

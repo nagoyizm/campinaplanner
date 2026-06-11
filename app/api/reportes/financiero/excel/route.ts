@@ -8,7 +8,10 @@ const STATUS_LABELS: Record<string, string> = {
 }
 
 function fmtDate(d: Date) {
-  return new Date(d).toLocaleDateString('es-CL')
+  const y = d.getUTCFullYear()
+  const m = String(d.getUTCMonth() + 1).padStart(2, '0')
+  const dateVal = String(d.getUTCDate()).padStart(2, '0')
+  return `${dateVal}/${m}/${y}`
 }
 
 export async function GET(req: NextRequest) {
@@ -21,8 +24,8 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Fechas requeridas' }, { status: 400 })
   }
 
-  const start = new Date(startDate); start.setHours(0, 0, 0, 0)
-  const end = new Date(endDate); end.setHours(23, 59, 59, 999)
+  const start = new Date(`${startDate}T00:00:00.000Z`)
+  const end = new Date(`${endDate}T23:59:59.999Z`)
 
   let where: any = {}
   if (queryBy === 'arrival') where = { arrival: { gte: start, lte: end } }
@@ -88,7 +91,9 @@ export async function GET(req: NextRequest) {
       rsv.id, rsv.guest.firstName, rsv.guest.lastName,
       r.room.name.replace(/^[a-z]-/i, ''), r.room.code,
       r.rate?.name ?? '—',
-      new Date(r.arrival), new Date(r.departure), r.nights,
+      new Date(r.arrival.getUTCFullYear(), r.arrival.getUTCMonth(), r.arrival.getUTCDate()),
+      new Date(r.departure.getUTCFullYear(), r.departure.getUTCMonth(), r.departure.getUTCDate()),
+      r.nights,
       r.unitTotal, rsv.discounts, rsv.additionalServices, rsv.tax,
       total, rsv.totalPaid, amountDue,
       STATUS_LABELS[rsv.status] ?? rsv.status,

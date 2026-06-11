@@ -38,6 +38,23 @@ function formatCLP(val: number) {
   }).format(val)
 }
 
+function getTodayInSantiago(): string {
+  const formatter = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/Santiago',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  })
+  return formatter.format(new Date())
+}
+
+function formatUTCDate(date: Date): string {
+  const y = date.getUTCFullYear()
+  const m = String(date.getUTCMonth() + 1).padStart(2, '0')
+  const d = String(date.getUTCDate()).padStart(2, '0')
+  return `${d}/${m}/${y}`
+}
+
 function getGreeting(hour: number): string {
   if (hour >= 6 && hour < 12) return '¡Buenos días!'
   if (hour >= 12 && hour < 20) return '¡Buenas tardes!'
@@ -45,17 +62,43 @@ function getGreeting(hour: number): string {
 }
 
 export default async function DashboardPage() {
-  const today = new Date()
-  const currentHour = today.getHours()
+  const santiagoToday = getTodayInSantiago()
+  const parts = santiagoToday.split('-')
+  const year = parseInt(parts[0])
+  const month = parseInt(parts[1])
+
+  const todayStart = new Date(`${santiagoToday}T00:00:00.000Z`)
+  const todayEnd = new Date(`${santiagoToday}T23:59:59.999Z`)
+
+  const startMonth = new Date(`${parts[0]}-${parts[1]}-01T00:00:00.000Z`)
+  const lastDayVal = new Date(Date.UTC(year, month, 0)).getUTCDate()
+  const endMonth = new Date(`${parts[0]}-${parts[1]}-${String(lastDayVal).padStart(2, '0')}T23:59:59.999Z`)
+
+  const next7DaysEnd = new Date(todayStart)
+  next7DaysEnd.setUTCDate(next7DaysEnd.getUTCDate() + 7)
+  next7DaysEnd.setUTCHours(23, 59, 59, 999)
+
+  const formatterHour = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/Santiago',
+    hour: 'numeric',
+    hour12: false,
+  })
+  const currentHour = parseInt(formatterHour.format(new Date()))
   const greeting = getGreeting(currentHour)
 
-  const todayStart = startOfDay(today)
-  const todayEnd = endOfDay(today)
+  const santiagoDateWordsRaw = new Intl.DateTimeFormat('es-CL', {
+    timeZone: 'America/Santiago',
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  }).format(new Date())
+  const santiagoDateWords = santiagoDateWordsRaw.charAt(0).toUpperCase() + santiagoDateWordsRaw.slice(1)
 
-  const startMonth = startOfMonth(today)
-  const endMonth = endOfMonth(today)
-
-  const next7DaysEnd = endOfDay(addDays(today, 7))
+  const santiagoMonthName = new Intl.DateTimeFormat('es-CL', {
+    timeZone: 'America/Santiago',
+    month: 'long',
+  }).format(new Date())
 
   // Fetch all dashboard data in parallel
   const [
@@ -202,7 +245,7 @@ export default async function DashboardPage() {
         <div>
           <h1 className={styles.greeting}>{greeting}, Recepción</h1>
           <p className={styles.subtitle}>
-            {format(today, "EEEE d 'de' MMMM, yyyy", { locale: es })}
+            {santiagoDateWords}
           </p>
         </div>
         <div className={styles.pulseContainer}>
@@ -305,7 +348,7 @@ export default async function DashboardPage() {
                 {formatCLP(revenueThisMonth)}
               </span>
               <span className={styles.kpiSubtext}>
-                Reservas con llegada en {format(today, 'MMMM', { locale: es })}
+                Reservas con llegada en {santiagoMonthName}
               </span>
             </div>
           </div>
@@ -540,8 +583,8 @@ export default async function DashboardPage() {
                               </div>
                             </td>
                             <td>{item.room.name.replace(/^[a-z]-/i, '')}</td>
-                            <td>{format(new Date(item.arrival), 'dd/MM/yyyy')}</td>
-                            <td>{format(new Date(item.departure), 'dd/MM/yyyy')}</td>
+                            <td>{formatUTCDate(item.arrival)}</td>
+                            <td>{formatUTCDate(item.departure)}</td>
                             <td>{item.nights}</td>
                             <td>
                               <span className={`${styles.statusBadge} ${statusColors[rsv.status]}`}>

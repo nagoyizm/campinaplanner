@@ -11,10 +11,8 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'startDate y endDate son requeridos' }, { status: 400 })
   }
 
-  const start = new Date(startDate)
-  start.setHours(0, 0, 0, 0)
-  const end = new Date(endDate)
-  end.setHours(23, 59, 59, 999)
+  const start = new Date(`${startDate}T00:00:00.000Z`)
+  const end = new Date(`${endDate}T23:59:59.999Z`)
 
   let where: any = {}
   if (queryBy === 'arrival') {
