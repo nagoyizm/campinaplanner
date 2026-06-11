@@ -228,6 +228,14 @@ export default function ReservaModal({
     return () => clearTimeout(t)
   }, [guestSearch])
 
+  // Sincronizar automáticamente total de adultos y niños desde la selección de habitaciones
+  useEffect(() => {
+    const totalAdults = roomLines.reduce((sum, line) => sum + line.adults, 0)
+    const totalChildren = roomLines.reduce((sum, line) => sum + line.children, 0)
+    setAdults(totalAdults)
+    setChildren(totalChildren)
+  }, [roomLines])
+
   const selectGuest = (g: Guest) => {
     setGuestId(g.id)
     setFirstName(g.firstName)
@@ -630,15 +638,15 @@ export default function ReservaModal({
                   </div>
 
                   {/* PAX */}
-                  <div className={styles.sectionTitle} style={{ marginTop: 16 }}>PAX</div>
+                  <div className={styles.sectionTitle} style={{ marginTop: 16 }}>Pasajeros y Mascotas</div>
                   <div className={styles.paxRow}>
                     <div className="form-group">
-                      <label className="form-label">Adultos</label>
-                      <input type="number" className="input" min={1} value={adults} onChange={e => setAdults(+e.target.value)} />
+                      <label className="form-label">Total Adultos (Suma de hab.)</label>
+                      <input type="text" className="input" value={adults} readOnly disabled style={{ background: 'var(--surface-3)', opacity: 0.7 }} />
                     </div>
                     <div className="form-group">
-                      <label className="form-label">Niños</label>
-                      <input type="number" className="input" min={0} value={children} onChange={e => setChildren(+e.target.value)} />
+                      <label className="form-label">Total Niños (Suma de hab.)</label>
+                      <input type="text" className="input" value={children} readOnly disabled style={{ background: 'var(--surface-3)', opacity: 0.7 }} />
                     </div>
                     <div className="form-group">
                       <label className="form-label">🐕 Mascotas</label>
