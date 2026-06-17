@@ -144,7 +144,7 @@ export default function FinancialCharts({ rows, startDate, endDate }: { rows: Re
                   tickFormatter={(val) => `$${(val / 1000)}k`} 
                 />
                 <Tooltip 
-                  formatter={(value: number) => [formatCLP(value), 'Ingresos']}
+                  formatter={(value: any) => [formatCLP(value), 'Ingresos']}
                   contentStyle={{ background: 'var(--surface-1)', border: '1px solid var(--border)', borderRadius: '8px', color: 'var(--text-primary)' }}
                 />
                 <Area type="monotone" dataKey="total" stroke="#3b82f6" strokeWidth={3} fillOpacity={1} fill="url(#colorTotal)" />
@@ -173,7 +173,7 @@ export default function FinancialCharts({ rows, startDate, endDate }: { rows: Re
                   ))}
                 </Pie>
                 <Tooltip 
-                  formatter={(value: number) => formatCLP(value)}
+                  formatter={(value: any) => formatCLP(value)}
                   contentStyle={{ background: 'var(--surface-1)', border: '1px solid var(--border)', borderRadius: '8px' }}
                 />
                 <Legend verticalAlign="bottom" height={36} iconType="circle" wrapperStyle={{ fontSize: '12px', color: 'var(--text-secondary)' }} />
@@ -202,7 +202,7 @@ export default function FinancialCharts({ rows, startDate, endDate }: { rows: Re
                   ))}
                 </Pie>
                 <Tooltip 
-                  formatter={(value: number) => formatCLP(value)}
+                  formatter={(value: any) => formatCLP(value)}
                   contentStyle={{ background: 'var(--surface-1)', border: '1px solid var(--border)', borderRadius: '8px' }}
                 />
                 <Legend verticalAlign="bottom" height={36} iconType="circle" wrapperStyle={{ fontSize: '12px', color: 'var(--text-secondary)' }} />

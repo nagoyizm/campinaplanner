@@ -14,7 +14,7 @@ import styles from './ReservaModal.module.css'
 // ── Types ────────────────────────────────────────────────────────
 interface Room { id: string; code: string; name: string; unitType: { name: string }; defaultRate?: { id: string; name: string; rackRate: number } | null }
 interface Rate { id: string; name: string; rackRate: number; includedOccupants: number; extraPersonAdult: number; extraPersonChild: number }
-interface Guest { id: string; firstName: string; lastName: string; rut?: string; email?: string; phone?: string; nationality?: string }
+interface Guest { id: string; firstName: string; lastName: string; rut?: string; email?: string; phone?: string; nationality?: string; referral?: string }
 
 interface ReservationRoomLine {
   id?: string
