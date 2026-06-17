@@ -62,6 +62,15 @@ export default function Sidebar({ theme, onThemeToggle }: SidebarProps) {
     if (isSetupActive) setSetupOpen(true)
   }, [isSetupActive])
 
+  useEffect(() => {
+    if (collapsed) {
+      document.documentElement.classList.add('sidebar-collapsed')
+    } else {
+      document.documentElement.classList.remove('sidebar-collapsed')
+    }
+    return () => document.documentElement.classList.remove('sidebar-collapsed')
+  }, [collapsed])
+
   return (
     <>
       {/* Mobile overlay */}

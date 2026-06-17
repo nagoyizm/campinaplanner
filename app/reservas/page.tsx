@@ -16,7 +16,8 @@ import {
   Clock,
   HelpCircle,
   Filter,
-  X
+  X,
+  Trash2
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import ReservaModal from '@/components/reservas/ReservaModal'
@@ -152,6 +153,20 @@ export default function ReservasPage() {
   const handleModalSave = () => {
     setModalOpen(false)
     fetchReservas()
+  }
+
+  const handleDelete = async (id: number) => {
+    if (!window.confirm('¿Está seguro que desea eliminar esta reserva? Esta acción no se puede deshacer.')) return
+    
+    try {
+      const res = await fetch(`/api/reservas/${id}`, { method: 'DELETE' })
+      if (!res.ok) throw new Error('Error al eliminar')
+      toast.success('Reserva eliminada con éxito')
+      fetchReservas()
+    } catch (err) {
+      console.error(err)
+      toast.error('Ocurrió un error al eliminar la reserva')
+    }
   }
 
   const statusLabels: Record<string, string> = {
@@ -323,6 +338,14 @@ export default function ReservasPage() {
                               title="Editar/Ver Reserva"
                             >
                               <Edit2 size={14} />
+                            </button>
+                            <button 
+                              className="btn btn-ghost btn-sm" 
+                              onClick={() => handleDelete(rsv.id)}
+                              style={{ padding: '6px', height: 'auto', color: '#ef4444' }}
+                              title="Eliminar Reserva"
+                            >
+                              <Trash2 size={14} />
                             </button>
                           </div>
                         </td>

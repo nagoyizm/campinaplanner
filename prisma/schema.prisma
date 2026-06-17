@@ -35,6 +35,7 @@ model Guest {
   nationality String?  @default("Chile")
   address     String?
   notes       String?
+  referral    String?
   tags        String   @default("") // JSON array stored as string: ["VIP","ruidoso"]
   totalStays  Int      @default(0)
   createdAt   DateTime @default(now())
@@ -104,6 +105,7 @@ model Reservation {
   isDifficult       Boolean   @default(false)
   isNewPax          Boolean   @default(true)
   isRecurring       Boolean   @default(false)
+  isWalkIn          Boolean   @default(false)
   lateCheckoutHrs   Int?
   earlyCheckinHrs   Int?
 
@@ -131,6 +133,9 @@ model Reservation {
   // Extra info
   lostItems         String?
   notes             String?
+  dte               String?
+  guaranteeRsv      String?
+  guaranteeGames    String?
 
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt

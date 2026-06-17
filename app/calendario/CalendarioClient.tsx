@@ -4,18 +4,20 @@ import { useState, useCallback, useRef, Fragment, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   format, addDays, addMonths, startOfMonth,
-  isSameDay, isWeekend, isToday, differenceInDays
+  isSameDay, isWeekend, isToday, differenceInDays,
+  getDaysInMonth, startOfWeek
 } from 'date-fns'
 import { es } from 'date-fns/locale'
 import {
-  ChevronLeft, ChevronRight, RotateCcw,
+  ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, RotateCcw,
   Plus, RefreshCw, Printer, Crown, Volume2,
   Trash2, AlertTriangle, Star, Dog, Clock, Sunrise,
-  Repeat, Loader2,
+  Repeat, Loader2, ShieldCheck, ShieldAlert
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import styles from './Calendario.module.css'
 import ReservaModal from '@/components/reservas/ReservaModal'
+import QuickReservaModal from '@/components/reservas/QuickReservaModal'
 
 // ── Types ────────────────────────────────────────────────────────
 interface Room {
@@ -51,7 +53,14 @@ interface ReservationRoom {
     pets: number
     adults: number
     children: number
-    guest: { id: string; firstName: string; lastName: string }
+    unitTotal: number
+    additionalServices: number
+    discounts: number
+    tax: number
+    totalPaid: number
+    lostItems: string | null
+    notes: string | null
+    guest: { id: string; firstName: string; lastName: string; email: string | null; phone: string | null; rut: string | null }
   }
   rate: { id: string; name: string; rackRate: number } | null
 }
@@ -68,48 +77,36 @@ function parseUTCDate(dateStr: string): Date {
   return new Date(year, month - 1, day, 0, 0, 0, 0)
 }
 
-// ── Status config ─────────────────────────────────────────────────
-const STATUS_CONFIG: Record<string, { label: string; color: string; textColor: string }> = {
-  booked:      { label: 'Reservado',   color: '#3b82f6', textColor: '#fff' },
-  confirmed:   { label: 'Confirmado',  color: '#10b981', textColor: '#fff' },
-  checked_in:  { label: 'Check-In',    color: '#f59e0b', textColor: '#fff' },
-  checked_out: { label: 'Check-Out',   color: '#6b7280', textColor: '#fff' },
-  blocked:     { label: 'Bloqueado',   color: '#1f2937', textColor: '#f9fafb' },
-  cancelled:   { label: 'Cancelado',   color: '#ef4444', textColor: '#fff' },
-  no_show:     { label: 'No Show',     color: '#8b5cf6', textColor: '#fff' },
+function formatCLP(n: number) {
+  return new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 }).format(n || 0)
 }
 
-const DAYS_TO_SHOW = 30
-
-// ── Mini icon component ───────────────────────────────────────────
-function ReservationIcons({ rsv }: { rsv: ReservationRoom['reservation'] }) {
-  return (
-    <span className={styles.icons}>
-      {rsv.isVip        && <Crown size={10} className={styles.iconVip} data-tooltip="VIP" />}
-      {rsv.isNoisy      && <Volume2 size={10} className={styles.iconNoisy} data-tooltip="Ruidoso" />}
-      {rsv.isDifficult  && <AlertTriangle size={10} className={styles.iconDiff} data-tooltip="Complicado" />}
-      {rsv.isDirty      && <Trash2 size={10} className={styles.iconDirty} data-tooltip="Sucio" />}
-      {rsv.isNewPax     && <Star size={10} className={styles.iconNew} data-tooltip="PAX Nuevo" />}
-      {rsv.isRecurring  && <Repeat size={10} className={styles.iconRecurring} data-tooltip="Recurrente" />}
-      {rsv.pets > 0     && <Dog size={10} className={styles.iconPet} data-tooltip="Mascota" />}
-      {rsv.lateCheckoutHrs && <Clock size={10} className={styles.iconLate} data-tooltip={`Late +${rsv.lateCheckoutHrs}h`} />}
-      {rsv.earlyCheckinHrs && <Sunrise size={10} className={styles.iconEarly} data-tooltip={`Early -${rsv.earlyCheckinHrs}h`} />}
-    </span>
-  )
+// ── Status config ─────────────────────────────────────────────────
+const STATUS_CONFIG: Record<string, { label: string; color: string; textColor: string }> = {
+  booked:      { label: 'Reservado',   color: '#1d4ed8', textColor: '#fff' },
+  confirmed:   { label: 'Confirmado',  color: '#047857', textColor: '#fff' },
+  checked_in:  { label: 'Check-In',    color: '#b45309', textColor: '#fff' },
+  checked_out: { label: 'Check-Out',   color: '#4b5563', textColor: '#fff' },
+  blocked:     { label: 'Bloqueado',   color: '#111827', textColor: '#f9fafb' },
+  cancelled:   { label: 'Cancelado',   color: '#b91c1c', textColor: '#fff' },
+  no_show:     { label: 'No Show',     color: '#6d28d9', textColor: '#fff' },
 }
 
 // ── Main Component ────────────────────────────────────────────────
 export default function CalendarioClient({ rooms, reservas, fechaBase }: CalendarioClientProps) {
   const router = useRouter()
   const [currentDate, setCurrentDate] = useState(() => parseUTCDate(fechaBase))
+  const [viewMode, setViewMode] = useState<'month' | 'week'>('month')
   const [modalOpen, setModalOpen] = useState(false)
   const [selectedCell, setSelectedCell] = useState<{
     roomId: string; arrival: Date; departure: Date
   } | null>(null)
   const [selectedReservaId, setSelectedReservaId] = useState<number | null>(null)
+  const [quickModalRsv, setQuickModalRsv] = useState<any>(null)
   const [dragStart, setDragStart] = useState<{ roomId: string; date: Date } | null>(null)
   const [dragEnd, setDragEnd] = useState<Date | null>(null)
   const [refreshing, setRefreshing] = useState(false)
+  const [hoverRsv, setHoverRsv] = useState<{ rsv: ReservationRoom; x: number; y: number } | null>(null)
 
   // Drag & drop / Resize states
   const [activeDrag, setActiveDrag] = useState<{
@@ -125,8 +122,9 @@ export default function CalendarioClient({ rooms, reservas, fechaBase }: Calenda
   const clickStartRef = useRef<{ x: number; y: number } | null>(null)
 
   // Generate days array
-  const startDay = startOfMonth(currentDate)
-  const days = Array.from({ length: DAYS_TO_SHOW }, (_, i) => addDays(startDay, i))
+  const daysToShow = viewMode === 'month' ? getDaysInMonth(currentDate) : 7
+  const startDay = viewMode === 'month' ? startOfMonth(currentDate) : startOfWeek(currentDate, { weekStartsOn: 1 })
+  const days = Array.from({ length: daysToShow }, (_, i) => addDays(startDay, i))
 
   // Group rooms by unit type
   const unitTypes = Array.from(
@@ -179,14 +177,14 @@ export default function CalendarioClient({ rooms, reservas, fechaBase }: Calenda
 
   // ── Navigation ────────────────────────────────────────────────
   const goToPrev = () => {
-    const prevMonth = addMonths(currentDate, -1)
-    setCurrentDate(prevMonth)
-    router.push(`/calendario?fecha=${format(prevMonth, 'yyyy-MM-dd')}`)
+    const newDate = viewMode === 'month' ? addMonths(currentDate, -1) : addDays(currentDate, -7)
+    setCurrentDate(newDate)
+    router.push(`/calendario?fecha=${format(newDate, 'yyyy-MM-dd')}`)
   }
   const goToNext = () => {
-    const nextMonth = addMonths(currentDate, 1)
-    setCurrentDate(nextMonth)
-    router.push(`/calendario?fecha=${format(nextMonth, 'yyyy-MM-dd')}`)
+    const newDate = viewMode === 'month' ? addMonths(currentDate, 1) : addDays(currentDate, 7)
+    setCurrentDate(newDate)
+    router.push(`/calendario?fecha=${format(newDate, 'yyyy-MM-dd')}`)
   }
   const goToToday = () => {
     const today = new Date()
@@ -203,10 +201,8 @@ export default function CalendarioClient({ rooms, reservas, fechaBase }: Calenda
   // ── Cell click → new reservation ─────────────────────────────
   const handleCellClick = (roomId: string, day: Date, existingRsv: ReservationRoom | null) => {
     if (existingRsv) {
-      // Open existing reservation
-      setSelectedReservaId(existingRsv.reservationId)
-      setSelectedCell(null)
-      setModalOpen(true)
+      // Open quick modal
+      setQuickModalRsv(existingRsv.reservation)
     } else {
       // New reservation
       setSelectedReservaId(null)
@@ -309,9 +305,7 @@ export default function CalendarioClient({ rooms, reservas, fechaBase }: Calenda
       : false
 
     if (isClick) {
-      setSelectedReservaId(activeDrag.rsv.reservationId)
-      setSelectedCell(null)
-      setModalOpen(true)
+      setQuickModalRsv(activeDrag.rsv.reservation)
       setActiveDrag(null)
       return
     }
@@ -444,6 +438,21 @@ export default function CalendarioClient({ rooms, reservas, fechaBase }: Calenda
     setActiveDrag(null)
   }, [activeDrag, checkCollision, router])
 
+  const handleRsvMouseEnter = (e: React.MouseEvent, rsv: ReservationRoom) => {
+    if (activeDrag || rescheduling) return
+    setHoverRsv({ rsv, x: e.clientX, y: e.clientY })
+  }
+
+  const handleRsvMouseMove = (e: React.MouseEvent) => {
+    if (hoverRsv) {
+      setHoverRsv(prev => prev ? { ...prev, x: e.clientX, y: e.clientY } : null)
+    }
+  }
+
+  const handleRsvMouseLeave = () => {
+    setHoverRsv(null)
+  }
+
   useEffect(() => {
     if (!activeDrag) return
 
@@ -463,13 +472,26 @@ export default function CalendarioClient({ rooms, reservas, fechaBase }: Calenda
       {/* ── Toolbar ── */}
       <div className={styles.toolbar}>
         <div className={styles.toolbarLeft}>
-          <button className="btn btn-secondary btn-sm" onClick={goToPrev} id="cal-prev">
+          <div style={{ display: 'flex', gap: '2px', background: 'var(--surface-3)', padding: '2px', borderRadius: '6px', marginRight: '12px' }}>
+            <button
+              style={{ padding: '4px 12px', fontSize: '12px', borderRadius: '4px', border: 'none', background: viewMode === 'month' ? 'var(--brand-500)' : 'transparent', color: viewMode === 'month' ? '#fff' : 'var(--text-secondary)', cursor: 'pointer', fontWeight: 600 }}
+              onClick={() => setViewMode('month')}
+            >Mes</button>
+            <button
+              style={{ padding: '4px 12px', fontSize: '12px', borderRadius: '4px', border: 'none', background: viewMode === 'week' ? 'var(--brand-500)' : 'transparent', color: viewMode === 'week' ? '#fff' : 'var(--text-secondary)', cursor: 'pointer', fontWeight: 600 }}
+              onClick={() => setViewMode('week')}
+            >Semana</button>
+          </div>
+
+          <button className="btn btn-secondary btn-sm" onClick={goToPrev} id="cal-prev" title="Anterior">
             <ChevronLeft size={16} />
           </button>
           <span className={styles.monthLabel}>
-            {format(currentDate, 'MMMM yyyy', { locale: es })}
+            {viewMode === 'month' 
+              ? format(currentDate, 'MMMM yyyy', { locale: es })
+              : `${format(startDay, 'd MMM', { locale: es })} - ${format(addDays(startDay, 6), 'd MMM yyyy', { locale: es })}`}
           </span>
-          <button className="btn btn-secondary btn-sm" onClick={goToNext} id="cal-next">
+          <button className="btn btn-secondary btn-sm" onClick={goToNext} id="cal-next" title="Siguiente">
             <ChevronRight size={16} />
           </button>
           <button className="btn btn-secondary btn-sm" onClick={goToToday} id="cal-today">
@@ -495,7 +517,7 @@ export default function CalendarioClient({ rooms, reservas, fechaBase }: Calenda
       <div className={styles.gridWrapper}>
         <div
           className={styles.grid}
-          style={{ gridTemplateColumns: `200px repeat(${DAYS_TO_SHOW}, minmax(38px, 1fr))` }}
+          style={{ gridTemplateColumns: `130px repeat(${daysToShow}, minmax(46px, 1fr))` }}
           onMouseLeave={() => { setDragStart(null); setDragEnd(null) }}
         >
           {/* ── Header Row ── */}
@@ -517,10 +539,7 @@ export default function CalendarioClient({ rooms, reservas, fechaBase }: Calenda
             const unitRooms = rooms.filter(r => r.unitTypeId === ut.id)
             return (
               <Fragment key={`ut-group-${ut.id}`}>
-                {/* Unit type separator */}
-                <div key={`ut-${ut.id}`} className={styles.unitTypeRow} style={{ gridColumn: `1 / ${DAYS_TO_SHOW + 2}` }}>
-                  <span>{ut.name}</span>
-                </div>
+                {/* Unit type separator removed per user request */}
 
                 {unitRooms.map((room) => (
                   <Fragment key={`room-group-${room.id}`}>
@@ -621,7 +640,9 @@ export default function CalendarioClient({ rooms, reservas, fechaBase }: Calenda
                                 if (rescheduling) return
                                 handleRsvMouseDown(e, rsv, day, 'move')
                               }}
-                              title={`Rsv #${rsv.reservationId} — ${rsv.reservation.guest.firstName} ${rsv.reservation.guest.lastName}`}
+                              onMouseEnter={(e) => handleRsvMouseEnter(e, rsv)}
+                              onMouseMove={handleRsvMouseMove}
+                              onMouseLeave={handleRsvMouseLeave}
                             >
                               {/* Left Resize Handle */}
                               <div
@@ -632,15 +653,16 @@ export default function CalendarioClient({ rooms, reservas, fechaBase }: Calenda
                                 }}
                               />
                               
-                              <span className={styles.rsvGuest}>
-                                {rsv.reservation.guest.firstName} {rsv.reservation.guest.lastName}
+                              <span className={styles.rsvGuest} style={{ display: 'flex', alignItems: 'center', gap: '4px', overflow: 'hidden' }}>
+                                {rsv.reservation.guaranteeRsv === 'true' ? (
+                                  <ShieldCheck size={12} style={{ color: '#10b981', flexShrink: 0 }} data-tooltip="Garantía Pagada" />
+                                ) : (
+                                  <ShieldAlert size={12} style={{ color: '#ef4444', flexShrink: 0 }} data-tooltip="Sin Garantía" />
+                                )}
+                                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                  {rsv.reservation.guest.firstName} {rsv.reservation.guest.lastName}
+                                </span>
                               </span>
-                              <span className={styles.rsvPax}>
-                                {rsv.reservation.adults}A
-                                {rsv.reservation.children > 0 && ` ${rsv.reservation.children}N`}
-                                {rsv.reservation.pets > 0 && ` ${rsv.reservation.pets}M`}
-                              </span>
-                              <ReservationIcons rsv={rsv.reservation} />
 
                               {/* Right Resize Handle */}
                               <div
@@ -693,12 +715,8 @@ export default function CalendarioClient({ rooms, reservas, fechaBase }: Calenda
           </div>
         ))}
         <div className={styles.legendSeparator} />
-        <div className={styles.legendItem}><Crown size={12} style={{color:'#d4a843'}} /><span>VIP</span></div>
-        <div className={styles.legendItem}><Volume2 size={12} style={{color:'#ef4444'}} /><span>Ruidoso</span></div>
-        <div className={styles.legendItem}><Dog size={12} style={{color:'#ec4899'}} /><span>Mascota</span></div>
-        <div className={styles.legendItem}><Star size={12} style={{color:'#10b981'}} /><span>PAX Nuevo</span></div>
-        <div className={styles.legendItem}><Clock size={12} style={{color:'#8b5cf6'}} /><span>Late C/O</span></div>
-        <div className={styles.legendItem}><Sunrise size={12} style={{color:'#0ea5e9'}} /><span>Early C/I</span></div>
+        <div className={styles.legendItem}><ShieldCheck size={12} style={{color:'#10b981'}} /><span>Garantía Pagada</span></div>
+        <div className={styles.legendItem}><ShieldAlert size={12} style={{color:'#ef4444'}} /><span>Sin Garantía</span></div>
       </div>
 
       {/* ── Modal ── */}
@@ -711,6 +729,74 @@ export default function CalendarioClient({ rooms, reservas, fechaBase }: Calenda
           onClose={() => setModalOpen(false)}
           onSave={() => {
             setModalOpen(false)
+            router.refresh()
+          }}
+        />
+      )}
+
+      {/* ── Tooltip ── */}
+      {hoverRsv && !activeDrag && !quickModalRsv && !modalOpen && (
+        <div
+          style={{
+            position: 'fixed',
+            top: hoverRsv.y + 15,
+            left: hoverRsv.x + 15,
+            background: 'var(--surface-1)',
+            border: '1px solid var(--border)',
+            borderRadius: '8px',
+            padding: '12px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+            zIndex: 1000,
+            pointerEvents: 'none',
+            fontSize: '13px',
+            minWidth: '240px',
+            maxWidth: '320px',
+            color: 'var(--text-primary)'
+          }}
+        >
+          {(() => {
+            const hrsv = hoverRsv.rsv.reservation
+            const hguest = hrsv.guest
+            const total = (hrsv.unitTotal || 0) + (hrsv.additionalServices || 0) - (hrsv.discounts || 0) + (hrsv.tax || 0)
+            const amountDue = total - (hrsv.totalPaid || 0)
+
+            return (
+              <>
+                <div style={{ fontWeight: 'bold', marginBottom: 6, fontSize: '14px', color: 'var(--brand-500)' }}>
+                  {hguest.firstName} {hguest.lastName} - #{hrsv.id}
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  <div><strong>PAX y Mascotas:</strong> {hrsv.adults} Adultos, {hrsv.children} Niños, {hrsv.pets} Mascotas</div>
+                  {hguest.email && <div><strong>Email:</strong> {hguest.email}</div>}
+                  {hguest.phone && <div><strong>Celular:</strong> {hguest.phone}</div>}
+                  {hguest.rut && <div><strong>RUT:</strong> {hguest.rut}</div>}
+                  <hr style={{ margin: '4px 0', borderColor: 'var(--border)' }} />
+                  <div><strong>Total:</strong> {formatCLP(total)}</div>
+                  <div><strong>Total Pagado:</strong> {formatCLP(hrsv.totalPaid)}</div>
+                  <div><strong style={{ color: amountDue > 0 ? '#ef4444' : 'inherit' }}>Monto Adeudado:</strong> {formatCLP(amountDue)}</div>
+                  {(hrsv.lostItems || hrsv.notes) && <hr style={{ margin: '4px 0', borderColor: 'var(--border)' }} />}
+                  {hrsv.lostItems && <div><strong>Objeto perdido:</strong> {hrsv.lostItems}</div>}
+                  {hrsv.notes && <div><strong>Notas:</strong> {hrsv.notes}</div>}
+                </div>
+              </>
+            )
+          })()}
+        </div>
+      )}
+
+      {/* ── Quick Modal ── */}
+      {quickModalRsv && (
+        <QuickReservaModal
+          rsv={quickModalRsv}
+          onClose={() => setQuickModalRsv(null)}
+          onOpenFull={() => {
+            setQuickModalRsv(null)
+            setSelectedReservaId(quickModalRsv.id)
+            setSelectedCell(null)
+            setModalOpen(true)
+          }}
+          onSaved={() => {
+            setQuickModalRsv(null)
             router.refresh()
           }}
         />

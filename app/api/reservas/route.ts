@@ -44,6 +44,12 @@ export async function POST(req: NextRequest) {
   const session = await auth()
   const body = await req.json()
 
+  let validUserId = session?.user?.id || null
+  if (validUserId) {
+    const userExists = await prisma.user.findUnique({ where: { id: validUserId } })
+    if (!userExists) validUserId = null
+  }
+
   // Upsert guest
   let guestId = body.guest.id
   if (!guestId) {
@@ -57,6 +63,7 @@ export async function POST(req: NextRequest) {
         nationality: body.guest.nationality || 'Chile',
         address: body.guest.address || null,
         notes: body.guest.notes || null,
+        referral: body.guest.referral || null,
         tags: '[]',
       },
     })
@@ -88,6 +95,7 @@ export async function POST(req: NextRequest) {
       isDifficult: body.isDifficult,
       isNewPax: body.isNewPax,
       isRecurring: body.isRecurring,
+      isWalkIn: body.isWalkIn,
       lateCheckoutHrs: body.lateCheckoutHrs || null,
       earlyCheckinHrs: body.earlyCheckinHrs || null,
       adults: body.adults,
@@ -98,6 +106,9 @@ export async function POST(req: NextRequest) {
       totalPaid: body.totalPaid,
       lostItems: body.lostItems || null,
       notes: body.notes || null,
+      dte: body.dte || null,
+      guaranteeRsv: body.guaranteeRsv || null,
+      guaranteeGames: body.guaranteeGames || null,
       unitTotal: body.unitTotal,
       discounts: body.discounts,
       additionalServices: body.additionalServices,
@@ -119,7 +130,7 @@ export async function POST(req: NextRequest) {
         create: {
           action: 'Reserva creada',
           details: `Estado: ${body.status}`,
-          userId: session?.user?.id || null,
+          userId: validUserId,
         },
       },
     },
@@ -142,6 +153,12 @@ export async function PUT(req: NextRequest) {
 
   if (!reservaId) return NextResponse.json({ error: 'ID requerido' }, { status: 400 })
 
+  let validUserId = session?.user?.id || null
+  if (validUserId) {
+    const userExists = await prisma.user.findUnique({ where: { id: validUserId } })
+    if (!userExists) validUserId = null
+  }
+
   // Update guest
   if (body.guest.id) {
     await prisma.guest.update({
@@ -155,6 +172,7 @@ export async function PUT(req: NextRequest) {
         nationality: body.guest.nationality || 'Chile',
         address: body.guest.address || null,
         notes: body.guest.notes || null,
+        referral: body.guest.referral || null,
       },
     })
   }
@@ -173,6 +191,7 @@ export async function PUT(req: NextRequest) {
       isDifficult: body.isDifficult,
       isNewPax: body.isNewPax,
       isRecurring: body.isRecurring,
+      isWalkIn: body.isWalkIn,
       lateCheckoutHrs: body.lateCheckoutHrs || null,
       earlyCheckinHrs: body.earlyCheckinHrs || null,
       adults: body.adults,
@@ -183,6 +202,9 @@ export async function PUT(req: NextRequest) {
       totalPaid: body.totalPaid,
       lostItems: body.lostItems || null,
       notes: body.notes || null,
+      dte: body.dte || null,
+      guaranteeRsv: body.guaranteeRsv || null,
+      guaranteeGames: body.guaranteeGames || null,
       unitTotal: body.unitTotal,
       discounts: body.discounts,
       additionalServices: body.additionalServices,
@@ -216,7 +238,7 @@ export async function PUT(req: NextRequest) {
         reservationId: reservaId,
         action: 'Reserva actualizada',
         details: changes.join(', '),
-        userId: session?.user?.id || null,
+        userId: validUserId,
       },
     })
   }

@@ -30,8 +30,15 @@ interface ReservationRoomLine {
 }
 
 const PAYMENT_METHODS = [
-  'Efectivo', 'Transferencia', 'Tarjeta Débito', 'Tarjeta Crédito',
-  'Cheque', 'WebPay', 'MercadoPago', 'Otro'
+  'Transferencia', 'Efectivo', 'POS Tarjeta Crédito', 'POS Tarjeta Débito', 'Link Pago Tarjeta Crédito', 'Link Pago Tarjeta Débito'
+]
+
+const ACCOUNT_CODES = [
+  'Santander', 'Scotiabank', 'Banco de Chile', 'BE Chequera', 'BE Rut', 'BE Turismo', 'BE Turismo (POS/LP)', 'BCI/MACH', 'Caja'
+]
+
+const DTE_OPTIONS = [
+  'Hacer Boleta', 'Boleta', 'NB/F', 'Hacer Factura', 'Factura', 'Nota de Crédito'
 ]
 
 const NATIONALITIES = [
@@ -93,6 +100,7 @@ export default function ReservaModal({
   const [nationality, setNationality] = useState('Chile')
   const [address, setAddress] = useState('')
   const [guestNotes, setGuestNotes] = useState('')
+  const [referral, setReferral] = useState('')
 
   // Tags
   const [isVip, setIsVip] = useState(false)
@@ -101,6 +109,7 @@ export default function ReservaModal({
   const [isDifficult, setIsDifficult] = useState(false)
   const [isNewPax, setIsNewPax] = useState(true)
   const [isRecurring, setIsRecurring] = useState(false)
+  const [isWalkIn, setIsWalkIn] = useState(false)
   const [lateCheckoutHrs, setLateCheckoutHrs] = useState<number | ''>('')
   const [earlyCheckinHrs, setEarlyCheckinHrs] = useState<number | ''>('')
 
@@ -117,6 +126,9 @@ export default function ReservaModal({
   // Extra info
   const [lostItems, setLostItems] = useState('')
   const [notes, setNotes] = useState('')
+  const [dte, setDte] = useState('')
+  const [guaranteeRsv, setGuaranteeRsv] = useState('')
+  const [guaranteeGames, setGuaranteeGames] = useState('')
 
   // Room lines
   const [roomLines, setRoomLines] = useState<ReservationRoomLine[]>([])
@@ -176,12 +188,14 @@ export default function ReservaModal({
             setNationality(data.guest.nationality || 'Chile')
             setAddress(data.guest.address || '')
             setGuestNotes(data.guest.notes || '')
+            setReferral(data.guest.referral || '')
             setIsVip(data.isVip)
             setIsNoisy(data.isNoisy)
             setIsDirty(data.isDirty)
             setIsDifficult(data.isDifficult)
             setIsNewPax(data.isNewPax)
             setIsRecurring(data.isRecurring)
+            setIsWalkIn(data.isWalkIn)
             setLateCheckoutHrs(data.lateCheckoutHrs || '')
             setEarlyCheckinHrs(data.earlyCheckinHrs || '')
             setAdults(data.adults)
@@ -192,6 +206,9 @@ export default function ReservaModal({
             setTotalPaid(data.totalPaid)
             setLostItems(data.lostItems || '')
             setNotes(data.notes || '')
+            setDte(data.dte || '')
+            setGuaranteeRsv(data.guaranteeRsv || '')
+            setGuaranteeGames(data.guaranteeGames || '')
             setDiscounts(data.discounts)
             setAdditionalServices(data.additionalServices)
             setTax(data.tax)
@@ -245,6 +262,7 @@ export default function ReservaModal({
     setEmail(g.email || '')
     setPhone(g.phone || '+56')
     setNationality(g.nationality || 'Chile')
+    setReferral(g.referral || '')
     setGuestSearch('')
     setGuestResults([])
     setIsNewPax(false)
@@ -304,6 +322,20 @@ export default function ReservaModal({
     setRoomLines(prev => prev.filter((_, i) => i !== idx))
   }
 
+  const handleTotalAdultsChange = (val: number) => {
+    if (roomLines.length === 0) return
+    const otherRoomsSum = roomLines.slice(1).reduce((s, r) => s + r.adults, 0)
+    const newFirstRoomVal = Math.max(1, val - otherRoomsSum)
+    updateRoomLine(0, 'adults', newFirstRoomVal)
+  }
+
+  const handleTotalChildrenChange = (val: number) => {
+    if (roomLines.length === 0) return
+    const otherRoomsSum = roomLines.slice(1).reduce((s, r) => s + r.children, 0)
+    const newFirstRoomVal = Math.max(0, val - otherRoomsSum)
+    updateRoomLine(0, 'children', newFirstRoomVal)
+  }
+
   // ── Calculations ──────────────────────────────────────────────
   const unitTotal = roomLines.reduce((s, r) => s + r.unitTotal, 0)
   const postTaxTotal = unitTotal + additionalServices - discounts + tax
@@ -342,13 +374,13 @@ export default function ReservaModal({
       const payload = {
         reservaId,
         status: newStatus || status,
-        guest: { id: guestId || null, firstName, lastName, rut, email, phone, nationality, address, notes: guestNotes },
-        isVip, isNoisy, isDirty, isDifficult, isNewPax, isRecurring,
+        guest: { id: guestId || null, firstName, lastName, rut, email, phone, nationality, address, notes: guestNotes, referral },
+        isVip, isNoisy, isDirty, isDifficult, isNewPax, isRecurring, isWalkIn,
         lateCheckoutHrs: lateCheckoutHrs || null,
         earlyCheckinHrs: earlyCheckinHrs || null,
         adults, children, pets,
         paymentMethod, accountCode, totalPaid,
-        lostItems, notes,
+        lostItems, notes, dte, guaranteeRsv, guaranteeGames,
         discounts, additionalServices, tax,
         unitTotal, rooms: roomLines,
       }
@@ -619,6 +651,10 @@ export default function ReservaModal({
                       <label className="form-label">Dirección</label>
                       <input className="input" value={address} onChange={e => setAddress(e.target.value)} placeholder="Calle, ciudad" />
                     </div>
+                    <div className="form-group" style={{ gridColumn: '1 / -1' }}>
+                      <label className="form-label">REFERRAL</label>
+                      <input className="input" value={referral} onChange={e => setReferral(e.target.value)} placeholder="Recomendación o empresa..." />
+                    </div>
                   </div>
 
                   {/* Tags */}
@@ -630,13 +666,21 @@ export default function ReservaModal({
                       { label: '🧹 Sucio',       val: isDirty,     set: setIsDirty,     cls: 'chip-dirty' },
                       { label: '⚠️ Complicado',  val: isDifficult, set: setIsDifficult, cls: 'chip-difficult' },
                       { label: '✨ PAX Nuevo',   val: isNewPax,    set: setIsNewPax,    cls: 'chip-newpax' },
-                      { label: '🔄 Recurrente',  val: isRecurring, set: setIsRecurring, cls: 'chip-recurring' },
+                      { label: '🔄 Cliente',     val: isRecurring, set: setIsRecurring, cls: 'chip-recurring' },
+                      { label: '🚶 Walk-in',     val: isWalkIn,    set: setIsWalkIn,    cls: 'chip-walkin' },
                     ].map(tag => (
                       <button
                         key={tag.label}
-                        className={`chip ${tag.cls} ${tag.val ? styles.tagActive : styles.tagInactive}`}
-                        onClick={() => tag.set(!tag.val)}
                         type="button"
+                        className={`chip ${tag.cls}`}
+                        style={{ 
+                          cursor: 'pointer',
+                          opacity: tag.val ? 1 : 0.35,
+                          filter: tag.val ? 'saturate(1.2)' : 'grayscale(100%)',
+                          outline: tag.val ? '1px solid currentColor' : 'none',
+                          outlineOffset: '1px'
+                        }}
+                        onClick={() => tag.set(!tag.val)}
                       >
                         {tag.label}
                       </button>
@@ -659,12 +703,12 @@ export default function ReservaModal({
                   <div className={styles.sectionTitle} style={{ marginTop: 16 }}>Pasajeros y Mascotas</div>
                   <div className={styles.paxRow}>
                     <div className="form-group">
-                      <label className="form-label">Total Adultos (Suma de hab.)</label>
-                      <input type="text" className="input" value={adults} readOnly disabled style={{ background: 'var(--surface-3)', opacity: 0.7 }} />
+                      <label className="form-label">Total Adultos</label>
+                      <input type="number" className="input" min={1} value={adults} onChange={e => handleTotalAdultsChange(+e.target.value)} />
                     </div>
                     <div className="form-group">
-                      <label className="form-label">Total Niños (Suma de hab.)</label>
-                      <input type="text" className="input" value={children} readOnly disabled style={{ background: 'var(--surface-3)', opacity: 0.7 }} />
+                      <label className="form-label">Total Niños</label>
+                      <input type="number" className="input" min={0} value={children} onChange={e => handleTotalChildrenChange(+e.target.value)} />
                     </div>
                     <div className="form-group">
                       <label className="form-label">🐕 Mascotas</label>
@@ -673,7 +717,7 @@ export default function ReservaModal({
                   </div>
 
                   {/* Payment + Notes */}
-                  <div className={styles.sectionTitle} style={{ marginTop: 16 }}>Pago y Notas</div>
+                  <div className={styles.sectionTitle} style={{ marginTop: 16 }}>PAGOS, GARANTÍAS y NOTAS</div>
                   <div className={styles.twoColSmall}>
                     <div className="form-group">
                       <label className="form-label">Forma de pago</label>
@@ -683,19 +727,45 @@ export default function ReservaModal({
                       </select>
                     </div>
                     <div className="form-group">
-                      <label className="form-label">Código / Cuenta</label>
-                      <input className="input" value={accountCode} onChange={e => setAccountCode(e.target.value)} placeholder="BCI MACH..." />
+                      <label className="form-label">CUENTA DESTINO</label>
+                      <select className="select" value={accountCode} onChange={e => setAccountCode(e.target.value)}>
+                        <option value="">Seleccionar...</option>
+                        {ACCOUNT_CODES.map(m => <option key={m} value={m}>{m}</option>)}
+                      </select>
                     </div>
                   </div>
                   <div className={styles.twoColSmall} style={{ marginTop: 12 }}>
                     <div className="form-group">
+                      <label className="form-label">DTE</label>
+                      <select className="select" value={dte} onChange={e => setDte(e.target.value)}>
+                        <option value="">Seleccionar...</option>
+                        {DTE_OPTIONS.map(m => <option key={m} value={m}>{m}</option>)}
+                      </select>
+                    </div>
+                    <div className="form-group">
                       <label className="form-label">Objeto perdido</label>
                       <input className="input" value={lostItems} onChange={e => setLostItems(e.target.value)} placeholder="Descripción..." />
                     </div>
-                    <div className="form-group">
-                      <label className="form-label">Notas adicionales</label>
-                      <textarea className="textarea" value={notes} onChange={e => setNotes(e.target.value)} placeholder="Notas internas, instrucciones especiales..." style={{ minHeight: 60 }} />
+                  </div>
+                  <div className={styles.twoColSmall} style={{ marginTop: 12 }}>
+                    <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 24 }}>
+                      <input 
+                        type="checkbox" 
+                        id="garantia-rsv"
+                        checked={guaranteeRsv === 'true'} 
+                        onChange={e => setGuaranteeRsv(e.target.checked ? 'true' : 'false')} 
+                        style={{ width: 16, height: 16, cursor: 'pointer' }}
+                      />
+                      <label htmlFor="garantia-rsv" className="form-label" style={{ marginBottom: 0, cursor: 'pointer' }}>GARANTÍA RSV</label>
                     </div>
+                    <div className="form-group">
+                      <label className="form-label">GARANTÍA JUEGOS</label>
+                      <input className="input" value={guaranteeGames} onChange={e => setGuaranteeGames(e.target.value)} placeholder="Ej: Efectivo $10.000..." />
+                    </div>
+                  </div>
+                  <div className="form-group" style={{ marginTop: 12 }}>
+                    <label className="form-label">Notas adicionales</label>
+                    <textarea className="textarea" value={notes} onChange={e => setNotes(e.target.value)} placeholder="Notas internas, instrucciones especiales..." style={{ minHeight: 60 }} />
                   </div>
                 </div>
 
@@ -722,11 +792,26 @@ export default function ReservaModal({
                   <div className={styles.summaryRow}>
                     <span>Descuentos</span>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                      <span style={{ color: '#ef4444' }}>−</span>
                       <input
                         type="number"
                         className="input"
-                        style={{ width: 100, textAlign: 'right' }}
+                        style={{ width: 50, textAlign: 'right', padding: '4px 8px' }}
+                        placeholder="%"
+                        min={0}
+                        max={100}
+                        onChange={e => {
+                          const pct = +e.target.value;
+                          if (pct >= 0) {
+                            setDiscounts(Math.round(unitTotal * (pct / 100)));
+                          }
+                        }}
+                      />
+                      <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>%</span>
+                      <span style={{ color: '#ef4444', marginLeft: 4 }}>−$</span>
+                      <input
+                        type="number"
+                        className="input"
+                        style={{ width: 90, textAlign: 'right' }}
                         value={discounts}
                         min={0}
                         onChange={e => setDiscounts(+e.target.value)}

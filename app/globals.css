@@ -93,6 +93,10 @@
   --header-height: 56px;
 }
 
+:root.sidebar-collapsed {
+  --sidebar-width: var(--sidebar-collapsed);
+}
+
 /* ─── TOKENS: Dark Mode ──────────────────────────────────────── */
 [data-theme="dark"] {
   --bg:         #16120e; /* Carbón de leña / Madera quemada profunda */

@@ -9,6 +9,7 @@ import {
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import styles from './financiero.module.css'
+import FinancialCharts from '@/components/reportes/FinancialCharts'
 
 // ── Types ────────────────────────────────────────────────────────
 interface ReportRow {
@@ -259,6 +260,11 @@ export default function ReporteFinancieroPage() {
                 </div>
               ))}
             </div>
+          )}
+
+          {/* Dashboards & Charts */}
+          {rows.length > 0 && (
+            <FinancialCharts rows={filteredRows} startDate={startDate} endDate={endDate} />
           )}
 
           {/* Filter + Table */}
