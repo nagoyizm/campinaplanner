@@ -60,6 +60,8 @@ interface ReservationRoom {
     totalPaid: number
     lostItems: string | null
     notes: string | null
+    guaranteeRsv: string | null
+    guaranteeGames: string | null
     guest: { id: string; firstName: string; lastName: string; email: string | null; phone: string | null; rut: string | null }
   }
   rate: { id: string; name: string; rackRate: number } | null
