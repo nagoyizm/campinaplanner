@@ -15,11 +15,11 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Cabañas La Campiña — Sistema de Reservas',
     description: 'Sistema de gestión de reservas para Cabañas La Campiña',
-    url: 'https://campinaplanner.com',
+    url: 'https://campinaplanner.vercel.app',
     siteName: 'Planner La Campiña',
     images: [
       {
-        url: 'https://campinaplanner.com/og-image.png',
+        url: 'https://campinaplanner.vercel.app/og-image.png',
         width: 1200,
         height: 630,
         alt: 'Cabañas La Campiña',
@@ -32,7 +32,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Cabañas La Campiña — Sistema de Reservas',
     description: 'Sistema de gestión de reservas para Cabañas La Campiña',
-    images: ['https://campinaplanner.com/og-image.png'],
+    images: ['https://campinaplanner.vercel.app/og-image.png'],
   },
 }
 
