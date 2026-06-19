@@ -62,6 +62,7 @@ export default async function CalendarioPage({
       rooms={rooms}
       reservas={mappedReservas as any}
       fechaBase={fechaBaseStr}
+      todayStr={getTodayInSantiago()}
     />
   )
 }

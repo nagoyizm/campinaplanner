@@ -12,6 +12,28 @@ export const metadata: Metadata = {
   title: 'Cabañas La Campiña — Sistema de Reservas',
   description: 'Sistema de gestión de reservas para Cabañas La Campiña',
   keywords: ['reservas', 'cabañas', 'la campiña', 'planner'],
+  openGraph: {
+    title: 'Cabañas La Campiña — Sistema de Reservas',
+    description: 'Sistema de gestión de reservas para Cabañas La Campiña',
+    url: 'https://campinaplanner.com',
+    siteName: 'Planner La Campiña',
+    images: [
+      {
+        url: 'https://campinaplanner.com/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'Cabañas La Campiña',
+      },
+    ],
+    locale: 'es_CL',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Cabañas La Campiña — Sistema de Reservas',
+    description: 'Sistema de gestión de reservas para Cabañas La Campiña',
+    images: ['https://campinaplanner.com/og-image.png'],
+  },
 }
 
 export default function RootLayout({

@@ -71,6 +71,7 @@ interface CalendarioClientProps {
   rooms: Room[]
   reservas: ReservationRoom[]
   fechaBase: string
+  todayStr: string
 }
 
 // Convierte una fecha UTC ISO (YYYY-MM-DD...) a un objeto Date local sin desfase de zona horaria
@@ -95,7 +96,7 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; textColor: s
 }
 
 // ── Main Component ────────────────────────────────────────────────
-export default function CalendarioClient({ rooms, reservas, fechaBase }: CalendarioClientProps) {
+export default function CalendarioClient({ rooms, reservas, fechaBase, todayStr }: CalendarioClientProps) {
   const router = useRouter()
   const [currentDate, setCurrentDate] = useState(() => parseUTCDate(fechaBase))
   const [viewMode, setViewMode] = useState<'month' | 'week'>('month')
@@ -122,6 +123,11 @@ export default function CalendarioClient({ rooms, reservas, fechaBase }: Calenda
   } | null>(null)
   const [rescheduling, setRescheduling] = useState(false)
   const clickStartRef = useRef<{ x: number; y: number } | null>(null)
+
+  // Is this day "Today" in Santiago?
+  const isTodaySantiago = useCallback((d: Date) => {
+    return isSameDay(d, parseUTCDate(todayStr))
+  }, [todayStr])
 
   // Generate days array
   const daysToShow = viewMode === 'month' ? getDaysInMonth(currentDate) : 7
@@ -529,7 +535,7 @@ export default function CalendarioClient({ rooms, reservas, fechaBase }: Calenda
           {days.map((day) => (
             <div
               key={day.toISOString()}
-              className={`${styles.dayHeader} ${isToday(day) ? styles.todayHeader : ''} ${isWeekend(day) ? styles.weekendHeader : ''}`}
+              className={`${styles.dayHeader} ${isTodaySantiago(day) ? styles.todayHeader : ''} ${isWeekend(day) ? styles.weekendHeader : ''}`}
             >
               <span className={styles.dayNum}>{format(day, 'd')}</span>
               <span className={styles.dayName}>{format(day, 'EEE', { locale: es })}</span>
@@ -618,7 +624,7 @@ export default function CalendarioClient({ rooms, reservas, fechaBase }: Calenda
                           key={`cell-${room.id}-${day.toISOString()}`}
                           className={`
                             ${styles.cell}
-                            ${isToday(day) ? styles.todayCell : ''}
+                            ${isTodaySantiago(day) ? styles.todayCell : ''}
                             ${isWeekend(day) ? styles.weekendCell : ''}
                             ${isDragSel ? styles.dragSelected : ''}
                             ${rsv ? styles.hasReservation : ''}
