@@ -4,7 +4,7 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
-        // Aplicar los headers a todas las rutas
+        // Aplicar los headers de seguridad a todas las rutas
         source: "/(.*)",
         headers: [
           {
@@ -22,16 +22,6 @@ const nextConfig: NextConfig = {
           {
             key: "Permissions-Policy",
             value: "camera=(), microphone=(), geolocation=()",
-          },
-        ],
-      },
-      {
-        // Restringir explícitamente el origen para la API
-        source: "/api/:path*",
-        headers: [
-          {
-            key: "Access-Control-Allow-Origin",
-            value: "https://campinaplanner.vercel.app",
           },
         ],
       },
