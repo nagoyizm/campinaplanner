@@ -9,76 +9,114 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-model User {
+// ── Multi-Tenant: cada cliente es una Organization ─────────────────
+model Organization {
   id          String   @id @default(cuid())
-  name        String
-  email       String   @unique
-  password    String
-  role        String   @default("operator") // admin, operator, observer
-  roleName    String   @default("Recepción")
+  name        String                          // "Cabañas La Campiña"
+  slug        String   @unique               // "campina" → campina.planner.cl
+  logoUrl     String?
+  timezone    String   @default("America/Santiago")
+  currency    String   @default("CLP")
+  plan        String   @default("starter")   // starter | pro | enterprise
   active      Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  checkIns    Reservation[] @relation("CheckInStaff")
-  checkOuts   Reservation[] @relation("CheckOutStaff")
-  auditLogs   AuditLog[]
+  users        User[]
+  unitTypes    UnitType[]
+  rooms        Room[]
+  rates        Rate[]
+  guests       Guest[]
+  reservations Reservation[]
+  amenities    Amenity[]
+  auditLogs    AuditLog[]
+  saasPayments SaasPayment[]
+  memos        Memo[]
+}
+
+model User {
+  id             String   @id @default(cuid())
+  name           String
+  email          String   @unique
+  password       String
+  role           String   @default("operator") // superadmin | admin | operator | observer
+  roleName       String   @default("Recepción")
+  active         Boolean  @default(true)
+  organizationId String   @default("seed-org-campina")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization  @relation(fields: [organizationId], references: [id])
+  checkIns     Reservation[] @relation("CheckInStaff")
+  checkOuts    Reservation[] @relation("CheckOutStaff")
+  auditLogs    AuditLog[]
+  targetedMemos Memo[]       @relation("TargetUser")
 }
 
 model Guest {
-  id          String   @id @default(cuid())
-  firstName   String
-  lastName    String
-  rut         String?
-  email       String?
-  phone       String?
-  nationality String?  @default("Chile")
-  address     String?
-  notes       String?
-  referral    String?
-  tags        String   @default("") // JSON array stored as string: ["VIP","ruidoso"]
-  totalStays  Int      @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id             String   @id @default(cuid())
+  organizationId String   @default("seed-org-campina")
+  firstName      String
+  lastName       String
+  rut            String?
+  email          String?
+  phone          String?
+  nationality    String?  @default("Chile")
+  address        String?
+  notes          String?
+  referral       String?
+  tags           String   @default("") // JSON array stored as string: ["VIP","ruidoso"]
+  totalStays     Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
+  organization Organization   @relation(fields: [organizationId], references: [id])
   reservations Reservation[]
 }
 
 model UnitType {
-  id           String   @id @default(cuid())
-  name         String   // "Cabaña 5P", "Suite Deluxe"
-  description  String?
-  maxOccupancy Int      @default(2)
-  sortOrder    Int      @default(0)
-  active       Boolean  @default(true)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id             String   @id @default(cuid())
+  organizationId String   @default("seed-org-campina")
+  name           String   // "Cabaña 5P", "Suite Deluxe"
+  description    String?
+  maxOccupancy   Int      @default(2)
+  sortOrder      Int      @default(0)
+  active         Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
+  organization Organization @relation(fields: [organizationId], references: [id])
   rooms        Room[]
   rates        Rate[]
 }
 
 model Room {
-  id            String    @id @default(cuid())
-  code          String    @unique // "C1", "S1", "D1", "P1"
-  name          String    // "Cabaña 1", "Suite Std 1"
-  unitTypeId    String
-  defaultRateId String?
-  active        Boolean   @default(true)
-  sortOrder     Int       @default(0)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id             String    @id @default(cuid())
+  organizationId String    @default("seed-org-campina")
+  code           String    // "C1", "S1" — único por org
+  name           String    // "Cabaña 1", "Suite Std 1"
+  unitTypeId     String
+  defaultRateId  String?
+  active         Boolean   @default(true)
+  cleaningStatus String    @default("clean") // 'clean', 'dirty', 'maintenance'
+  sortOrder      Int       @default(0)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
+  organization     Organization      @relation(fields: [organizationId], references: [id])
   unitType         UnitType          @relation(fields: [unitTypeId], references: [id])
   defaultRate      Rate?             @relation("DefaultRate", fields: [defaultRateId], references: [id])
   reservationRooms ReservationRoom[]
+
+  @@unique([code, organizationId]) // ponytail: two orgs can share "C1"
 }
 
 model Rate {
   id                   String    @id @default(cuid())
+  organizationId       String    @default("seed-org-campina")
   name                 String    // "Cabaña 5P Temporada Alta"
   unitTypeId           String?
-  rackRate             Float     @default(0) // tarifa por noche
+  rackRate             Float     @default(0)
   extraPersonAdult     Float     @default(0)
   extraPersonChild     Float     @default(0)
   weekendSurcharge     Float     @default(0)
@@ -87,6 +125,7 @@ model Rate {
   createdAt            DateTime  @default(now())
   updatedAt            DateTime  @updatedAt
 
+  organization     Organization      @relation(fields: [organizationId], references: [id])
   unitType         UnitType?         @relation(fields: [unitTypeId], references: [id])
   defaultForRooms  Room[]            @relation("DefaultRate")
   reservationRooms ReservationRoom[]
@@ -94,11 +133,11 @@ model Rate {
 
 model Reservation {
   id                Int       @id @default(autoincrement())
+  organizationId    String    @default("seed-org-campina")
   guestId           String
   status            String    @default("booked")
   // booked | confirmed | checked_in | checked_out | blocked | cancelled | no_show
 
-  // Guest tags (stored as booleans for quick filtering)
   isVip             Boolean   @default(false)
   isNoisy           Boolean   @default(false)
   isDirty           Boolean   @default(false)
@@ -109,20 +148,16 @@ model Reservation {
   lateCheckoutHrs   Int?
   earlyCheckinHrs   Int?
 
-  // PAX
   adults            Int       @default(1)
   children          Int       @default(0)
   pets              Int       @default(0)
 
-  // Staff
   checkInStaffId    String?
   checkOutStaffId   String?
 
-  // Payment
   paymentMethod     String?
   accountCode       String?
 
-  // Financial summary (calculated and cached)
   unitTotal         Float     @default(0)
   extraPersonCharge Float     @default(0)
   discounts         Float     @default(0)
@@ -130,7 +165,6 @@ model Reservation {
   tax               Float     @default(0)
   totalPaid         Float     @default(0)
 
-  // Extra info
   lostItems         String?
   notes             String?
   dte               String?
@@ -140,6 +174,7 @@ model Reservation {
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
 
+  organization    Organization      @relation(fields: [organizationId], references: [id])
   guest           Guest             @relation(fields: [guestId], references: [id])
   checkInStaff    User?             @relation("CheckInStaff", fields: [checkInStaffId], references: [id])
   checkOutStaff   User?             @relation("CheckOutStaff", fields: [checkOutStaffId], references: [id])
@@ -200,26 +235,70 @@ model Extra {
 }
 
 model Amenity {
-  id          String    @id @default(cuid())
-  name        String
-  category    String?   // "Alimentos", "Servicios", "Equipamiento"
-  price       Float     @default(0)
-  unit        String?   // "por noche", "por persona", "unidad"
-  active      Boolean   @default(true)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id             String    @id @default(cuid())
+  organizationId String    @default("seed-org-campina")
+  name           String
+  category       String?   // "Alimentos", "Servicios", "Equipamiento"
+  price          Float     @default(0)
+  unit           String?   // "por noche", "por persona", "unidad"
+  active         Boolean   @default(true)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
-  extras      Extra[]
+  organization Organization @relation(fields: [organizationId], references: [id])
+  extras       Extra[]
 }
 
 model AuditLog {
-  id            String    @id @default(cuid())
-  reservationId Int?
-  userId        String?
-  action        String    // created | updated | status_changed | payment_added | etc.
-  details       String?
-  timestamp     DateTime  @default(now())
+  id             String    @id @default(cuid())
+  organizationId String    @default("seed-org-campina")
+  reservationId  Int?
+  userId         String?
+  action         String    // created | updated | status_changed | payment_added | etc.
+  details        String?
+  timestamp      DateTime  @default(now())
 
-  reservation   Reservation? @relation(fields: [reservationId], references: [id])
-  user          User?        @relation(fields: [userId], references: [id])
+  organization  Organization  @relation(fields: [organizationId], references: [id])
+  reservation   Reservation?  @relation(fields: [reservationId], references: [id])
+  user          User?         @relation(fields: [userId], references: [id])
+}
+
+model Memo {
+  id             String   @id @default(cuid())
+  organizationId String
+  content        String
+  author         String   @default("Administración")
+  targetUserId   String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  targetUser   User?        @relation("TargetUser", fields: [targetUserId], references: [id])
+}
+
+// ── SaaS SuperAdmin Models ──────────────────────────────────────
+model SaasPayment {
+  id             String       @id @default(cuid())
+  organizationId String
+  amount         Float
+  startDate      DateTime
+  endDate        DateTime
+  paidAt         DateTime?
+  status         String       @default("pending") // pending | paid | overdue
+  notes          String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  organization   Organization @relation(fields: [organizationId], references: [id])
+}
+
+model SaasEvent {
+  id          String   @id @default(cuid())
+  title       String
+  startDate   DateTime
+  endDate     DateTime
+  description String?
+  type        String   @default("reminder") // meeting | reminder | maintenance
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }

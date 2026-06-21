@@ -63,8 +63,8 @@
   --status-pending:      #b91c1c; /* Rojo rústico */
 
   /* Calendar: Inspirado en elementos de madera y lino */
-  --cal-header-bg:   #1c150f; /* Encabezado de madera de nogal */
-  --cal-header-text: #ffffff;
+  --cal-header-bg:   var(--brand-200); /* Verde claro */
+  --cal-header-text: var(--text-primary); /* Letras oscuras */
   --cal-row-even:    #ffffff;
   --cal-row-odd:     #faf6ee; /* Lino de fondo */
   --cal-row-hover:   #f4eee1; /* Arena de selección */
@@ -121,6 +121,7 @@
   --sidebar-text-hover:  #ffffff;
 
   --cal-header-bg:   #0e0b08;
+  --cal-header-text: #ffffff;
   --cal-row-even:    #1f1a14;
   --cal-row-odd:     #231e17;
   --cal-row-hover:   #28221b;

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import {
   LayoutDashboard,
   Calendar,
@@ -20,28 +21,65 @@ import {
   Moon,
   Menu,
   MessageSquare,
+  Globe,
+  Building2,
+  LineChart,
+  ShieldAlert,
+  UsersRound,
 } from 'lucide-react'
 import { signOut } from 'next-auth/react'
 import styles from './Sidebar.module.css'
 
-const navItems = [
-  { href: '/dashboard',  label: 'Dashboard',   icon: LayoutDashboard },
-  { href: '/calendario', label: 'Calendario',   icon: Calendar },
-  { href: '/reservas',   label: 'Reservas',     icon: BookOpen },
-  { href: '/huespedes',  label: 'Huéspedes',    icon: Users },
-  { href: '/reportes',   label: 'Reportes',     icon: BarChart3 },
-  { href: '/simulador',  label: 'Simulador Bot', icon: MessageSquare },
-  {
-    label: 'Configuración',
-    icon: Settings,
-    children: [
-      { href: '/setup/tarifas',   label: 'Tarifas' },
-      { href: '/setup/unidades',  label: 'Unidades' },
-      { href: '/setup/rooms',     label: 'Habitaciones' },
-      { href: '/setup/amenities', label: 'Amenities' },
-      { href: '/setup/usuarios',  label: 'Usuarios' },
-    ],
-  },
+const getHotelNavItems = (role: string) => {
+  if (role === 'empleado') {
+    return [
+      { href: '/pizarra', label: 'Pizarra / Memo', icon: MessageSquare },
+      { href: '/habitaciones', label: 'Habitaciones', icon: Hotel },
+    ]
+  }
+
+  if (role === 'recepcionista') {
+    return [
+      { href: '/recepcion', label: 'Recepción', icon: LayoutDashboard },
+      { href: '/calendario', label: 'Calendario',   icon: Calendar },
+      { href: '/reservas',   label: 'Reservas',     icon: BookOpen },
+      { href: '/habitaciones', label: 'Habitaciones', icon: Hotel },
+      { href: '/huespedes',  label: 'Huéspedes',    icon: Users },
+      { href: '/pizarra',    label: 'Pizarra / Memo', icon: MessageSquare },
+    ]
+  }
+
+  return [
+    { href: '/dashboard',  label: 'Home',         icon: LayoutDashboard },
+    { href: '/recepcion',  label: 'Recepción',    icon: LayoutDashboard },
+    { href: '/calendario', label: 'Calendario',   icon: Calendar },
+    { href: '/reservas',   label: 'Reservas',     icon: BookOpen },
+    { href: '/habitaciones', label: 'Habitaciones', icon: Hotel },
+    { href: '/huespedes',  label: 'Huéspedes',    icon: Users },
+    { href: '/pizarra',    label: 'Pizarra / Memo', icon: MessageSquare },
+    { href: '/reportes',   label: 'Reportes',     icon: BarChart3 },
+    {
+      label: 'Configuración',
+      icon: Settings,
+      children: [
+        { href: '/setup/tarifas',   label: 'Tarifas' },
+        { href: '/setup/unidades',  label: 'Unidades' },
+        { href: '/setup/rooms',     label: 'Habitaciones' },
+        { href: '/setup/amenities', label: 'Amenities' },
+        { href: '/setup/usuarios',  label: 'Usuarios' },
+      ],
+    },
+    { href: '/simulador',  label: 'Simulador Bot', icon: MessageSquare },
+  ]
+}
+
+const saasNavItems = [
+  { href: '/saas',               label: 'SaaS Dashboard', icon: Globe },
+  { href: '/saas/clientes',      label: 'Gestión Clientes',icon: Building2 },
+  { href: '/saas/usuarios',      label: 'Usuarios Global', icon: UsersRound },
+  { href: '/saas/planner',       label: 'SaaS Planner',   icon: Calendar },
+  { href: '/saas/analiticas',    label: 'Analíticas',     icon: LineChart },
+  { href: '/saas/monitorizacion',label: 'Monitorización', icon: ShieldAlert },
 ]
 
 interface SidebarProps {
@@ -51,6 +89,9 @@ interface SidebarProps {
 
 export default function Sidebar({ theme, onThemeToggle }: SidebarProps) {
   const pathname = usePathname()
+  const { data: session } = useSession()
+  const orgName = (session?.user as any)?.orgName ?? 'Planner'
+  const userRole = (session?.user as any)?.role ?? 'operator'
   const [collapsed, setCollapsed] = useState(false)
   const [setupOpen, setSetupOpen] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
@@ -95,7 +136,7 @@ export default function Sidebar({ theme, onThemeToggle }: SidebarProps) {
           </div>
           {!collapsed && (
             <div className={styles.logoText}>
-              <span className={styles.logoName}>La Campiña</span>
+              <span className={styles.logoName}>{orgName}</span>
               <span className={styles.logoSub}>Reservas</span>
             </div>
           )}
@@ -109,59 +150,61 @@ export default function Sidebar({ theme, onThemeToggle }: SidebarProps) {
         </div>
 
         {/* Navigation */}
-        <nav className={styles.nav}>
-          {navItems.map((item) => {
-            if (item.children) {
-              return (
-                <div key={item.label}>
-                  <button
-                    className={`${styles.navItem} ${isSetupActive ? styles.active : ''}`}
-                    onClick={() => setSetupOpen(!setupOpen)}
-                    title={collapsed ? item.label : undefined}
-                  >
-                    <item.icon size={18} className={styles.navIcon} />
-                    {!collapsed && (
-                      <>
-                        <span className={styles.navLabel}>{item.label}</span>
-                        <ChevronRight
-                          size={14}
-                          className={`${styles.chevron} ${setupOpen ? styles.chevronOpen : ''}`}
-                        />
-                      </>
+        <div className={styles.navContent}>
+          <div className={styles.navSection}>
+            {(userRole === 'superadmin' ? saasNavItems : getHotelNavItems(userRole)).map((item: any) => {
+              if (item.children) {
+                return (
+                  <div key={item.label}>
+                    <button
+                      className={`${styles.navItem} ${isSetupActive ? styles.active : ''}`}
+                      onClick={() => setSetupOpen(!setupOpen)}
+                      title={collapsed ? item.label : undefined}
+                    >
+                      <item.icon size={18} className={styles.navIcon} />
+                      {!collapsed && (
+                        <>
+                          <span className={styles.navLabel}>{item.label}</span>
+                          <ChevronRight
+                            size={14}
+                            className={`${styles.chevron} ${setupOpen ? styles.chevronOpen : ''}`}
+                          />
+                        </>
+                      )}
+                    </button>
+                    {!collapsed && setupOpen && (
+                      <div className={styles.subNav}>
+                        {item.children.map((child: any) => (
+                          <Link
+                            key={child.href}
+                            href={child.href}
+                            className={`${styles.subNavItem} ${isActive(child.href) ? styles.active : ''}`}
+                            onClick={() => setMobileOpen(false)}
+                          >
+                            {child.label}
+                          </Link>
+                        ))}
+                      </div>
                     )}
-                  </button>
-                  {!collapsed && setupOpen && (
-                    <div className={styles.subNav}>
-                      {item.children.map((child) => (
-                        <Link
-                          key={child.href}
-                          href={child.href}
-                          className={`${styles.subNavItem} ${isActive(child.href) ? styles.active : ''}`}
-                          onClick={() => setMobileOpen(false)}
-                        >
-                          {child.label}
-                        </Link>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )
-            }
+                  </div>
+                )
+              }
 
-            return (
-              <Link
-                key={item.href}
-                href={item.href!}
-                className={`${styles.navItem} ${isActive(item.href!) ? styles.active : ''}`}
-                title={collapsed ? item.label : undefined}
-                onClick={() => setMobileOpen(false)}
-              >
-                <item.icon size={18} className={styles.navIcon} />
-                {!collapsed && <span className={styles.navLabel}>{item.label}</span>}
-              </Link>
-            )
-          })}
-        </nav>
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`${styles.navItem} ${isActive(item.href) ? styles.active : ''}`}
+                  title={collapsed ? item.label : undefined}
+                  onClick={() => setMobileOpen(false)}
+                >
+                  <item.icon size={18} className={styles.navIcon} />
+                  {!collapsed && <span className={styles.navLabel}>{item.label}</span>}
+                </Link>
+              )
+            })}
+          </div>
+        </div>
 
         {/* Bottom actions */}
         <div className={styles.bottomActions}>

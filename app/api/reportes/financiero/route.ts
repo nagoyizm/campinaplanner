@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { requireOrg } from '@/lib/org'
 
 export async function GET(req: NextRequest) {
+  const { organizationId } = await requireOrg()
   const { searchParams } = new URL(req.url)
   const startDate = searchParams.get('startDate')
   const endDate = searchParams.get('endDate')
@@ -14,13 +16,13 @@ export async function GET(req: NextRequest) {
   const start = new Date(`${startDate}T00:00:00.000Z`)
   const end = new Date(`${endDate}T23:59:59.999Z`)
 
-  let where: any = {}
+  let dateFilter: any = {}
   if (queryBy === 'arrival') {
-    where = { arrival: { gte: start, lte: end } }
+    dateFilter = { arrival: { gte: start, lte: end } }
   } else if (queryBy === 'departure') {
-    where = { departure: { gte: start, lte: end } }
+    dateFilter = { departure: { gte: start, lte: end } }
   } else {
-    where = {
+    dateFilter = {
       OR: [
         { arrival: { gte: start, lte: end } },
         { departure: { gte: start, lte: end } },
@@ -29,9 +31,17 @@ export async function GET(req: NextRequest) {
   }
 
   const rows = await prisma.reservationRoom.findMany({
-    where,
+    where: { room: { organizationId }, ...dateFilter },
     include: {
-      reservation: { include: { guest: true } },
+      reservation: { 
+        include: { 
+          guest: {
+            include: {
+              _count: { select: { reservations: true } }
+            }
+          } 
+        } 
+      },
       room: { include: { unitType: true } },
       rate: true,
     },
@@ -46,6 +56,7 @@ export async function GET(req: NextRequest) {
       reservationId: rsv.id,
       guestFirstName: rsv.guest.firstName,
       guestLastName: rsv.guest.lastName,
+      isRecurring: rsv.guest._count.reservations > 1,
       roomCode: r.room.code,
       roomName: r.room.name.replace(/^[a-z]-/i, ''),
       unitType: r.room.unitType.name,
@@ -65,5 +76,9 @@ export async function GET(req: NextRequest) {
     }
   })
 
-  return NextResponse.json(data)
+  const totalActiveRooms = await prisma.room.count({
+    where: { organizationId, active: true }
+  })
+
+  return NextResponse.json({ rows: data, totalActiveRooms })
 }

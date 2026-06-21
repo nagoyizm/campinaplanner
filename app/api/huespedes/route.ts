@@ -1,32 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { requireOrg } from '@/lib/org'
 
 export async function GET(req: NextRequest) {
+  const { organizationId } = await requireOrg()
   const { searchParams } = new URL(req.url)
   const q = searchParams.get('q') || ''
   const limit = parseInt(searchParams.get('limit') || '20')
   const page = parseInt(searchParams.get('page') || '1')
   const skip = (page - 1) * limit
 
-  const where = q
-    ? {
-        OR: [
-          { firstName: { contains: q } },
-          { lastName: { contains: q } },
-          { rut: { contains: q } },
-          { email: { contains: q } },
-          { phone: { contains: q } },
-        ],
-      }
-    : {}
+  const where: any = { organizationId }
+  if (q) {
+    where.OR = [
+      { firstName: { contains: q } },
+      { lastName: { contains: q } },
+      { rut: { contains: q } },
+      { email: { contains: q } },
+      { phone: { contains: q } },
+    ]
+  }
 
   const [guests, total] = await Promise.all([
-    prisma.guest.findMany({
-      where,
-      orderBy: { lastName: 'asc' },
-      take: limit,
-      skip,
-    }),
+    prisma.guest.findMany({ where, orderBy: { lastName: 'asc' }, take: limit, skip }),
     prisma.guest.count({ where }),
   ])
 
@@ -34,9 +30,11 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  const { organizationId } = await requireOrg()
   const body = await req.json()
   const guest = await prisma.guest.create({
     data: {
+      organizationId,
       firstName: body.firstName,
       lastName: body.lastName,
       rut: body.rut || null,

@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma'
+import { requireOrg } from '@/lib/org'
 import CalendarioClient from './CalendarioClient'
 import { addDays } from 'date-fns'
 
@@ -19,6 +20,7 @@ export default async function CalendarioPage({
 }: {
   searchParams: Promise<{ fecha?: string }>
 }) {
+  const { organizationId } = await requireOrg()
   const params = await searchParams
   const fechaBaseStr = params.fecha || getTodayInSantiago()
 
@@ -27,16 +29,15 @@ export default async function CalendarioPage({
   const lastDayVal = new Date(Date.UTC(year, month, 0)).getUTCDate()
   const fin = new Date(Date.UTC(year, month - 1, lastDayVal, 23, 59, 59, 999))
 
-  // Cargar rooms con su tipo de unidad
   const rooms = await prisma.room.findMany({
-    where: { active: true },
+    where: { active: true, organizationId },
     include: { unitType: true },
     orderBy: { sortOrder: 'asc' },
   })
 
-  // Cargar reservas del mes (con margen de ±7 días)
   const reservas = await prisma.reservationRoom.findMany({
     where: {
+      room: { organizationId },
       OR: [
         { arrival: { lte: addDays(fin, 7), gte: addDays(inicio, -7) } },
         { departure: { lte: addDays(fin, 7), gte: addDays(inicio, -7) } },

@@ -69,12 +69,25 @@ export async function PATCH(
   if (body.guaranteeRsv !== undefined) data.guaranteeRsv = body.guaranteeRsv
   if (body.guaranteeGames !== undefined) data.guaranteeGames = body.guaranteeGames
 
-  const old = await prisma.reservation.findUnique({ where: { id: parseInt(id) }, select: { status: true } })
+  const old = await prisma.reservation.findUnique({ 
+    where: { id: parseInt(id) }, 
+    select: { status: true, rooms: { select: { roomId: true } } } 
+  })
 
   const reservation = await prisma.reservation.update({
     where: { id: parseInt(id) },
     data,
   })
+
+  // Si se hizo checkout, cambiar el estado de las habitaciones a sucias (dirty / sin limpieza)
+  if (body.status === 'checked_out' && old?.status !== 'checked_out') {
+    if (old?.rooms && old.rooms.length > 0) {
+      await prisma.room.updateMany({
+        where: { id: { in: old.rooms.map((r: any) => r.roomId) } },
+        data: { cleaningStatus: 'dirty' }
+      })
+    }
+  }
 
   const changes: string[] = []
   if (old?.status !== body.status && body.status) changes.push(`Estado: ${old?.status} → ${body.status}`)

@@ -11,6 +11,8 @@ export const authConfig = {
         token.id = user.id
         token.role = (user as any).role
         token.roleName = (user as any).roleName
+        token.organizationId = (user as any).organizationId
+        token.orgName = (user as any).orgName
       }
       return token
     },
@@ -19,6 +21,8 @@ export const authConfig = {
         session.user.id = token.id as string
         ;(session.user as any).role = token.role
         ;(session.user as any).roleName = token.roleName
+        ;(session.user as any).organizationId = token.organizationId
+        ;(session.user as any).orgName = token.orgName
       }
       return session
     },

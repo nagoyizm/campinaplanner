@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma'
+import { requireOrg } from '@/lib/org'
 import { format, startOfDay, endOfDay, addDays, startOfMonth, endOfMonth } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { 
@@ -62,6 +63,9 @@ function getGreeting(hour: number): string {
 }
 
 export default async function DashboardPage() {
+  const { organizationId } = await requireOrg()
+  const org = await prisma.organization.findUnique({ where: { id: organizationId }, select: { name: true } })
+  const orgName = org?.name ?? 'Mi Organización'
   const santiagoToday = getTodayInSantiago()
   const parts = santiagoToday.split('-')
   const year = parseInt(parts[0])
@@ -114,6 +118,7 @@ export default async function DashboardPage() {
     // 1. Today's Arrivals
     prisma.reservationRoom.findMany({
       where: {
+        room: { organizationId },
         arrival: { gte: todayStart, lte: todayEnd },
         reservation: { status: { notIn: ['cancelled', 'blocked'] } }
       },
@@ -127,6 +132,7 @@ export default async function DashboardPage() {
     // 2. Today's Departures
     prisma.reservationRoom.findMany({
       where: {
+        room: { organizationId },
         departure: { gte: todayStart, lte: todayEnd },
         reservation: { status: { notIn: ['cancelled', 'blocked'] } }
       },
@@ -139,7 +145,7 @@ export default async function DashboardPage() {
 
     // 3. Checked-In Reservations
     prisma.reservation.findMany({
-      where: { status: 'checked_in' },
+      where: { organizationId, status: 'checked_in' },
       include: {
         guest: true,
         rooms: { include: { room: { include: { unitType: true } } } }
@@ -148,13 +154,14 @@ export default async function DashboardPage() {
 
     // 4. Total Active Rooms
     prisma.room.findMany({
-      where: { active: true },
+      where: { active: true, organizationId },
       include: { unitType: true }
     }),
 
     // 5. Reservations arriving this month
     prisma.reservation.findMany({
       where: {
+        organizationId,
         status: { notIn: ['cancelled', 'blocked'] },
         rooms: {
           some: {
@@ -167,6 +174,7 @@ export default async function DashboardPage() {
     // 6. All non-cancelled, non-blocked reservations for pending payments
     prisma.reservation.findMany({
       where: {
+        organizationId,
         status: { notIn: ['cancelled', 'blocked'] }
       }
     }),
@@ -174,6 +182,7 @@ export default async function DashboardPage() {
     // 7. Upcoming arrivals next 7 days
     prisma.reservationRoom.findMany({
       where: {
+        room: { organizationId },
         arrival: { gte: todayStart, lte: next7DaysEnd },
         reservation: { status: { notIn: ['cancelled', 'blocked'] } }
       },
@@ -187,7 +196,7 @@ export default async function DashboardPage() {
 
     // 8. Recent reservations (last 5 created)
     prisma.reservation.findMany({
-      where: { status: { not: 'blocked' } },
+      where: { organizationId, status: { not: 'blocked' } },
       include: {
         guest: true,
         rooms: { include: { room: true } }
@@ -273,6 +282,11 @@ export default async function DashboardPage() {
     no_show: styles.statusNoShow
   }
 
+  // Limpieza
+  const cleanCount = totalActiveRooms.filter(r => (r as any).cleaningStatus === 'clean').length
+  const dirtyCount = totalActiveRooms.filter(r => (r as any).cleaningStatus === 'dirty').length
+  const maintCount = totalActiveRooms.filter(r => (r as any).cleaningStatus === 'maintenance').length
+
   return (
     <div className="page-container">
       {/* Page Header */}
@@ -285,44 +299,36 @@ export default async function DashboardPage() {
         </div>
         <div className={styles.pulseContainer}>
           <span className={styles.pulseDot}></span>
-          <span className={styles.pulseText}>Sistema Online · Cabañas La Campiña</span>
+          <span className={styles.pulseText}>Sistema Online · {orgName}</span>
         </div>
       </div>
 
       {/* KPI Grid */}
       <div className={styles.kpiGrid}>
-        {/* KPI 1: Llegadas Hoy */}
-        <div className={`card ${styles.kpiCard}`}>
-          <div className="card-body">
-            <div className={styles.kpiHeader}>
+        {/* KPI 1: Llegadas y Salidas Hoy */}
+        <div className={`card ${styles.kpiCard}`} style={{ padding: '16px' }}>
+          <div className="card-body" style={{ padding: 0 }}>
+            <div className={styles.kpiHeader} style={{ marginBottom: '12px' }}>
               <div className={`${styles.kpiIcon} ${styles.colorWarning}`}>
                 <LogIn size={20} />
               </div>
-              <span className={styles.kpiLabel}>Llegadas Hoy</span>
+              <span className={styles.kpiLabel}>Movimientos Hoy</span>
             </div>
-            <div className={styles.kpiContent}>
-              <span className={styles.kpiValue}>{arrivalsCount}</span>
-              <span className={styles.kpiSubtext}>
-                {arrivalsToday.filter(a => a.reservation.status === 'confirmed').length} confirmadas
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* KPI 2: Salidas Hoy */}
-        <div className={`card ${styles.kpiCard}`}>
-          <div className="card-body">
-            <div className={styles.kpiHeader}>
-              <div className={`${styles.kpiIcon} ${styles.colorMuted}`}>
-                <LogOut size={20} />
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ textAlign: 'center', flex: 1, borderRight: '1px solid var(--border)' }}>
+                <span style={{ display: 'block', fontSize: '1.5rem', fontWeight: 800, color: '#d97706' }}>{arrivalsCount}</span>
+                <span style={{ fontSize: '0.65rem', color: '#b45309', textTransform: 'uppercase', fontWeight: 600 }}>Llegadas</span>
+                <span style={{ display: 'block', fontSize: '0.6rem', color: 'var(--text-muted)' }}>
+                  {arrivalsToday.filter(a => a.reservation.status === 'confirmed').length} conf.
+                </span>
               </div>
-              <span className={styles.kpiLabel}>Salidas Hoy</span>
-            </div>
-            <div className={styles.kpiContent}>
-              <span className={styles.kpiValue}>{departuresCount}</span>
-              <span className={styles.kpiSubtext}>
-                {departuresToday.filter(d => d.reservation.status === 'checked_in').length} por salir
-              </span>
+              <div style={{ textAlign: 'center', flex: 1 }}>
+                <span style={{ display: 'block', fontSize: '1.5rem', fontWeight: 800, color: '#4b5563' }}>{departuresCount}</span>
+                <span style={{ fontSize: '0.65rem', color: '#374151', textTransform: 'uppercase', fontWeight: 600 }}>Salidas</span>
+                <span style={{ display: 'block', fontSize: '0.6rem', color: 'var(--text-muted)' }}>
+                  {departuresToday.filter(d => d.reservation.status === 'checked_in').length} pdte.
+                </span>
+              </div>
             </div>
           </div>
         </div>
@@ -339,13 +345,40 @@ export default async function DashboardPage() {
             <div className={styles.kpiContent}>
               <span className={styles.kpiValue}>{totalGuestsCheckedIn}</span>
               <span className={styles.kpiSubtext} style={{ lineHeight: '1.4' }}>
-                {guestsInCabanas} en cabañas <br/> {guestsInSuites} en suites
+                {occupiedRoomsToday} habitaciones<br />
+                {checkedInCount} reservas
               </span>
             </div>
           </div>
         </div>
 
-        {/* KPI 4: Ocupación */}
+        {/* KPI 4: Estado Limpieza */}
+        <div className={`card ${styles.kpiCard}`} style={{ padding: '16px' }}>
+          <div className="card-body" style={{ padding: 0 }}>
+            <div className={styles.kpiHeader} style={{ marginBottom: '12px' }}>
+              <div className={`${styles.kpiIcon} ${styles.colorGold}`}>
+                <Activity size={20} />
+              </div>
+              <span className={styles.kpiLabel}>Estado Limpieza</span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ textAlign: 'center', flex: 1, borderRight: '1px solid var(--border)' }}>
+                <span style={{ display: 'block', fontSize: '1.5rem', fontWeight: 800, color: '#047857' }}>{cleanCount}</span>
+                <span style={{ fontSize: '0.65rem', color: '#065f46', textTransform: 'uppercase', fontWeight: 600 }}>Listas</span>
+              </div>
+              <div style={{ textAlign: 'center', flex: 1, borderRight: '1px solid var(--border)' }}>
+                <span style={{ display: 'block', fontSize: '1.5rem', fontWeight: 800, color: '#b91c1c' }}>{dirtyCount}</span>
+                <span style={{ fontSize: '0.65rem', color: '#991b1b', textTransform: 'uppercase', fontWeight: 600 }}>Sin limpieza</span>
+              </div>
+              <div style={{ textAlign: 'center', flex: 1 }}>
+                <span style={{ display: 'block', fontSize: '1.5rem', fontWeight: 800, color: '#4b5563' }}>{maintCount}</span>
+                <span style={{ fontSize: '0.65rem', color: '#374151', textTransform: 'uppercase', fontWeight: 600 }}>Mant.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* KPI 5: Disponibilidad Hoy */}
         <div className={`card ${styles.kpiCard}`}>
           <div className="card-body">
             <div className={styles.kpiHeader}>

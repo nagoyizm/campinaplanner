@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { auth } from '@/auth'
+import { requireOrg } from '@/lib/org'
 
-// GET /api/reservas — List reservations
 export async function GET(req: NextRequest) {
+  const { organizationId } = await requireOrg()
   const { searchParams } = new URL(req.url)
   const page = parseInt(searchParams.get('page') || '1')
   const limit = parseInt(searchParams.get('limit') || '20')
@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
   const q = searchParams.get('q') || ''
   const skip = (page - 1) * limit
 
-  const where: any = {}
+  const where: any = { organizationId }
   if (status) where.status = status
   if (q) {
     where.guest = {
@@ -39,22 +39,16 @@ export async function GET(req: NextRequest) {
   return NextResponse.json({ reservas, total, page, limit })
 }
 
-// POST /api/reservas — Create reservation
 export async function POST(req: NextRequest) {
-  const session = await auth()
+  const { organizationId, userId } = await requireOrg()
   const body = await req.json()
 
-  let validUserId = session?.user?.id || null
-  if (validUserId) {
-    const userExists = await prisma.user.findUnique({ where: { id: validUserId } })
-    if (!userExists) validUserId = null
-  }
-
-  // Upsert guest
+  // Upsert guest scoped to this org
   let guestId = body.guest.id
   if (!guestId) {
     const guest = await prisma.guest.create({
       data: {
+        organizationId,
         firstName: body.guest.firstName,
         lastName: body.guest.lastName,
         rut: body.guest.rut || null,
@@ -84,9 +78,9 @@ export async function POST(req: NextRequest) {
     })
   }
 
-  // Create reservation
   const reservation = await prisma.reservation.create({
     data: {
+      organizationId,
       guestId,
       status: body.status,
       isVip: body.isVip,
@@ -128,15 +122,15 @@ export async function POST(req: NextRequest) {
       },
       auditLogs: {
         create: {
+          organizationId,
           action: 'Reserva creada',
           details: `Estado: ${body.status}`,
-          userId: validUserId,
+          userId,
         },
       },
     },
   })
 
-  // Update guest total stays
   await prisma.guest.update({
     where: { id: guestId },
     data: { totalStays: { increment: 1 } },
@@ -145,21 +139,13 @@ export async function POST(req: NextRequest) {
   return NextResponse.json(reservation, { status: 201 })
 }
 
-// PUT /api/reservas — Update reservation
 export async function PUT(req: NextRequest) {
-  const session = await auth()
+  const { organizationId, userId } = await requireOrg()
   const body = await req.json()
   const { reservaId } = body
 
   if (!reservaId) return NextResponse.json({ error: 'ID requerido' }, { status: 400 })
 
-  let validUserId = session?.user?.id || null
-  if (validUserId) {
-    const userExists = await prisma.user.findUnique({ where: { id: validUserId } })
-    if (!userExists) validUserId = null
-  }
-
-  // Update guest
   if (body.guest.id) {
     await prisma.guest.update({
       where: { id: body.guest.id },
@@ -177,10 +163,12 @@ export async function PUT(req: NextRequest) {
     })
   }
 
-  // Get old status for audit
-  const old = await prisma.reservation.findUnique({ where: { id: reservaId }, select: { status: true } })
+  const old = await prisma.reservation.findUnique({
+    where: { id: reservaId, organizationId },
+    select: { status: true },
+  })
+  if (!old) return NextResponse.json({ error: 'No encontrado' }, { status: 404 })
 
-  // Update reservation
   const reservation = await prisma.reservation.update({
     where: { id: reservaId },
     data: {
@@ -212,7 +200,6 @@ export async function PUT(req: NextRequest) {
     },
   })
 
-  // Update room lines — delete and recreate
   await prisma.reservationRoom.deleteMany({ where: { reservationId: reservaId } })
   await prisma.reservationRoom.createMany({
     data: body.rooms.map((r: any) => ({
@@ -229,16 +216,16 @@ export async function PUT(req: NextRequest) {
     })),
   })
 
-  // Audit log
   const changes: string[] = []
   if (old?.status !== body.status) changes.push(`Estado: ${old?.status} → ${body.status}`)
   if (changes.length > 0) {
     await prisma.auditLog.create({
       data: {
+        organizationId,
         reservationId: reservaId,
         action: 'Reserva actualizada',
         details: changes.join(', '),
-        userId: validUserId,
+        userId,
       },
     })
   }

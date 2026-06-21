@@ -6,9 +6,10 @@ const { auth } = NextAuth(authConfig)
 
 export default auth((req) => {
   const nonce = btoa(crypto.randomUUID())
+  const isDev = process.env.NODE_ENV !== 'production'
   const cspHeader = `
     default-src 'self';
-    script-src 'self' 'nonce-${nonce}' 'strict-dynamic';
+    script-src 'self' 'nonce-${nonce}' 'strict-dynamic' ${isDev ? "'unsafe-eval'" : ""};
     style-src 'self' 'unsafe-inline';
     img-src 'self' blob: data:;
     font-src 'self';
@@ -28,6 +29,13 @@ export default auth((req) => {
   const isAuthPage = nextUrl.pathname.startsWith('/login')
   const isApiAuth = nextUrl.pathname.startsWith('/api/auth')
   const isPublic = isAuthPage || isApiAuth
+  const isRoot = nextUrl.pathname === '/'
+  
+  const userRole = (req.auth?.user as any)?.role
+  let redirectTarget = '/dashboard'
+  if (userRole === 'superadmin') redirectTarget = '/saas'
+  else if (userRole === 'recepcionista') redirectTarget = '/recepcion'
+  else if (userRole === 'empleado') redirectTarget = '/habitaciones'
 
   let response = NextResponse.next({
     request: {
@@ -35,10 +43,25 @@ export default auth((req) => {
     },
   })
 
+  // Role-based route protection
+  const path = nextUrl.pathname
+  const isSetupRoute = path.startsWith('/setup')
+  const isDashboardRoute = path === '/dashboard' || path.startsWith('/dashboard/')
+  const isReportesRoute = path.startsWith('/reportes')
+  const isSaasRoute = path.startsWith('/saas')
+
   if (!isLoggedIn && !isPublic) {
     response = NextResponse.redirect(new URL('/login', req.url))
   } else if (isLoggedIn && isAuthPage) {
-    response = NextResponse.redirect(new URL('/calendario', req.url))
+    response = NextResponse.redirect(new URL(redirectTarget, req.url))
+  } else if (isLoggedIn && isRoot) {
+    response = NextResponse.redirect(new URL(redirectTarget, req.url))
+  } else if (isLoggedIn) {
+    if (userRole === 'empleado' && (isDashboardRoute || isReportesRoute || isSetupRoute || isSaasRoute || path.startsWith('/calendario') || path.startsWith('/huespedes') || path.startsWith('/reservas'))) {
+      response = NextResponse.redirect(new URL(redirectTarget, req.url))
+    } else if (userRole === 'recepcionista' && (isSetupRoute || isReportesRoute || isDashboardRoute || isSaasRoute)) {
+      response = NextResponse.redirect(new URL(redirectTarget, req.url))
+    }
   }
 
   response.headers.set('Content-Security-Policy', cspHeader)

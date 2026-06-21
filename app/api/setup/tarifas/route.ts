@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { requireOrg } from '@/lib/org'
 
 export async function GET() {
+  const { organizationId } = await requireOrg()
   const rates = await prisma.rate.findMany({
+    where: { organizationId },
     include: { unitType: { select: { name: true } } },
     orderBy: { name: 'asc' },
   })
@@ -10,9 +13,11 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  const { organizationId } = await requireOrg()
   const body = await req.json()
   const rate = await prisma.rate.create({
     data: {
+      organizationId,
       name: body.name,
       unitTypeId: body.unitTypeId || null,
       rackRate: Number(body.rackRate),
