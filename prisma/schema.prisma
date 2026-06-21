@@ -11,16 +11,17 @@ datasource db {
 
 // ── Multi-Tenant: cada cliente es una Organization ─────────────────
 model Organization {
-  id          String   @id @default(cuid())
-  name        String                          // "Cabañas La Campiña"
-  slug        String   @unique               // "campina" → campina.planner.cl
-  logoUrl     String?
-  timezone    String   @default("America/Santiago")
-  currency    String   @default("CLP")
-  plan        String   @default("starter")   // starter | pro | enterprise
-  active      Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id           String   @id @default(cuid())
+  name         String                          // "Cabañas La Campiña"
+  slug         String   @unique               // "campina" → campina.planner.cl
+  logoUrl      String?
+  timezone     String   @default("America/Santiago")
+  currency     String   @default("CLP")
+  plan         String   @default("starter")   // starter | pro | enterprise
+  colorPalette String   @default("verde")     // verde | azul | rojizo | crema | morado | turquesa
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   users        User[]
   unitTypes    UnitType[]

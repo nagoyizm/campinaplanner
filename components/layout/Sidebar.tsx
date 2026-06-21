@@ -28,6 +28,7 @@ import {
   UsersRound,
 } from 'lucide-react'
 import { signOut } from 'next-auth/react'
+import PalettePicker from './PalettePicker'
 import styles from './Sidebar.module.css'
 
 const getHotelNavItems = (role: string) => {
@@ -85,9 +86,11 @@ const saasNavItems = [
 interface SidebarProps {
   theme: 'light' | 'dark'
   onThemeToggle: () => void
+  palette: string
+  onPaletteChange: (p: string) => void
 }
 
-export default function Sidebar({ theme, onThemeToggle }: SidebarProps) {
+export default function Sidebar({ theme, onThemeToggle, palette, onPaletteChange }: SidebarProps) {
   const pathname = usePathname()
   const { data: session } = useSession()
   const orgName = (session?.user as any)?.orgName ?? 'Planner'
@@ -208,6 +211,11 @@ export default function Sidebar({ theme, onThemeToggle }: SidebarProps) {
 
         {/* Bottom actions */}
         <div className={styles.bottomActions}>
+          <PalettePicker
+            currentPalette={palette}
+            collapsed={collapsed}
+            onPaletteChange={onPaletteChange}
+          />
           <button
             className={styles.actionBtn}
             onClick={onThemeToggle}

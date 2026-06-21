@@ -97,6 +97,322 @@
   --sidebar-width: var(--sidebar-collapsed);
 }
 
+/* ─── PALETAS DE COLOR ────────────────────────────────────────── */
+/* Azul Medianoche */
+[data-palette="azul"] {
+  --brand-50:  #eff6ff;
+  --brand-100: #dbeafe;
+  --brand-200: #bfdbfe;
+  --brand-300: #93c5fd;
+  --brand-400: #60a5fa;
+  --brand-500: #2563eb;
+  --brand-600: #1d4ed8;
+  --brand-700: #1e40af;
+  --brand-800: #1e3a8a;
+  --brand-900: #1e3070;
+  --bg:         #f0f4ff;
+  --surface-1:  #ffffff;
+  --surface-2:  #e8efff;
+  --surface-3:  #d1deff;
+  --text-primary:   #0f172a;
+  --text-secondary: #1e3a8a;
+  --text-muted:     #64748b;
+  --border:       #c7d8ff;
+  --border-light: #dbe7ff;
+  --sidebar-bg:     #1e3a8a;
+  --sidebar-text:   #bfdbfe;
+  --sidebar-title:  #ffffff;
+  --sidebar-border: #1d4ed8;
+  --sidebar-active: #60a5fa;
+  --sidebar-hover:  #1d4ed8;
+  --sidebar-text-active: #0f172a;
+  --sidebar-text-hover:  #ffffff;
+  --cal-header-bg:   #bfdbfe;
+  --cal-row-even:    #ffffff;
+  --cal-row-odd:     #f0f4ff;
+  --cal-row-hover:   #e8efff;
+  --cal-border:      #c7d8ff;
+  --cal-today-bg:    #dbeafe;
+  --cal-today-border:#2563eb;
+  --cal-weekend-bg:  #f8faff;
+}
+[data-palette="azul"][data-theme="dark"] {
+  --bg:         #060d1f;
+  --surface-1:  #0d1b3e;
+  --surface-2:  #142251;
+  --surface-3:  #1a2d68;
+  --text-primary:   #e8f0ff;
+  --text-secondary: #93c5fd;
+  --text-muted:     #4a6fa5;
+  --border:       #1d3a7a;
+  --border-light: #152d65;
+  --sidebar-bg:     #040b1a;
+  --sidebar-text:   #93c5fd;
+  --sidebar-title:  #e8f0ff;
+  --sidebar-border: #0d1b3e;
+  --sidebar-active: #2563eb;
+  --sidebar-hover:  #0d1b3e;
+  --cal-header-bg:   #040b1a;
+  --cal-row-even:    #0d1b3e;
+  --cal-row-odd:     #111e45;
+  --cal-row-hover:   #142251;
+  --cal-border:      #1d3a7a;
+  --cal-today-bg:    #172560;
+  --cal-weekend-bg:  #0a1530;
+}
+
+/* Rojizo Borgoña */
+[data-palette="rojizo"] {
+  --brand-50:  #fff1f2;
+  --brand-100: #ffe4e6;
+  --brand-200: #fecdd3;
+  --brand-300: #fda4af;
+  --brand-400: #fb7185;
+  --brand-500: #be123c;
+  --brand-600: #9f1239;
+  --brand-700: #881337;
+  --brand-800: #6b1030;
+  --brand-900: #4c0519;
+  --bg:         #fff5f6;
+  --surface-1:  #ffffff;
+  --surface-2:  #ffecee;
+  --surface-3:  #ffdde1;
+  --text-primary:   #1a0009;
+  --text-secondary: #881337;
+  --text-muted:     #9f526a;
+  --border:       #ffc7cf;
+  --border-light: #ffdde1;
+  --sidebar-bg:     #881337;
+  --sidebar-text:   #fecdd3;
+  --sidebar-title:  #ffffff;
+  --sidebar-border: #9f1239;
+  --sidebar-active: #fb7185;
+  --sidebar-hover:  #9f1239;
+  --sidebar-text-active: #1a0009;
+  --sidebar-text-hover:  #ffffff;
+  --cal-header-bg:   #fecdd3;
+  --cal-row-even:    #ffffff;
+  --cal-row-odd:     #fff5f6;
+  --cal-row-hover:   #ffecee;
+  --cal-border:      #ffc7cf;
+  --cal-today-bg:    #ffe4e6;
+  --cal-today-border:#be123c;
+  --cal-weekend-bg:  #fffbfb;
+}
+[data-palette="rojizo"][data-theme="dark"] {
+  --bg:         #1a0009;
+  --surface-1:  #2d0013;
+  --surface-2:  #3d0019;
+  --surface-3:  #4e0020;
+  --text-primary:   #ffeaed;
+  --text-secondary: #fda4af;
+  --text-muted:     #9f526a;
+  --border:       #6b1030;
+  --border-light: #4e0020;
+  --sidebar-bg:     #0f0006;
+  --sidebar-text:   #fda4af;
+  --sidebar-title:  #ffeaed;
+  --sidebar-border: #2d0013;
+  --sidebar-active: #be123c;
+  --sidebar-hover:  #2d0013;
+  --cal-header-bg:   #0f0006;
+  --cal-row-even:    #2d0013;
+  --cal-row-odd:     #33001a;
+  --cal-row-hover:   #3d0019;
+  --cal-border:      #6b1030;
+  --cal-today-bg:    #4a0025;
+  --cal-weekend-bg:  #220010;
+}
+
+/* Crema / Dorado Cálido */
+[data-palette="crema"] {
+  --brand-50:  #fffbeb;
+  --brand-100: #fef3c7;
+  --brand-200: #fde68a;
+  --brand-300: #fcd34d;
+  --brand-400: #f59e0b;
+  --brand-500: #b45309;
+  --brand-600: #92400e;
+  --brand-700: #78350f;
+  --brand-800: #5f2c0c;
+  --brand-900: #451a03;
+  --bg:         #fffdf0;
+  --surface-1:  #ffffff;
+  --surface-2:  #fef9e0;
+  --surface-3:  #fef0c0;
+  --text-primary:   #1c1200;
+  --text-secondary: #78350f;
+  --text-muted:     #a16207;
+  --border:       #fde68a;
+  --border-light: #fef3c7;
+  --sidebar-bg:     #78350f;
+  --sidebar-text:   #fde68a;
+  --sidebar-title:  #fffbeb;
+  --sidebar-border: #92400e;
+  --sidebar-active: #f59e0b;
+  --sidebar-hover:  #92400e;
+  --sidebar-text-active: #1c1200;
+  --sidebar-text-hover:  #fffbeb;
+  --cal-header-bg:   #fde68a;
+  --cal-row-even:    #ffffff;
+  --cal-row-odd:     #fffdf0;
+  --cal-row-hover:   #fef9e0;
+  --cal-border:      #fde68a;
+  --cal-today-bg:    #fef3c7;
+  --cal-today-border:#f59e0b;
+  --cal-weekend-bg:  #fffef8;
+}
+[data-palette="crema"][data-theme="dark"] {
+  --bg:         #1a1200;
+  --surface-1:  #2e1f00;
+  --surface-2:  #3d2a00;
+  --surface-3:  #4e3600;
+  --text-primary:   #fff8e0;
+  --text-secondary: #fcd34d;
+  --text-muted:     #a16207;
+  --border:       #5f4000;
+  --border-light: #4e3600;
+  --sidebar-bg:     #0f0a00;
+  --sidebar-text:   #fcd34d;
+  --sidebar-title:  #fff8e0;
+  --sidebar-border: #2e1f00;
+  --sidebar-active: #b45309;
+  --sidebar-hover:  #2e1f00;
+  --cal-header-bg:   #0f0a00;
+  --cal-row-even:    #2e1f00;
+  --cal-row-odd:     #352300;
+  --cal-row-hover:   #3d2a00;
+  --cal-border:      #5f4000;
+  --cal-today-bg:    #4a3000;
+  --cal-weekend-bg:  #221800;
+}
+
+/* Morado Índigo */
+[data-palette="morado"] {
+  --brand-50:  #f5f3ff;
+  --brand-100: #ede9fe;
+  --brand-200: #ddd6fe;
+  --brand-300: #c4b5fd;
+  --brand-400: #a78bfa;
+  --brand-500: #7c3aed;
+  --brand-600: #6d28d9;
+  --brand-700: #5b21b6;
+  --brand-800: #4c1d95;
+  --brand-900: #3b0764;
+  --bg:         #f8f5ff;
+  --surface-1:  #ffffff;
+  --surface-2:  #f0ebff;
+  --surface-3:  #e4dcff;
+  --text-primary:   #1a0a3d;
+  --text-secondary: #5b21b6;
+  --text-muted:     #7c5cbf;
+  --border:       #d4c8ff;
+  --border-light: #e4dcff;
+  --sidebar-bg:     #5b21b6;
+  --sidebar-text:   #ddd6fe;
+  --sidebar-title:  #ffffff;
+  --sidebar-border: #6d28d9;
+  --sidebar-active: #a78bfa;
+  --sidebar-hover:  #6d28d9;
+  --sidebar-text-active: #1a0a3d;
+  --sidebar-text-hover:  #ffffff;
+  --cal-header-bg:   #ddd6fe;
+  --cal-row-even:    #ffffff;
+  --cal-row-odd:     #f8f5ff;
+  --cal-row-hover:   #f0ebff;
+  --cal-border:      #d4c8ff;
+  --cal-today-bg:    #ede9fe;
+  --cal-today-border:#7c3aed;
+  --cal-weekend-bg:  #fcfbff;
+}
+[data-palette="morado"][data-theme="dark"] {
+  --bg:         #0d0520;
+  --surface-1:  #190d35;
+  --surface-2:  #211246;
+  --surface-3:  #2a185a;
+  --text-primary:   #f0ebff;
+  --text-secondary: #c4b5fd;
+  --text-muted:     #7c5cbf;
+  --border:       #3b1d7a;
+  --border-light: #2a185a;
+  --sidebar-bg:     #07021a;
+  --sidebar-text:   #c4b5fd;
+  --sidebar-title:  #f0ebff;
+  --sidebar-border: #190d35;
+  --sidebar-active: #7c3aed;
+  --sidebar-hover:  #190d35;
+  --cal-header-bg:   #07021a;
+  --cal-row-even:    #190d35;
+  --cal-row-odd:     #1e1040;
+  --cal-row-hover:   #211246;
+  --cal-border:      #3b1d7a;
+  --cal-today-bg:    #2d1570;
+  --cal-weekend-bg:  #110828;
+}
+
+/* Turquesa Menta */
+[data-palette="turquesa"] {
+  --brand-50:  #f0fdfa;
+  --brand-100: #ccfbf1;
+  --brand-200: #99f6e4;
+  --brand-300: #5eead4;
+  --brand-400: #2dd4bf;
+  --brand-500: #0d9488;
+  --brand-600: #0f766e;
+  --brand-700: #115e59;
+  --brand-800: #134e4a;
+  --brand-900: #0f3d39;
+  --bg:         #f0fdfb;
+  --surface-1:  #ffffff;
+  --surface-2:  #e0faf6;
+  --surface-3:  #c5f5ed;
+  --text-primary:   #042f2e;
+  --text-secondary: #115e59;
+  --text-muted:     #5eada8;
+  --border:       #9febe0;
+  --border-light: #c5f5ed;
+  --sidebar-bg:     #115e59;
+  --sidebar-text:   #99f6e4;
+  --sidebar-title:  #ffffff;
+  --sidebar-border: #0f766e;
+  --sidebar-active: #2dd4bf;
+  --sidebar-hover:  #0f766e;
+  --sidebar-text-active: #042f2e;
+  --sidebar-text-hover:  #ffffff;
+  --cal-header-bg:   #99f6e4;
+  --cal-row-even:    #ffffff;
+  --cal-row-odd:     #f0fdfb;
+  --cal-row-hover:   #e0faf6;
+  --cal-border:      #9febe0;
+  --cal-today-bg:    #ccfbf1;
+  --cal-today-border:#0d9488;
+  --cal-weekend-bg:  #f8fffd;
+}
+[data-palette="turquesa"][data-theme="dark"] {
+  --bg:         #011f1f;
+  --surface-1:  #042f2e;
+  --surface-2:  #063e3c;
+  --surface-3:  #094e4a;
+  --text-primary:   #e0faf6;
+  --text-secondary: #5eead4;
+  --text-muted:     #5eada8;
+  --border:       #0f5e58;
+  --border-light: #094e4a;
+  --sidebar-bg:     #010f0f;
+  --sidebar-text:   #5eead4;
+  --sidebar-title:  #e0faf6;
+  --sidebar-border: #042f2e;
+  --sidebar-active: #0d9488;
+  --sidebar-hover:  #042f2e;
+  --cal-header-bg:   #010f0f;
+  --cal-row-even:    #042f2e;
+  --cal-row-odd:     #063535;
+  --cal-row-hover:   #063e3c;
+  --cal-border:      #0f5e58;
+  --cal-today-bg:    #0b4a45;
+  --cal-weekend-bg:  #021a1a;
+}
+
 /* ─── TOKENS: Dark Mode ──────────────────────────────────────── */
 [data-theme="dark"] {
   --bg:         #16120e; /* Carbón de leña / Madera quemada profunda */

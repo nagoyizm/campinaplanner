@@ -14,13 +14,33 @@ interface AppLayoutProps {
 
 export default function AppLayout({ children, title }: AppLayoutProps) {
   const [theme, setTheme] = useState<'light' | 'dark'>('light')
+  const [palette, setPalette] = useState('verde')
 
+  // Load theme
   useEffect(() => {
     const saved = localStorage.getItem('theme') as 'light' | 'dark' | null
     const preferred = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
     const initial = saved || preferred
     setTheme(initial)
     document.documentElement.setAttribute('data-theme', initial)
+  }, [])
+
+  // Load palette: first from localStorage (instant), then confirm from DB
+  useEffect(() => {
+    const cached = localStorage.getItem('palette') ?? 'verde'
+    setPalette(cached)
+    document.documentElement.setAttribute('data-palette', cached)
+
+    fetch('/api/setup/organization')
+      .then(r => r.json())
+      .then(data => {
+        if (data?.colorPalette && data.colorPalette !== cached) {
+          setPalette(data.colorPalette)
+          document.documentElement.setAttribute('data-palette', data.colorPalette)
+          localStorage.setItem('palette', data.colorPalette)
+        }
+      })
+      .catch(() => {/* silencioso si no está logueado */})
   }, [])
 
   const toggleTheme = () => {
@@ -34,7 +54,12 @@ export default function AppLayout({ children, title }: AppLayoutProps) {
     <SessionProvider>
       <SessionTimeout />
       <div className={styles.appLayout}>
-        <Sidebar theme={theme} onThemeToggle={toggleTheme} />
+        <Sidebar
+          theme={theme}
+          onThemeToggle={toggleTheme}
+          palette={palette}
+          onPaletteChange={setPalette}
+        />
         <div className={styles.mainArea}>
           <Header title={title} />
           <main className={styles.content}>
