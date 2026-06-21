@@ -5,7 +5,7 @@ import { signOut } from 'next-auth/react'
 import { toast } from 'react-hot-toast'
 
 export default function SessionTimeout() {
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // Tiempo límite: 15 minutos (15 * 60 * 1000 ms)
   const INACTIVITY_LIMIT = 15 * 60 * 1000

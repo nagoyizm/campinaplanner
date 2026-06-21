@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
   try {
     await requireSuperAdmin()
 
-    const formData = await req.formData()
+    const formData = await req.formData() as any
     const file = formData.get('file') as File
     const orgId = formData.get('orgId') as string
     const table = formData.get('table') as string
@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
     const arrayBuffer = await file.arrayBuffer()
     const buffer = Buffer.from(arrayBuffer)
     const workbook = new ExcelJS.Workbook()
-    await workbook.xlsx.load(buffer)
+    await workbook.xlsx.load(buffer as any)
 
     const worksheet = workbook.worksheets[0]
     if (!worksheet) {
