@@ -68,6 +68,7 @@ const getHotelNavItems = (role: string) => {
         { href: '/setup/rooms',     label: 'Habitaciones' },
         { href: '/setup/amenities', label: 'Amenities' },
         { href: '/setup/usuarios',  label: 'Usuarios' },
+        { href: '/setup/whatsapp',  label: 'WhatsApp Bot' },
       ],
     },
     { href: '/simulador',  label: 'Simulador Bot', icon: MessageSquare },

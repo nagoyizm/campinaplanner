@@ -1,11 +1,14 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { requireOrg } from '@/lib/org'
+import { auth } from '@/auth'
+import { sendWhatsAppMessage } from '@/lib/whatsapp'
 
 export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { organizationId } = await requireOrg()
     const { id } = await params
+    const session = await auth()
     
     const body = await req.json()
     const { cleaningStatus } = body
@@ -23,6 +26,26 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
         cleaningStatus
       }
     })
+
+    // Send WhatsApp if status is 'clean'
+    if (cleaningStatus === 'clean') {
+      const admins = await prisma.user.findMany({
+        where: {
+          organizationId,
+          role: { in: ['admin', 'superadmin'] },
+          phone: { not: null }
+        }
+      })
+
+      const authorName = session?.user?.name || 'Un empleado'
+      const msg = `✅ *Habitación Limpia*\n${authorName} ha marcado la habitación *${room.name}* como limpia.`
+
+      for (const admin of admins) {
+        if (admin.phone) {
+          sendWhatsAppMessage(admin.phone, msg).catch(console.error)
+        }
+      }
+    }
 
     return NextResponse.json({ success: true, room })
   } catch (error) {
