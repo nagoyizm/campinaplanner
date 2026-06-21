@@ -2,7 +2,8 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const qrcode = require('qrcode');
-const { Client, LocalAuth } = require('whatsapp-web.js');
+const { default: makeWASocket, useMultiFileAuthState, DisconnectReason, fetchLatestBaileysVersion } = require('@whiskeysockets/baileys');
+const pino = require('pino');
 
 const app = express();
 app.use(cors());
@@ -22,46 +23,54 @@ const requireAuth = (req, res, next) => {
 
 let qrCodeData = null;
 let isReady = false;
+let sock = null;
 
-// Initialize WhatsApp Client
-const client = new Client({
-  authStrategy: new LocalAuth(),
-  puppeteer: {
-    args: [
-      '--no-sandbox', 
-      '--disable-setuid-sandbox', 
-      '--disable-dev-shm-usage',
-      '--disable-accelerated-2d-canvas',
-      '--no-first-run',
-      '--no-zygote',
-      '--single-process',
-      '--disable-gpu'
-    ],
-    headless: true,
-  }
-});
+async function startSock() {
+  const { state, saveCreds } = await useMultiFileAuthState('baileys_auth_info');
+  // Fetch latest version of WA Web
+  const { version, isLatest } = await fetchLatestBaileysVersion();
+  console.log(`Using WA v${version.join('.')}, isLatest: ${isLatest}`);
 
-client.on('qr', (qr) => {
-  console.log('QR Code received, waiting for scan...');
-  qrCodeData = qr;
-  isReady = false;
-});
+  sock = makeWASocket({
+    version,
+    logger: pino({ level: 'silent' }), // Suppress massive baileys logs
+    printQRInTerminal: true,
+    auth: state,
+    syncFullHistory: false, // Save memory!
+  });
 
-client.on('ready', () => {
-  console.log('WhatsApp Client is ready!');
-  isReady = true;
-  qrCodeData = null;
-});
+  sock.ev.on('creds.update', saveCreds);
 
-client.on('disconnected', (reason) => {
-  console.log('WhatsApp Client disconnected:', reason);
-  isReady = false;
-  qrCodeData = null;
-  // Try to reconnect or restart
-  client.initialize();
-});
+  sock.ev.on('connection.update', (update) => {
+    const { connection, lastDisconnect, qr } = update;
 
-client.initialize();
+    if (qr) {
+      console.log('QR Code received, waiting for scan...');
+      qrCodeData = qr;
+      isReady = false;
+    }
+
+    if (connection === 'close') {
+      const shouldReconnect = (lastDisconnect.error)?.output?.statusCode !== DisconnectReason.loggedOut;
+      console.log('Connection closed due to', lastDisconnect.error, ', reconnecting:', shouldReconnect);
+      isReady = false;
+      qrCodeData = null;
+      
+      if (shouldReconnect) {
+        startSock();
+      }
+    } else if (connection === 'open') {
+      console.log('WhatsApp Client is ready!');
+      isReady = true;
+      qrCodeData = null;
+    }
+  });
+
+  // Ignore incoming messages to save memory
+  sock.ev.on('messages.upsert', () => {});
+}
+
+startSock();
 
 // API Endpoints
 
@@ -89,7 +98,7 @@ app.get('/api/status', requireAuth, (req, res) => {
 
 // 3. Send Message
 app.post('/api/send', requireAuth, async (req, res) => {
-  if (!isReady) {
+  if (!isReady || !sock) {
     return res.status(503).json({ error: 'WhatsApp client not ready' });
   }
 
@@ -99,11 +108,11 @@ app.post('/api/send', requireAuth, async (req, res) => {
   }
 
   try {
-    // Format phone to whatsapp id (e.g., 56977087353@c.us)
+    // Format phone to whatsapp id (e.g., 56977087353@s.whatsapp.net)
     const cleanPhone = phone.replace(/\D/g, ''); // remove non-digits
-    const chatId = `${cleanPhone}@c.us`;
+    const chatId = `${cleanPhone}@s.whatsapp.net`; // Baileys uses @s.whatsapp.net
     
-    await client.sendMessage(chatId, message);
+    await sock.sendMessage(chatId, { text: message });
     res.json({ success: true, message: 'Message sent successfully' });
   } catch (error) {
     console.error('Error sending message:', error);
