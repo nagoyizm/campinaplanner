@@ -98,319 +98,392 @@
 }
 
 /* ─── PALETAS DE COLOR ────────────────────────────────────────── */
-/* Azul Medianoche */
+/* Filosofía:
+   - Claro: fondo cálido/suave, superficies con apenas un toque del tono,
+     sidebar claro (igual que verde), brand-500 apagado/pastel.
+   - Oscuro: igual estructura que verde (casi negro neutro con sutil tinte),
+     sidebar muy oscuro, solo sidebar-active muestra el color de acento. */
+
+/* ── AZUL PIZARRA (Dusty Steel Blue) ─────────────────────────── */
 [data-palette="azul"] {
-  --brand-50:  #eff6ff;
-  --brand-100: #dbeafe;
-  --brand-200: #bfdbfe;
-  --brand-300: #93c5fd;
-  --brand-400: #60a5fa;
-  --brand-500: #2563eb;
-  --brand-600: #1d4ed8;
-  --brand-700: #1e40af;
-  --brand-800: #1e3a8a;
-  --brand-900: #1e3070;
-  --bg:         #f0f4ff;
+  --brand-50:  #f0f4f9;
+  --brand-100: #dce8f5;
+  --brand-200: #b8d0e8;
+  --brand-300: #88b0d5;
+  --brand-400: #6090c0;
+  --brand-500: #4a7ab5;
+  --brand-600: #3a6298;
+  --brand-700: #2c4e7a;
+  --brand-800: #1e3a5c;
+  --brand-900: #122840;
+
+  --bg:         #f3f6fb; /* Cielo muy pálido */
   --surface-1:  #ffffff;
-  --surface-2:  #e8efff;
-  --surface-3:  #d1deff;
-  --text-primary:   #0f172a;
-  --text-secondary: #1e3a8a;
-  --text-muted:     #64748b;
-  --border:       #c7d8ff;
-  --border-light: #dbe7ff;
-  --sidebar-bg:     #1e3a8a;
-  --sidebar-text:   #bfdbfe;
-  --sidebar-title:  #ffffff;
-  --sidebar-border: #1d4ed8;
-  --sidebar-active: #60a5fa;
-  --sidebar-hover:  #1d4ed8;
-  --sidebar-text-active: #0f172a;
-  --sidebar-text-hover:  #ffffff;
-  --cal-header-bg:   #bfdbfe;
+  --surface-2:  #e8eef8; /* Azul porcelana */
+  --surface-3:  #d4e0f0; /* Slate suave */
+
+  --text-primary:   #1a2233;
+  --text-secondary: #3a5480;
+  --text-muted:     #7090b0;
+
+  --border:       #c8d8ee;
+  --border-light: #dce8f5;
+
+  --sidebar-bg:     #e8eef8;
+  --sidebar-text:   #3a5480;
+  --sidebar-title:  #1a2233;
+  --sidebar-border: #c8d8ee;
+  --sidebar-active: #4a7ab5;
+  --sidebar-hover:  #d4e0f0;
+  --sidebar-text-active: #ffffff;
+  --sidebar-text-hover:  #1a2233;
+
+  --cal-header-bg:   var(--brand-200);
+  --cal-header-text: var(--text-primary);
   --cal-row-even:    #ffffff;
-  --cal-row-odd:     #f0f4ff;
-  --cal-row-hover:   #e8efff;
-  --cal-border:      #c7d8ff;
-  --cal-today-bg:    #dbeafe;
-  --cal-today-border:#2563eb;
-  --cal-weekend-bg:  #f8faff;
+  --cal-row-odd:     #f3f6fb;
+  --cal-row-hover:   #e8eef8;
+  --cal-border:      #c8d8ee;
+  --cal-today-bg:    #dce8f5;
+  --cal-today-border:#4a7ab5;
+  --cal-weekend-bg:  #f8fafc;
 }
 [data-palette="azul"][data-theme="dark"] {
-  --bg:         #060d1f;
-  --surface-1:  #0d1b3e;
-  --surface-2:  #142251;
-  --surface-3:  #1a2d68;
-  --text-primary:   #e8f0ff;
-  --text-secondary: #93c5fd;
-  --text-muted:     #4a6fa5;
-  --border:       #1d3a7a;
-  --border-light: #152d65;
-  --sidebar-bg:     #040b1a;
-  --sidebar-text:   #93c5fd;
-  --sidebar-title:  #e8f0ff;
-  --sidebar-border: #0d1b3e;
-  --sidebar-active: #2563eb;
-  --sidebar-hover:  #0d1b3e;
-  --cal-header-bg:   #040b1a;
-  --cal-row-even:    #0d1b3e;
-  --cal-row-odd:     #111e45;
-  --cal-row-hover:   #142251;
-  --cal-border:      #1d3a7a;
-  --cal-today-bg:    #172560;
-  --cal-weekend-bg:  #0a1530;
+  /* Neutro muy oscuro con sutilísimo tinte azul-gris, igual a como verde usa madera quemada */
+  --bg:         #0e1118;
+  --surface-1:  #141c28;
+  --surface-2:  #1c2535;
+  --surface-3:  #232f42;
+
+  --text-primary:   #e0e8f5;
+  --text-secondary: #a0b8d8;
+  --text-muted:     #5878a0;
+
+  --border:       #2a3850;
+  --border-light: #202e45;
+
+  --sidebar-bg:     #080c14;
+  --sidebar-text:   #a0b8d8;
+  --sidebar-title:  #e0e8f5;
+  --sidebar-border: #141c28;
+  --sidebar-active: #4a7ab5;
+  --sidebar-hover:  #141c28;
+  --sidebar-text-active: #ffffff;
+  --sidebar-text-hover:  #ffffff;
+
+  --cal-header-bg:   #080c14;
+  --cal-header-text: #ffffff;
+  --cal-row-even:    #141c28;
+  --cal-row-odd:     #181f30;
+  --cal-row-hover:   #1c2535;
+  --cal-border:      #2a3850;
+  --cal-today-bg:    #1a2848;
+  --cal-weekend-bg:  #101828;
 }
 
-/* Rojizo Borgoña */
+/* ── ROJIZO POLVOSO (Dusty Rose / Blush) ────────────────────── */
 [data-palette="rojizo"] {
-  --brand-50:  #fff1f2;
-  --brand-100: #ffe4e6;
-  --brand-200: #fecdd3;
-  --brand-300: #fda4af;
-  --brand-400: #fb7185;
-  --brand-500: #be123c;
-  --brand-600: #9f1239;
-  --brand-700: #881337;
-  --brand-800: #6b1030;
-  --brand-900: #4c0519;
-  --bg:         #fff5f6;
+  --brand-50:  #fdf2f0;
+  --brand-100: #f8e0dc;
+  --brand-200: #f0c0b8;
+  --brand-300: #e09090;
+  --brand-400: #c87070;
+  --brand-500: #a85252;
+  --brand-600: #8a4040;
+  --brand-700: #6c3030;
+  --brand-800: #502020;
+  --brand-900: #381414;
+
+  --bg:         #fdf4f3; /* Rosa pergamino */
   --surface-1:  #ffffff;
-  --surface-2:  #ffecee;
-  --surface-3:  #ffdde1;
-  --text-primary:   #1a0009;
-  --text-secondary: #881337;
-  --text-muted:     #9f526a;
-  --border:       #ffc7cf;
-  --border-light: #ffdde1;
-  --sidebar-bg:     #881337;
-  --sidebar-text:   #fecdd3;
-  --sidebar-title:  #ffffff;
-  --sidebar-border: #9f1239;
-  --sidebar-active: #fb7185;
-  --sidebar-hover:  #9f1239;
-  --sidebar-text-active: #1a0009;
-  --sidebar-text-hover:  #ffffff;
-  --cal-header-bg:   #fecdd3;
+  --surface-2:  #f8edeb; /* Albaricoque suave */
+  --surface-3:  #f0e0de; /* Melocotón pálido */
+
+  --text-primary:   #2a1212;
+  --text-secondary: #8a3535;
+  --text-muted:     #a06060;
+
+  --border:       #e8c8c5;
+  --border-light: #f0dedd;
+
+  --sidebar-bg:     #f8edeb;
+  --sidebar-text:   #8a3535;
+  --sidebar-title:  #2a1212;
+  --sidebar-border: #e8c8c5;
+  --sidebar-active: #a85252;
+  --sidebar-hover:  #f0e0de;
+  --sidebar-text-active: #ffffff;
+  --sidebar-text-hover:  #2a1212;
+
+  --cal-header-bg:   var(--brand-200);
+  --cal-header-text: var(--text-primary);
   --cal-row-even:    #ffffff;
-  --cal-row-odd:     #fff5f6;
-  --cal-row-hover:   #ffecee;
-  --cal-border:      #ffc7cf;
-  --cal-today-bg:    #ffe4e6;
-  --cal-today-border:#be123c;
-  --cal-weekend-bg:  #fffbfb;
+  --cal-row-odd:     #fdf4f3;
+  --cal-row-hover:   #f8edeb;
+  --cal-border:      #e8c8c5;
+  --cal-today-bg:    #f8e0dc;
+  --cal-today-border:#a85252;
+  --cal-weekend-bg:  #fdfafa;
 }
 [data-palette="rojizo"][data-theme="dark"] {
-  --bg:         #1a0009;
-  --surface-1:  #2d0013;
-  --surface-2:  #3d0019;
-  --surface-3:  #4e0020;
-  --text-primary:   #ffeaed;
-  --text-secondary: #fda4af;
-  --text-muted:     #9f526a;
-  --border:       #6b1030;
-  --border-light: #4e0020;
-  --sidebar-bg:     #0f0006;
-  --sidebar-text:   #fda4af;
-  --sidebar-title:  #ffeaed;
-  --sidebar-border: #2d0013;
-  --sidebar-active: #be123c;
-  --sidebar-hover:  #2d0013;
-  --cal-header-bg:   #0f0006;
-  --cal-row-even:    #2d0013;
-  --cal-row-odd:     #33001a;
-  --cal-row-hover:   #3d0019;
-  --cal-border:      #6b1030;
-  --cal-today-bg:    #4a0025;
-  --cal-weekend-bg:  #220010;
+  /* Casi negro con sutilísimo tinte cálido-rosado — igual que verde usa madera quemada */
+  --bg:         #150e0e;
+  --surface-1:  #1f1414;
+  --surface-2:  #281b1b;
+  --surface-3:  #332222;
+
+  --text-primary:   #f5ebe8;
+  --text-secondary: #cdb0a8;
+  --text-muted:     #8a6060;
+
+  --border:       #3e2a2a;
+  --border-light: #302020;
+
+  --sidebar-bg:     #0e0808;
+  --sidebar-text:   #cdb0a8;
+  --sidebar-title:  #f5ebe8;
+  --sidebar-border: #1f1414;
+  --sidebar-active: #a85252;
+  --sidebar-hover:  #1f1414;
+  --sidebar-text-active: #ffffff;
+  --sidebar-text-hover:  #ffffff;
+
+  --cal-header-bg:   #0e0808;
+  --cal-header-text: #ffffff;
+  --cal-row-even:    #1f1414;
+  --cal-row-odd:     #231818;
+  --cal-row-hover:   #281b1b;
+  --cal-border:      #3e2a2a;
+  --cal-today-bg:    #2d1a1a;
+  --cal-weekend-bg:  #181010;
 }
 
-/* Crema / Dorado Cálido */
+/* ── CREMA ÁMBAR (Warm Honey / Caramel) ─────────────────────── */
 [data-palette="crema"] {
-  --brand-50:  #fffbeb;
-  --brand-100: #fef3c7;
-  --brand-200: #fde68a;
-  --brand-300: #fcd34d;
-  --brand-400: #f59e0b;
-  --brand-500: #b45309;
-  --brand-600: #92400e;
-  --brand-700: #78350f;
-  --brand-800: #5f2c0c;
-  --brand-900: #451a03;
-  --bg:         #fffdf0;
+  --brand-50:  #fdf7ee;
+  --brand-100: #f8edcc;
+  --brand-200: #f0d898;
+  --brand-300: #e0b860;
+  --brand-400: #c09038;
+  --brand-500: #8c6a2e;
+  --brand-600: #705522;
+  --brand-700: #554018;
+  --brand-800: #3c2c10;
+  --brand-900: #281c08;
+
+  --bg:         #fdf9f0; /* Lino crema cálido */
   --surface-1:  #ffffff;
-  --surface-2:  #fef9e0;
-  --surface-3:  #fef0c0;
-  --text-primary:   #1c1200;
-  --text-secondary: #78350f;
-  --text-muted:     #a16207;
-  --border:       #fde68a;
-  --border-light: #fef3c7;
-  --sidebar-bg:     #78350f;
-  --sidebar-text:   #fde68a;
-  --sidebar-title:  #fffbeb;
-  --sidebar-border: #92400e;
-  --sidebar-active: #f59e0b;
-  --sidebar-hover:  #92400e;
-  --sidebar-text-active: #1c1200;
-  --sidebar-text-hover:  #fffbeb;
-  --cal-header-bg:   #fde68a;
+  --surface-2:  #f8f0df; /* Vainilla suave */
+  --surface-3:  #f0e5c5; /* Trigo claro */
+
+  --text-primary:   #261800;
+  --text-secondary: #7a4a10;
+  --text-muted:     #a07030;
+
+  --border:       #e8d8a0;
+  --border-light: #f0e5c5;
+
+  --sidebar-bg:     #f8f0df;
+  --sidebar-text:   #7a4a10;
+  --sidebar-title:  #261800;
+  --sidebar-border: #e8d8a0;
+  --sidebar-active: #8c6a2e;
+  --sidebar-hover:  #f0e5c5;
+  --sidebar-text-active: #ffffff;
+  --sidebar-text-hover:  #261800;
+
+  --cal-header-bg:   var(--brand-200);
+  --cal-header-text: var(--text-primary);
   --cal-row-even:    #ffffff;
-  --cal-row-odd:     #fffdf0;
-  --cal-row-hover:   #fef9e0;
-  --cal-border:      #fde68a;
-  --cal-today-bg:    #fef3c7;
-  --cal-today-border:#f59e0b;
-  --cal-weekend-bg:  #fffef8;
+  --cal-row-odd:     #fdf9f0;
+  --cal-row-hover:   #f8f0df;
+  --cal-border:      #e8d8a0;
+  --cal-today-bg:    #f8edcc;
+  --cal-today-border:#8c6a2e;
+  --cal-weekend-bg:  #fefcf7;
 }
 [data-palette="crema"][data-theme="dark"] {
-  --bg:         #1a1200;
-  --surface-1:  #2e1f00;
-  --surface-2:  #3d2a00;
-  --surface-3:  #4e3600;
-  --text-primary:   #fff8e0;
-  --text-secondary: #fcd34d;
-  --text-muted:     #a16207;
-  --border:       #5f4000;
-  --border-light: #4e3600;
-  --sidebar-bg:     #0f0a00;
-  --sidebar-text:   #fcd34d;
-  --sidebar-title:  #fff8e0;
-  --sidebar-border: #2e1f00;
-  --sidebar-active: #b45309;
-  --sidebar-hover:  #2e1f00;
-  --cal-header-bg:   #0f0a00;
-  --cal-row-even:    #2e1f00;
-  --cal-row-odd:     #352300;
-  --cal-row-hover:   #3d2a00;
-  --cal-border:      #5f4000;
-  --cal-today-bg:    #4a3000;
-  --cal-weekend-bg:  #221800;
+  --bg:         #15110a;
+  --surface-1:  #1f1810;
+  --surface-2:  #292018;
+  --surface-3:  #342820;
+
+  --text-primary:   #f5ede0;
+  --text-secondary: #d0b888;
+  --text-muted:     #8a7048;
+
+  --border:       #3e3020;
+  --border-light: #302418;
+
+  --sidebar-bg:     #0e0b06;
+  --sidebar-text:   #d0b888;
+  --sidebar-title:  #f5ede0;
+  --sidebar-border: #1f1810;
+  --sidebar-active: #8c6a2e;
+  --sidebar-hover:  #1f1810;
+  --sidebar-text-active: #ffffff;
+  --sidebar-text-hover:  #ffffff;
+
+  --cal-header-bg:   #0e0b06;
+  --cal-header-text: #ffffff;
+  --cal-row-even:    #1f1810;
+  --cal-row-odd:     #231c12;
+  --cal-row-hover:   #292018;
+  --cal-border:      #3e3020;
+  --cal-today-bg:    #2d2014;
+  --cal-weekend-bg:  #181208;
 }
 
-/* Morado Índigo */
+/* ── MORADO LAVANDA (Dusty Lavender / Mauve) ────────────────── */
 [data-palette="morado"] {
-  --brand-50:  #f5f3ff;
-  --brand-100: #ede9fe;
-  --brand-200: #ddd6fe;
-  --brand-300: #c4b5fd;
-  --brand-400: #a78bfa;
-  --brand-500: #7c3aed;
-  --brand-600: #6d28d9;
-  --brand-700: #5b21b6;
-  --brand-800: #4c1d95;
-  --brand-900: #3b0764;
-  --bg:         #f8f5ff;
+  --brand-50:  #f5f2fa;
+  --brand-100: #e8e0f5;
+  --brand-200: #d0c0e8;
+  --brand-300: #b090d8;
+  --brand-400: #9070c0;
+  --brand-500: #7050a8;
+  --brand-600: #584088;
+  --brand-700: #40306a;
+  --brand-800: #2c2050;
+  --brand-900: #1a1238;
+
+  --bg:         #f7f4fc; /* Lavanda muy pálida */
   --surface-1:  #ffffff;
-  --surface-2:  #f0ebff;
-  --surface-3:  #e4dcff;
-  --text-primary:   #1a0a3d;
-  --text-secondary: #5b21b6;
-  --text-muted:     #7c5cbf;
-  --border:       #d4c8ff;
-  --border-light: #e4dcff;
-  --sidebar-bg:     #5b21b6;
-  --sidebar-text:   #ddd6fe;
-  --sidebar-title:  #ffffff;
-  --sidebar-border: #6d28d9;
-  --sidebar-active: #a78bfa;
-  --sidebar-hover:  #6d28d9;
-  --sidebar-text-active: #1a0a3d;
-  --sidebar-text-hover:  #ffffff;
-  --cal-header-bg:   #ddd6fe;
+  --surface-2:  #eee8f8; /* Lila porcelana */
+  --surface-3:  #e0d5f0; /* Malva pálido */
+
+  --text-primary:   #1a1030;
+  --text-secondary: #6040a0;
+  --text-muted:     #8060b0;
+
+  --border:       #d0c0e8;
+  --border-light: #e0d5f0;
+
+  --sidebar-bg:     #eee8f8;
+  --sidebar-text:   #6040a0;
+  --sidebar-title:  #1a1030;
+  --sidebar-border: #d0c0e8;
+  --sidebar-active: #7050a8;
+  --sidebar-hover:  #e0d5f0;
+  --sidebar-text-active: #ffffff;
+  --sidebar-text-hover:  #1a1030;
+
+  --cal-header-bg:   var(--brand-200);
+  --cal-header-text: var(--text-primary);
   --cal-row-even:    #ffffff;
-  --cal-row-odd:     #f8f5ff;
-  --cal-row-hover:   #f0ebff;
-  --cal-border:      #d4c8ff;
-  --cal-today-bg:    #ede9fe;
-  --cal-today-border:#7c3aed;
-  --cal-weekend-bg:  #fcfbff;
+  --cal-row-odd:     #f7f4fc;
+  --cal-row-hover:   #eee8f8;
+  --cal-border:      #d0c0e8;
+  --cal-today-bg:    #e8e0f5;
+  --cal-today-border:#7050a8;
+  --cal-weekend-bg:  #fcfaff;
 }
 [data-palette="morado"][data-theme="dark"] {
-  --bg:         #0d0520;
-  --surface-1:  #190d35;
-  --surface-2:  #211246;
-  --surface-3:  #2a185a;
-  --text-primary:   #f0ebff;
-  --text-secondary: #c4b5fd;
-  --text-muted:     #7c5cbf;
-  --border:       #3b1d7a;
-  --border-light: #2a185a;
-  --sidebar-bg:     #07021a;
-  --sidebar-text:   #c4b5fd;
-  --sidebar-title:  #f0ebff;
-  --sidebar-border: #190d35;
-  --sidebar-active: #7c3aed;
-  --sidebar-hover:  #190d35;
-  --cal-header-bg:   #07021a;
-  --cal-row-even:    #190d35;
-  --cal-row-odd:     #1e1040;
-  --cal-row-hover:   #211246;
-  --cal-border:      #3b1d7a;
-  --cal-today-bg:    #2d1570;
-  --cal-weekend-bg:  #110828;
+  --bg:         #120e18;
+  --surface-1:  #1c1524;
+  --surface-2:  #241d30;
+  --surface-3:  #2e253c;
+
+  --text-primary:   #eee8f8;
+  --text-secondary: #c0a8e0;
+  --text-muted:     #706090;
+
+  --border:       #382858;
+  --border-light: #2a1e48;
+
+  --sidebar-bg:     #0b0810;
+  --sidebar-text:   #c0a8e0;
+  --sidebar-title:  #eee8f8;
+  --sidebar-border: #1c1524;
+  --sidebar-active: #7050a8;
+  --sidebar-hover:  #1c1524;
+  --sidebar-text-active: #ffffff;
+  --sidebar-text-hover:  #ffffff;
+
+  --cal-header-bg:   #0b0810;
+  --cal-header-text: #ffffff;
+  --cal-row-even:    #1c1524;
+  --cal-row-odd:     #201828;
+  --cal-row-hover:   #241d30;
+  --cal-border:      #382858;
+  --cal-today-bg:    #2a1e40;
+  --cal-weekend-bg:  #160f20;
 }
 
-/* Turquesa Menta */
+/* ── TURQUESA SALVIA (Soft Sage / Seafoam) ──────────────────── */
 [data-palette="turquesa"] {
-  --brand-50:  #f0fdfa;
-  --brand-100: #ccfbf1;
-  --brand-200: #99f6e4;
-  --brand-300: #5eead4;
-  --brand-400: #2dd4bf;
-  --brand-500: #0d9488;
-  --brand-600: #0f766e;
-  --brand-700: #115e59;
-  --brand-800: #134e4a;
-  --brand-900: #0f3d39;
-  --bg:         #f0fdfb;
+  --brand-50:  #edf8f5;
+  --brand-100: #d5f0e8;
+  --brand-200: #a8e0d0;
+  --brand-300: #70c8b5;
+  --brand-400: #48a898;
+  --brand-500: #3a8878;
+  --brand-600: #2c6e60;
+  --brand-700: #20564a;
+  --brand-800: #163e36;
+  --brand-900: #0c2820;
+
+  --bg:         #f0fbf8; /* Menta muy pálida */
   --surface-1:  #ffffff;
-  --surface-2:  #e0faf6;
-  --surface-3:  #c5f5ed;
-  --text-primary:   #042f2e;
-  --text-secondary: #115e59;
-  --text-muted:     #5eada8;
-  --border:       #9febe0;
-  --border-light: #c5f5ed;
-  --sidebar-bg:     #115e59;
-  --sidebar-text:   #99f6e4;
-  --sidebar-title:  #ffffff;
-  --sidebar-border: #0f766e;
-  --sidebar-active: #2dd4bf;
-  --sidebar-hover:  #0f766e;
-  --sidebar-text-active: #042f2e;
-  --sidebar-text-hover:  #ffffff;
-  --cal-header-bg:   #99f6e4;
+  --surface-2:  #dff5ef; /* Seafoam suave */
+  --surface-3:  #c5ece2; /* Salvia pálida */
+
+  --text-primary:   #0f2e28;
+  --text-secondary: #2a7060;
+  --text-muted:     #5a9080;
+
+  --border:       #9fd8cc;
+  --border-light: #c5ece2;
+
+  --sidebar-bg:     #dff5ef;
+  --sidebar-text:   #2a7060;
+  --sidebar-title:  #0f2e28;
+  --sidebar-border: #9fd8cc;
+  --sidebar-active: #3a8878;
+  --sidebar-hover:  #c5ece2;
+  --sidebar-text-active: #ffffff;
+  --sidebar-text-hover:  #0f2e28;
+
+  --cal-header-bg:   var(--brand-200);
+  --cal-header-text: var(--text-primary);
   --cal-row-even:    #ffffff;
-  --cal-row-odd:     #f0fdfb;
-  --cal-row-hover:   #e0faf6;
-  --cal-border:      #9febe0;
-  --cal-today-bg:    #ccfbf1;
-  --cal-today-border:#0d9488;
-  --cal-weekend-bg:  #f8fffd;
+  --cal-row-odd:     #f0fbf8;
+  --cal-row-hover:   #dff5ef;
+  --cal-border:      #9fd8cc;
+  --cal-today-bg:    #d5f0e8;
+  --cal-today-border:#3a8878;
+  --cal-weekend-bg:  #f8fdfc;
 }
 [data-palette="turquesa"][data-theme="dark"] {
-  --bg:         #011f1f;
-  --surface-1:  #042f2e;
-  --surface-2:  #063e3c;
-  --surface-3:  #094e4a;
-  --text-primary:   #e0faf6;
-  --text-secondary: #5eead4;
-  --text-muted:     #5eada8;
-  --border:       #0f5e58;
-  --border-light: #094e4a;
-  --sidebar-bg:     #010f0f;
-  --sidebar-text:   #5eead4;
-  --sidebar-title:  #e0faf6;
-  --sidebar-border: #042f2e;
-  --sidebar-active: #0d9488;
-  --sidebar-hover:  #042f2e;
-  --cal-header-bg:   #010f0f;
-  --cal-row-even:    #042f2e;
-  --cal-row-odd:     #063535;
-  --cal-row-hover:   #063e3c;
-  --cal-border:      #0f5e58;
-  --cal-today-bg:    #0b4a45;
-  --cal-weekend-bg:  #021a1a;
+  --bg:         #0c1614;
+  --surface-1:  #101e1c;
+  --surface-2:  #162624;
+  --surface-3:  #1c302e;
+
+  --text-primary:   #e0f5ef;
+  --text-secondary: #88c8b8;
+  --text-muted:     #507870;
+
+  --border:       #204038;
+  --border-light: #183028;
+
+  --sidebar-bg:     #070e0c;
+  --sidebar-text:   #88c8b8;
+  --sidebar-title:  #e0f5ef;
+  --sidebar-border: #101e1c;
+  --sidebar-active: #3a8878;
+  --sidebar-hover:  #101e1c;
+  --sidebar-text-active: #ffffff;
+  --sidebar-text-hover:  #ffffff;
+
+  --cal-header-bg:   #070e0c;
+  --cal-header-text: #ffffff;
+  --cal-row-even:    #101e1c;
+  --cal-row-odd:     #142020;
+  --cal-row-hover:   #162624;
+  --cal-border:      #204038;
+  --cal-today-bg:    #183428;
+  --cal-weekend-bg:  #0a1210;
 }
 
 /* ─── TOKENS: Dark Mode ──────────────────────────────────────── */
