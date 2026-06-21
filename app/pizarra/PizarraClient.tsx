@@ -95,6 +95,59 @@ export default function PizarraClient({ initialMemos, userRole, orgUsers = [] }:
         </form>
       )}
 
+      {canPost && (
+        <div style={{ background: 'var(--surface-1)', padding: '20px', borderRadius: '16px', border: '1px solid var(--border)', marginBottom: '32px', boxShadow: '0 4px 12px rgba(0,0,0,0.02)' }}>
+          <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '8px', color: 'var(--text-base)' }}>Envío Masivo por WhatsApp</h2>
+          <p style={{ color: 'var(--text-muted)', marginBottom: '16px', fontSize: '0.9rem' }}>
+            Envía un mensaje a todos los pasajeros que actualmente tienen estado de estadía ("Checked In").
+          </p>
+          <form 
+            onSubmit={async (e) => {
+              e.preventDefault()
+              const form = e.target as HTMLFormElement
+              const msg = (form.elements.namedItem('broadcastMsg') as HTMLTextAreaElement).value
+              if (!msg) return
+              
+              const btn = form.querySelector('button')
+              if(btn) btn.disabled = true
+              
+              try {
+                const res = await fetch('/api/whatsapp/broadcast', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ message: msg })
+                })
+                const data = await res.json()
+                if(res.ok) {
+                  toast.success(data.message)
+                  form.reset()
+                } else {
+                  toast.error(data.error || 'Error al enviar')
+                }
+              } catch (err) {
+                toast.error('Error de red al enviar')
+              } finally {
+                if(btn) btn.disabled = false
+              }
+            }}
+          >
+            <textarea 
+              name="broadcastMsg"
+              className="input" 
+              rows={3} 
+              placeholder="Escribe el mensaje aquí... Ej: Les recordamos que el desayuno es hasta las 10:30."
+              style={{ width: '100%', resize: 'vertical', marginBottom: '12px' }}
+              required
+            />
+            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+              <button type="submit" className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Send size={16} /> Enviar a Todos
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
       <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
         {memos.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '40px', background: 'var(--surface-1)', borderRadius: '16px', color: 'var(--text-muted)' }}>

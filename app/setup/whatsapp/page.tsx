@@ -78,6 +78,17 @@ export default function WhatsAppSetupPage() {
             </div>
           )}
 
+          {status === 'error' && (
+            <div className="flex flex-col items-center gap-4 text-red-500">
+              <AlertCircle size={48} />
+              <h4 className="font-medium text-primary">Error de Conexión</h4>
+              <p className="text-sm text-muted">{message}</p>
+              <p className="text-xs text-muted max-w-sm mt-2">
+                Revisa que la contraseña (API KEY) en Vercel/Localhost sea idéntica a la de Render.
+              </p>
+            </div>
+          )}
+
           {status === 'starting' && (
             <div className="flex flex-col items-center gap-4 text-amber-500">
               <RefreshCw size={48} className="animate-spin" />
@@ -104,49 +115,6 @@ export default function WhatsAppSetupPage() {
               <h4 className="font-medium text-primary">¡Conectado Exitosamente!</h4>
               <p className="text-sm text-muted">El sistema está listo para enviar notificaciones automáticas.</p>
               
-              <div className="w-full mt-8 pt-8 border-t text-left">
-                <h4 className="font-semibold text-primary mb-2">Envío Masivo a Pasajeros Actuales</h4>
-                <p className="text-sm text-muted mb-4">
-                  Envía un mensaje por WhatsApp a todos los pasajeros que actualmente tienen estado de estadía ("Checked In").
-                </p>
-                <form 
-                  onSubmit={async (e) => {
-                    e.preventDefault()
-                    const form = e.target as HTMLFormElement
-                    const msg = (form.elements.namedItem('broadcastMsg') as HTMLTextAreaElement).value
-                    if (!msg) return
-                    
-                    const btn = form.querySelector('button')
-                    if(btn) btn.disabled = true
-                    
-                    try {
-                      const res = await fetch('/api/whatsapp/broadcast', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ message: msg })
-                      })
-                      const data = await res.json()
-                      alert(data.message || data.error)
-                      if(res.ok) form.reset()
-                    } catch (err) {
-                      alert('Error de red al enviar')
-                    } finally {
-                      if(btn) btn.disabled = false
-                    }
-                  }}
-                  className="flex flex-col gap-3"
-                >
-                  <textarea 
-                    name="broadcastMsg"
-                    placeholder="Escribe el mensaje aquí... Ej: Les recordamos que el desayuno es hasta las 10:30."
-                    className="w-full p-3 border rounded-md min-h-[100px] text-sm"
-                    required
-                  />
-                  <button type="submit" className="btn btn-primary self-end">
-                    Enviar a todos
-                  </button>
-                </form>
-              </div>
             </div>
           )}
 
