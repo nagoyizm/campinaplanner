@@ -128,12 +128,23 @@ async function startSock(orgId) {
   const { version, isLatest } = await fetchLatestBaileysVersion();
   console.log(`[${orgId}] Using WA v${version.join('.')}, isLatest: ${isLatest}`);
 
+  let browserName = 'Campiña Planner';
+  try {
+    const res = await pool.query('SELECT name FROM "Organization" WHERE id = $1', [orgId]);
+    if (res.rows.length > 0) {
+      browserName = res.rows[0].name;
+    }
+  } catch (e) {
+    console.error(`[${orgId}] Error fetching org name:`, e.message);
+  }
+
   const sock = makeWASocket({
     version,
     logger: pino({ level: 'silent' }), // Suppress logs
     printQRInTerminal: false,
     auth: state,
     syncFullHistory: false,
+    browser: [browserName, 'Campiña Planner', '1.0.0'],
   });
 
   session.sock = sock;
@@ -245,12 +256,20 @@ app.delete('/api/session', requireAuth, requireOrg, async (req, res) => {
   const { orgId } = req;
   const session = sessions.get(orgId);
   
+  let remoteLogoutSuccess = false;
+  let errorMsg = null;
+
   if (session && session.sock) {
     try {
+      // This sends the actual unpair command to WhatsApp servers
       await session.sock.logout();
+      remoteLogoutSuccess = true;
     } catch (e) {
-      console.error(`[${orgId}] Error during logout:`, e.message);
+      console.error(`[${orgId}] Error during remote logout:`, e.message);
+      errorMsg = 'Error de conexión con WhatsApp al intentar desvincular.';
     }
+  } else {
+    errorMsg = 'El bot estaba fuera de línea, solo se borró la sesión local.';
   }
   
   sessions.delete(orgId);
@@ -263,7 +282,13 @@ app.delete('/api/session', requireAuth, requireOrg, async (req, res) => {
     }
   }
 
-  res.json({ success: true, message: 'Session disconnected' });
+  res.json({ 
+    success: true, 
+    remoteLogoutSuccess,
+    message: remoteLogoutSuccess 
+      ? 'Desvinculado del celular exitosamente.' 
+      : 'Borrador local. ' + (errorMsg || '')
+  });
 });
 
 app.listen(PORT, () => {

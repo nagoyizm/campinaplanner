@@ -42,7 +42,13 @@ export default function WhatsAppSetupPage() {
     setStatus('loading')
     setMessage('Desconectando...')
     try {
-      await fetch('/api/setup/whatsapp', { method: 'DELETE' })
+      const res = await fetch('/api/setup/whatsapp', { method: 'DELETE' })
+      const data = await res.json()
+      
+      if (data.remoteLogoutSuccess === false) {
+        alert('⚠️ ' + (data.message || 'La sesión se borró del sistema, pero podría seguir apareciendo en tu celular. Bórrala manualmente desde Dispositivos Vinculados.'))
+      }
+      
       await fetchStatus()
     } catch (err) {
       console.error(err)

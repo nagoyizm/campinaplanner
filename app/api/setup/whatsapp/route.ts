@@ -60,7 +60,8 @@ export async function DELETE() {
       return NextResponse.json({ error: 'Error al desconectar.' }, { status: res.status })
     }
 
-    return NextResponse.json({ success: true })
+    const data = await res.json()
+    return NextResponse.json(data)
   } catch (err) {
     return NextResponse.json({ error: 'No se pudo conectar con el microservicio de WhatsApp.' }, { status: 500 })
   }
