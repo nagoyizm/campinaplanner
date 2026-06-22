@@ -33,3 +33,35 @@ export async function GET() {
     return NextResponse.json({ status: 'offline', message: 'No se pudo conectar con el microservicio de WhatsApp.' })
   }
 }
+
+export async function DELETE() {
+  const { role, organizationId } = await requireOrg()
+  if (role !== 'admin' && role !== 'superadmin') {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+
+  const apiUrl = process.env.WHATSAPP_API_URL
+  const apiKey = process.env.WHATSAPP_API_KEY
+
+  if (!apiUrl || !apiKey) {
+    return NextResponse.json({ error: 'Variables de entorno no configuradas.' }, { status: 500 })
+  }
+
+  try {
+    const res = await fetch(`${apiUrl}/api/session`, {
+      method: 'DELETE',
+      headers: { 
+        'x-api-key': apiKey,
+        'x-organization-id': organizationId 
+      }
+    })
+    
+    if (!res.ok) {
+      return NextResponse.json({ error: 'Error al desconectar.' }, { status: res.status })
+    }
+
+    return NextResponse.json({ success: true })
+  } catch (err) {
+    return NextResponse.json({ error: 'No se pudo conectar con el microservicio de WhatsApp.' }, { status: 500 })
+  }
+}

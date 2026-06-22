@@ -241,6 +241,31 @@ app.post('/api/send', requireAuth, requireOrg, async (req, res) => {
   }
 });
 
+app.delete('/api/session', requireAuth, requireOrg, async (req, res) => {
+  const { orgId } = req;
+  const session = sessions.get(orgId);
+  
+  if (session && session.sock) {
+    try {
+      await session.sock.logout();
+    } catch (e) {
+      console.error(`[${orgId}] Error during logout:`, e.message);
+    }
+  }
+  
+  sessions.delete(orgId);
+  
+  if (DB_URL) {
+    try {
+      await pool.query('DELETE FROM "WhatsAppSession" WHERE id LIKE $1', [`${orgId}:%`]);
+    } catch (e) {
+      console.error(`[${orgId}] Error clearing DB session:`, e.message);
+    }
+  }
+
+  res.json({ success: true, message: 'Session disconnected' });
+});
+
 app.listen(PORT, () => {
   console.log(`WhatsApp Bot listening on port ${PORT}`);
 });

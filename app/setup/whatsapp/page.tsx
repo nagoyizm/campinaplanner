@@ -37,6 +37,19 @@ export default function WhatsAppSetupPage() {
     return () => clearInterval(interval)
   }, [status])
 
+  const disconnect = async () => {
+    if (!confirm('¿Estás seguro que deseas desconectar este dispositivo? Dejarás de enviar mensajes automáticamente.')) return;
+    setStatus('loading')
+    setMessage('Desconectando...')
+    try {
+      await fetch('/api/setup/whatsapp', { method: 'DELETE' })
+      await fetchStatus()
+    } catch (err) {
+      console.error(err)
+      await fetchStatus()
+    }
+  }
+
   return (
     <div className="page-container">
       <div className="page-header">
@@ -66,7 +79,7 @@ export default function WhatsAppSetupPage() {
           {status === 'loading' && (
             <div className="flex flex-col items-center gap-4 text-muted">
               <RefreshCw size={32} className="animate-spin" />
-              <p>Conectando con el microservicio...</p>
+              <p>{message || 'Conectando con el microservicio...'}</p>
             </div>
           )}
 
@@ -114,7 +127,12 @@ export default function WhatsAppSetupPage() {
               <CheckCircle2 size={64} />
               <h4 className="font-medium text-primary">¡Conectado Exitosamente!</h4>
               <p className="text-sm text-muted">El sistema está listo para enviar notificaciones automáticas.</p>
-              
+              <button 
+                onClick={disconnect}
+                className="btn text-red-600 bg-red-50 hover:bg-red-100 mt-4 border border-red-200"
+              >
+                Desconectar Dispositivo
+              </button>
             </div>
           )}
 
