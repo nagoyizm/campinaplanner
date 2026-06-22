@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
     // Send messages (not blocking completely, but we'll wait for them to report back counts)
     const sendPromises = guestsToMessage.map(async (guest) => {
       if (!guest.phone) return
-      const res = await sendWhatsAppMessage(guest.phone, message)
+      const res = await sendWhatsAppMessage(guest.phone, message, organizationId)
       if (res.success) {
         successCount++
       } else {

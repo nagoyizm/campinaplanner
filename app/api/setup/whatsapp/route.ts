@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { requireOrg } from '@/lib/org'
 
 export async function GET() {
-  const { role } = await requireOrg()
+  const { role, organizationId } = await requireOrg()
   if (role !== 'admin' && role !== 'superadmin') {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
@@ -16,7 +16,10 @@ export async function GET() {
 
   try {
     const res = await fetch(`${apiUrl}/api/qr`, {
-      headers: { 'x-api-key': apiKey },
+      headers: { 
+        'x-api-key': apiKey,
+        'x-organization-id': organizationId 
+      },
       cache: 'no-store'
     })
     

@@ -1,4 +1,4 @@
-export async function sendWhatsAppMessage(phone: string, message: string) {
+export async function sendWhatsAppMessage(phone: string, message: string, organizationId: string) {
   const apiUrl = process.env.WHATSAPP_API_URL
   const apiKey = process.env.WHATSAPP_API_KEY
 
@@ -13,6 +13,7 @@ export async function sendWhatsAppMessage(phone: string, message: string) {
       headers: {
         'Content-Type': 'application/json',
         'x-api-key': apiKey,
+        'x-organization-id': organizationId
       },
       body: JSON.stringify({ phone, message }),
     })

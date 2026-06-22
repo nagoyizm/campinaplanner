@@ -43,7 +43,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       const promises = []
       for (const admin of admins) {
         if (admin.phone) {
-          promises.push(sendWhatsAppMessage(admin.phone, msg).catch(console.error))
+          promises.push(sendWhatsAppMessage(admin.phone, msg, organizationId).catch(console.error))
         }
       }
       await Promise.all(promises)
