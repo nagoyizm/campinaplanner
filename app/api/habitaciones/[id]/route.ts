@@ -40,11 +40,13 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       const authorName = session?.user?.name || 'Un empleado'
       const msg = `✅ *Habitación Limpia*\n${authorName} ha marcado la habitación *${room.name}* como limpia.`
 
+      const promises = []
       for (const admin of admins) {
         if (admin.phone) {
-          sendWhatsAppMessage(admin.phone, msg).catch(console.error)
+          promises.push(sendWhatsAppMessage(admin.phone, msg).catch(console.error))
         }
       }
+      await Promise.all(promises)
     }
 
     return NextResponse.json({ success: true, room })

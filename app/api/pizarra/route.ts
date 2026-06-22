@@ -34,8 +34,7 @@ export async function POST(req: NextRequest) {
     // Send WhatsApp Notification
     if (memo.targetUser?.phone) {
       const msg = `*Nuevo Memo en Campiña Planner*\nDe: ${memo.author}\nPara: ${memo.targetUser.name}\n\n${memo.content}`
-      // Fire and forget (don't await so it doesn't block response)
-      sendWhatsAppMessage(memo.targetUser.phone, msg).catch(console.error)
+      await sendWhatsAppMessage(memo.targetUser.phone, msg).catch(console.error)
     }
 
     return NextResponse.json(memo)
