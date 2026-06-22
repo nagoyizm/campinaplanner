@@ -26,6 +26,7 @@ import {
   LineChart,
   ShieldAlert,
   UsersRound,
+  Smartphone,
 } from 'lucide-react'
 import { signOut } from 'next-auth/react'
 import PalettePicker from './PalettePicker'
@@ -102,6 +103,8 @@ export default function Sidebar({ theme, onThemeToggle, palette, onPaletteChange
   const [setupOpen, setSetupOpen] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
 
+  const [waConnected, setWaConnected] = useState<boolean | null>(null)
+
   const isActive = (href: string) => pathname === href || pathname.startsWith(href + '/')
   const isSetupActive = pathname.startsWith('/setup')
 
@@ -117,6 +120,15 @@ export default function Sidebar({ theme, onThemeToggle, palette, onPaletteChange
     }
     return () => document.documentElement.classList.remove('sidebar-collapsed')
   }, [collapsed])
+
+  useEffect(() => {
+    if (userRole !== 'superadmin') {
+      fetch('/api/setup/whatsapp/status')
+        .then(res => res.json())
+        .then(data => setWaConnected(data.connected))
+        .catch(() => setWaConnected(false))
+    }
+  }, [userRole])
 
   return (
     <>
@@ -214,6 +226,22 @@ export default function Sidebar({ theme, onThemeToggle, palette, onPaletteChange
 
         {/* Bottom actions */}
         <div className={styles.bottomActions}>
+          {userRole !== 'superadmin' && waConnected !== null && (
+            <Link 
+              href="/setup/whatsapp"
+              className={styles.actionBtn}
+              title={waConnected ? 'WhatsApp Conectado' : 'WhatsApp Desconectado'}
+              style={{ color: waConnected ? 'var(--brand-600)' : '#ef4444' }}
+            >
+              <Smartphone size={16} />
+              {!collapsed && (
+                <span style={{ fontSize: '0.8rem', fontWeight: 500 }}>
+                  {waConnected ? 'WA Conectado' : 'WA Desconectado'}
+                </span>
+              )}
+            </Link>
+          )}
+
           <PalettePicker
             currentPalette={palette}
             collapsed={collapsed}
