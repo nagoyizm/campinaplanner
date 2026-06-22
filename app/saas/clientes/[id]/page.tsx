@@ -5,6 +5,7 @@ import Link from 'next/link'
 import styles from '../../saas.module.css'
 import { ArrowLeft, Building2, Users, BookOpen, Download, Upload } from 'lucide-react'
 import { format } from 'date-fns'
+import PlanSelector from './PlanSelector'
 
 export const dynamic = 'force-dynamic'
 
@@ -47,7 +48,10 @@ export default async function ClienteDetailPage({ params }: { params: Promise<{ 
           </div>
           <p className={styles.subtitle}>Slug: {org.slug} • Creado el {format(new Date(org.createdAt), 'dd/MM/yyyy')}</p>
         </div>
-        <div style={{ display: 'flex', gap: '12px' }}>
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+          {org.slug !== 'system-plannerio' && (
+            <PlanSelector orgId={org.id} initialPlan={org.plan} />
+          )}
           <button className="btn btn-secondary">Editar Perfil</button>
         </div>
       </div>

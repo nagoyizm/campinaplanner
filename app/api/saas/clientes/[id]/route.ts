@@ -2,6 +2,30 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { requireSuperAdmin } from '@/lib/org'
 
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    await requireSuperAdmin()
+  } catch {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  const { id } = await params
+  const body = await req.json()
+
+  try {
+    if (body.plan) {
+      await prisma.organization.update({
+        where: { id },
+        data: { plan: body.plan }
+      })
+    }
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    console.error('Error updating organization:', error)
+    return NextResponse.json({ error: 'Error al actualizar organización.' }, { status: 500 })
+  }
+}
+
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     await requireSuperAdmin()
