@@ -32,9 +32,18 @@ export async function POST(req: NextRequest) {
     })
 
     // Send WhatsApp Notification
-    if (memo.targetUser?.phone) {
-      const msg = `*Nuevo Memo en Campiña Planner*\nDe: ${memo.author}\nPara: ${memo.targetUser.name}\n\n${memo.content}`
+    if (memo.targetUserId && memo.targetUser?.phone) {
+      const msg = `*Memo de ${memo.author}*\n${memo.content}`
       await sendWhatsAppMessage(memo.targetUser.phone, msg, organizationId).catch(console.error)
+    } else if (!memo.targetUserId) {
+      const users = await prisma.user.findMany({
+        where: { organizationId, phone: { not: null } }
+      })
+      const msg = `*Memo general de ${memo.author}*\n${memo.content}`
+      const promises = users.map(u => 
+        sendWhatsAppMessage(u.phone as string, msg, organizationId).catch(console.error)
+      )
+      await Promise.all(promises)
     }
 
     return NextResponse.json(memo)
