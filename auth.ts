@@ -22,7 +22,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             id: true, email: true, name: true, role: true,
             roleName: true, active: true, password: true,
             organizationId: true,
-            organization: { select: { name: true } },
+            organization: { select: { name: true, plan: true } },
           },
         })
 
@@ -42,6 +42,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           roleName: user.roleName,
           organizationId: user.organizationId,
           orgName: user.organization.name,
+          orgPlan: user.organization.plan,
         }
       },
     }),

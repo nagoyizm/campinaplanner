@@ -95,6 +95,8 @@ export default function Sidebar({ theme, onThemeToggle, palette, onPaletteChange
   const pathname = usePathname()
   const { data: session } = useSession()
   const orgName = (session?.user as any)?.orgName ?? 'Planner'
+  const orgPlan = (session?.user as any)?.orgPlan
+  const planDisplay = orgPlan ? orgPlan.charAt(0).toUpperCase() + orgPlan.slice(1) : 'Reservas'
   const userRole = (session?.user as any)?.role ?? 'operator'
   const [collapsed, setCollapsed] = useState(false)
   const [setupOpen, setSetupOpen] = useState(false)
@@ -141,7 +143,7 @@ export default function Sidebar({ theme, onThemeToggle, palette, onPaletteChange
           {!collapsed && (
             <div className={styles.logoText}>
               <span className={styles.logoName}>{orgName}</span>
-              <span className={styles.logoSub}>Reservas</span>
+              <span className={styles.logoSub} style={{ fontWeight: 600, color: 'var(--brand-600)' }}>Plan {planDisplay}</span>
             </div>
           )}
           <button

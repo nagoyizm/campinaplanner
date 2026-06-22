@@ -8,6 +8,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   const data: any = {
     name: body.name,
     email: body.email,
+    phone: body.phone,
     role: body.role,
     roleName: body.roleName,
     active: body.active !== false,
@@ -18,7 +19,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   const user = await prisma.user.update({
     where: { id },
     data,
-    select: { id: true, name: true, email: true, role: true, roleName: true, active: true, createdAt: true },
+    select: { id: true, name: true, email: true, phone: true, role: true, roleName: true, active: true, createdAt: true },
   })
   return NextResponse.json(user)
 }

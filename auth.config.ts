@@ -13,6 +13,7 @@ export const authConfig = {
         token.roleName = (user as any).roleName
         token.organizationId = (user as any).organizationId
         token.orgName = (user as any).orgName
+        token.orgPlan = (user as any).orgPlan
       }
       return token
     },
@@ -23,6 +24,7 @@ export const authConfig = {
         ;(session.user as any).roleName = token.roleName
         ;(session.user as any).organizationId = token.organizationId
         ;(session.user as any).orgName = token.orgName
+        ;(session.user as any).orgPlan = token.orgPlan
       }
       return session
     },

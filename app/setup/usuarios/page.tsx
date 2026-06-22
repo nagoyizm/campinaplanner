@@ -9,7 +9,7 @@ const ROLES = [
   { value: 'observer', label: 'Solo lectura' },
 ]
 
-const empty = { name: '', email: '', password: '', role: 'operator', roleName: 'Recepción', active: true }
+const empty = { name: '', email: '', phone: '', password: '', role: 'operator', roleName: 'Recepción', active: true }
 
 export default function UsuariosPage() {
   const [form, setForm] = useState<any>({ ...empty })
@@ -22,6 +22,7 @@ export default function UsuariosPage() {
   const columns = [
     { key: 'name', label: 'Nombre' },
     { key: 'email', label: 'Email' },
+    { key: 'phone', label: 'Celular' },
     { key: 'roleName', label: 'Cargo' },
     { key: 'role', label: 'Rol Sistema', render: (r: any) => (
       <span style={{ fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 999,
@@ -52,6 +53,10 @@ export default function UsuariosPage() {
           <div className="form-group">
             <label className="form-label required">Email</label>
             <input className="input" type="email" value={form.email} onChange={e => onFormChange('email', e.target.value)} placeholder="ana@capiña.cl" />
+          </div>
+          <div className="form-group">
+            <label className="form-label">Celular (WhatsApp)</label>
+            <input className="input" type="tel" value={form.phone || ''} onChange={e => onFormChange('phone', e.target.value)} placeholder="+56912345678" />
           </div>
           <div className="form-group">
             <label className="form-label" style={{ display: 'flex', justifyContent: 'space-between' }}>

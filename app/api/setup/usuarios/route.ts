@@ -7,7 +7,7 @@ export async function GET() {
   const { organizationId } = await requireOrg()
   const users = await prisma.user.findMany({
     where: { organizationId },
-    select: { id: true, name: true, email: true, role: true, roleName: true, active: true, createdAt: true },
+    select: { id: true, name: true, email: true, phone: true, role: true, roleName: true, active: true, createdAt: true },
     orderBy: { name: 'asc' },
   })
   return NextResponse.json(users)
@@ -23,12 +23,13 @@ export async function POST(req: NextRequest) {
       organizationId,
       name: body.name,
       email: body.email,
+      phone: body.phone,
       password: hashed,
       role: body.role || 'operator',
       roleName: body.roleName || 'Recepción',
       active: body.active !== false,
     },
-    select: { id: true, name: true, email: true, role: true, roleName: true, active: true, createdAt: true },
+    select: { id: true, name: true, email: true, phone: true, role: true, roleName: true, active: true, createdAt: true },
   })
   return NextResponse.json(user, { status: 201 })
 }
