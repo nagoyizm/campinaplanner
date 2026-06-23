@@ -37,6 +37,13 @@ const TEMPLATES = {
     { header: 'children', key: 'children', width: 10 },
     { header: 'status', key: 'status', width: 15 }, // booked, confirmed, checked_in
     { header: 'totalPaid', key: 'totalPaid', width: 15 },
+  ],
+  inventario: [
+    { header: 'name', key: 'name', width: 30 },
+    { header: 'category', key: 'category', width: 25 },
+    { header: 'unitCost', key: 'unitCost', width: 15 },
+    { header: 'currentQuantity', key: 'currentQuantity', width: 15 },
+    { header: 'minQuantity', key: 'minQuantity', width: 15 },
   ]
 }
 
@@ -71,6 +78,8 @@ export async function GET(req: NextRequest) {
       worksheet.addRow({ code: 'C1', name: 'Cabaña 1', unitTypeName: 'Cabaña 5P' })
     } else if (table === 'reservation') {
       worksheet.addRow({ guestRut: '12345678-9', roomCode: 'C1', arrival: '2026-07-01', departure: '2026-07-05', adults: 2, children: 0, status: 'confirmed', totalPaid: 150000 })
+    } else if (table === 'inventario') {
+      worksheet.addRow({ name: 'Papel Higiénico', category: 'Amenidades', unitCost: 350, currentQuantity: 100, minQuantity: 20 })
     }
 
     const buffer = await workbook.xlsx.writeBuffer()

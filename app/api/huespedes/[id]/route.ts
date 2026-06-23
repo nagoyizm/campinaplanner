@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { auth } from '@/auth'
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -38,6 +39,12 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 }
 
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const session = await auth()
+  const role = (session?.user as any)?.role
+  if (role !== 'admin' && role !== 'superadmin') {
+    return NextResponse.json({ error: 'Solo administradores pueden eliminar huéspedes' }, { status: 403 })
+  }
+
   const { id } = await params
   try {
     await prisma.guest.delete({ where: { id } })

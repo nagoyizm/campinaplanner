@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { requireOrg } from '@/lib/org'
 import { auth } from '@/auth'
 import { sendWhatsAppMessage } from '@/lib/whatsapp'
+import { sendEmail } from '@/lib/email'
 
 export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -11,10 +12,33 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     const session = await auth()
     
     const body = await req.json()
-    const { cleaningStatus } = body
+    const { cleaningStatus, cleaningPriority, cleaningNote } = body
 
-    if (!cleaningStatus || !['clean', 'dirty', 'maintenance', 'occupied'].includes(cleaningStatus)) {
-      return NextResponse.json({ error: 'Estado de limpieza inválido' }, { status: 400 })
+    const dataToUpdate: any = {}
+    
+    if (cleaningStatus !== undefined) {
+      if (!['clean', 'dirty', 'maintenance', 'occupied'].includes(cleaningStatus)) {
+        return NextResponse.json({ error: 'Estado de limpieza inválido' }, { status: 400 })
+      }
+      dataToUpdate.cleaningStatus = cleaningStatus
+      
+      // Auto-remove priority when room is cleaned
+      if (cleaningStatus === 'clean') {
+        dataToUpdate.cleaningPriority = false
+        dataToUpdate.cleaningNote = null
+      }
+    }
+    
+    if (cleaningPriority !== undefined) {
+      dataToUpdate.cleaningPriority = cleaningPriority
+    }
+    
+    if (cleaningNote !== undefined) {
+      dataToUpdate.cleaningNote = cleaningNote
+    }
+
+    if (Object.keys(dataToUpdate).length === 0) {
+      return NextResponse.json({ error: 'No se enviaron datos para actualizar' }, { status: 400 })
     }
 
     const room = await prisma.room.update({
@@ -22,31 +46,33 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
         id,
         organizationId // Ensure they only update their own rooms
       },
-      data: {
-        cleaningStatus
-      }
+      data: dataToUpdate
     })
 
-    // Send WhatsApp if status is 'clean'
+    // Send WhatsApp/Email if status is 'clean'
     if (cleaningStatus === 'clean') {
-      const admins = await prisma.user.findMany({
-        where: {
-          organizationId,
-          role: { in: ['admin', 'superadmin'] },
-          phone: { not: null }
-        }
-      })
+      try {
+        const notifyAdmins = await prisma.user.findMany({
+          where: {
+            organizationId,
+            role: { in: ['admin', 'superadmin'] },
+            OR: [{ notifyWspCleaning: true }, { notifyEmailCleaning: true }]
+          }
+        })
 
-      const authorName = session?.user?.name || 'Un empleado'
-      const msg = `✅ *Habitación Limpia*\n${authorName} ha marcado la habitación *${room.name}* como limpia.`
+        const message = `✨ *Habitación Limpia:*\nLa cabaña ${room.name} ha sido marcada como limpia por el personal.`
 
-      const promises = []
-      for (const admin of admins) {
-        if (admin.phone) {
-          promises.push(sendWhatsAppMessage(admin.phone, msg, organizationId).catch(console.error))
+        for (const admin of notifyAdmins) {
+          if (admin.notifyWspCleaning && admin.phone) {
+            await sendWhatsAppMessage(admin.phone, message, organizationId).catch(console.error)
+          }
+          if (admin.notifyEmailCleaning && admin.email) {
+            await sendEmail(admin.email, `Limpieza Completa: ${room.name}`, `<p>La cabaña ${room.name} ha sido marcada como limpia por el personal.</p>`).catch(console.error)
+          }
         }
+      } catch (notificationError) {
+        console.error('Error al enviar notificaciones de limpieza:', notificationError)
       }
-      await Promise.all(promises)
     }
 
     return NextResponse.json({ success: true, room })

@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/auth'
+import { requireOrg } from '@/lib/org'
+import { sendWhatsAppMessage } from '@/lib/whatsapp'
+import { sendEmail } from '@/lib/email'
 
 export async function GET(
   req: NextRequest,
@@ -48,6 +51,7 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params
+  const { organizationId } = await requireOrg()
   const session = await auth()
   const body = await req.json()
 
@@ -86,6 +90,29 @@ export async function PATCH(
         where: { id: { in: old.rooms.map((r: any) => r.roomId) } },
         data: { cleaningStatus: 'dirty' }
       })
+    }
+
+    try {
+      const notifyAdmins = await prisma.user.findMany({
+        where: {
+          organizationId,
+          role: { in: ['admin', 'superadmin'] },
+          OR: [{ notifyWspCheckOut: true }, { notifyEmailCheckOut: true }]
+        }
+      })
+
+      const msg = `👋 *Checkout Realizado:*\nEl huésped de la reserva #${id} ha realizado el checkout y la(s) cabaña(s) pasaron a estado sucio.`
+
+      for (const admin of notifyAdmins) {
+        if (admin.notifyWspCheckOut && admin.phone) {
+          await sendWhatsAppMessage(admin.phone, msg, organizationId).catch(console.error)
+        }
+        if (admin.notifyEmailCheckOut && admin.email) {
+          await sendEmail(admin.email, `Checkout: Reserva #${id}`, `<p>El huésped de la reserva #${id} ha hecho checkout.</p>`).catch(console.error)
+        }
+      }
+    } catch (notificationError) {
+      console.error('Error al enviar notificaciones de checkout:', notificationError)
     }
   }
 

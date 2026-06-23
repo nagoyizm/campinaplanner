@@ -5,6 +5,14 @@ const prisma = new PrismaClient()
 
 async function main() {
   const email = 'admin@capiña.cl'
+  // Read password from CLI arg or env — never hardcode secrets in source
+  // Usage: npx ts-node scratch/check-password.ts <password>
+  const passwordToCheck = process.argv[2] ?? process.env.CHECK_PASSWORD
+  if (!passwordToCheck) {
+    console.error('Usage: npx ts-node scratch/check-password.ts <password>')
+    process.exit(1)
+  }
+
   const user = await prisma.user.findUnique({
     where: { email },
   })
@@ -15,8 +23,8 @@ async function main() {
   }
 
   console.log(`User found: ${user.email}`)
-  const isMatch = await bcrypt.compare('admin123', user.password)
-  console.log(`Password 'admin123' matches? ${isMatch}`)
+  const isMatch = await bcrypt.compare(passwordToCheck, user.password)
+  console.log(`Password matches? ${isMatch}`)
 }
 
 main()

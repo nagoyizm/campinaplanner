@@ -170,6 +170,22 @@ export async function POST(req: NextRequest) {
           })
           insertCount++
         }
+      } else if (table === 'inventario') {
+        for (const row of rows) {
+          if (!row.name || !row.category) continue
+          await tx.inventoryItem.create({
+            data: {
+              organizationId: orgId,
+              name: row.name.toString(),
+              category: row.category.toString(),
+              unitCost: parseFloat(row.unitCost?.toString() || '0'),
+              currentQuantity: parseInt(row.currentQuantity?.toString() || '0', 10),
+              minQuantity: parseInt(row.minQuantity?.toString() || '0', 10),
+              active: true
+            }
+          })
+          insertCount++
+        }
       } else {
         throw new Error('Tabla no soportada para importación')
       }

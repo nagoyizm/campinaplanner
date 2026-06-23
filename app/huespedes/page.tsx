@@ -9,6 +9,7 @@ import {
   Volume2, AlertTriangle, Repeat, Phone, Mail, Globe
 } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { useSession } from 'next-auth/react'
 import styles from './huespedes.module.css'
 
 interface Guest {
@@ -37,6 +38,10 @@ const empty: Omit<Guest, 'id' | 'totalStays' | 'createdAt'> = {
 }
 
 export default function HuespedesPage() {
+  const { data: session } = useSession()
+  const userRole = (session?.user as any)?.role || 'operator'
+  const isAdmin = userRole === 'admin' || userRole === 'superadmin'
+
   const [guests, setGuests] = useState<Guest[]>([])
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
@@ -284,9 +289,11 @@ export default function HuespedesPage() {
                       <td>
                         <div style={{ display: 'flex', gap: 4, justifyContent: 'center' }}>
                           <button className="btn btn-ghost btn-icon btn-sm" onClick={() => handleEdit(g)} title="Editar"><Edit2 size={14} /></button>
-                          <button className="btn btn-ghost btn-icon btn-sm" onClick={() => handleDelete(g.id)} disabled={deleting === g.id} title="Eliminar" style={{ color: '#ef4444' }}>
-                            {deleting === g.id ? <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} /> : <Trash2 size={14} />}
-                          </button>
+                          {isAdmin && (
+                            <button className="btn btn-ghost btn-icon btn-sm" onClick={() => handleDelete(g.id)} disabled={deleting === g.id} title="Eliminar" style={{ color: '#ef4444' }}>
+                              {deleting === g.id ? <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} /> : <Trash2 size={14} />}
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>

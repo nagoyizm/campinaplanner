@@ -35,20 +35,18 @@
 .backdrop {
   position: fixed;
   inset: 0;
-  z-index: 99;
+  z-index: 99998;
 }
 
 .dropdown {
-  position: absolute;
-  bottom: calc(100% + 8px);
-  left: 8px;
-  right: 8px;
+  position: fixed;
+  width: 220px;
   background: var(--surface-1);
   border: 1px solid var(--border);
   border-radius: 12px;
   box-shadow: 0 16px 40px rgba(0,0,0,0.18);
   padding: 12px;
-  z-index: 100;
+  z-index: 99999;
   animation: popUp 0.15s ease;
 }
 

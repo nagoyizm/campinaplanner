@@ -85,6 +85,7 @@
 /* Navigation */
 .nav {
   flex: 1;
+  min-height: 0;
   padding: 10px 8px;
   display: flex;
   flex-direction: column;

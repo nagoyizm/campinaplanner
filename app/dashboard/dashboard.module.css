@@ -4,9 +4,9 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
+  margin-bottom: 16px;
   flex-wrap: wrap;
-  gap: 16px;
+  gap: 12px;
 }
 
 .greeting {
@@ -72,8 +72,8 @@
 .kpiGrid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 18px;
-  margin-bottom: 28px;
+  gap: 12px;
+  margin-bottom: 20px;
 }
 
 .kpiCard {
@@ -123,11 +123,11 @@
 .kpiContent {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
 }
 
 .kpiValue {
-  font-size: 26px;
+  font-size: 22px;
   font-weight: 800;
   color: var(--text-primary);
   letter-spacing: -0.5px;
@@ -180,15 +180,15 @@
 }
 
 .actionsGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-  gap: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .actionButton {
   display: flex;
   align-items: center;
-  padding: 16px;
+  padding: 10px 14px;
   background: var(--surface-1);
   border: 1px solid var(--border-light);
   border-radius: var(--radius-lg);
@@ -196,22 +196,23 @@
   color: inherit;
   transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
   position: relative;
+  flex: 1 1 auto;
 }
 
 .actionButton:hover {
   transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-sm);
   border-color: var(--brand-500);
 }
 
 .actionIcon {
-  width: 44px;
-  height: 44px;
+  width: 32px;
+  height: 32px;
   border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-right: 14px;
+  margin-right: 12px;
   color: #ffffff;
   flex-shrink: 0;
 }
@@ -223,16 +224,13 @@
 
 .actionTitle {
   display: block;
-  font-size: 14px;
-  font-weight: 700;
+  font-size: 13px;
+  font-weight: 600;
   color: var(--text-primary);
 }
 
 .actionDesc {
-  display: block;
-  font-size: 12px;
-  color: var(--text-muted);
-  margin-top: 2px;
+  display: none;
 }
 
 .actionArrow {
@@ -250,7 +248,7 @@
 .columnsGrid {
   display: grid;
   grid-template-columns: 1.4fr 1fr;
-  gap: 20px;
+  gap: 16px;
   align-items: start;
 }
 

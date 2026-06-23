@@ -1,5 +1,7 @@
 import AppLayout from '@/components/layout/AppLayout'
+import { requireSuperAdmin } from '@/lib/org'
 
-export default function SimuladorLayout({ children }: { children: React.ReactNode }) {
+export default async function SimuladorLayout({ children }: { children: React.ReactNode }) {
+  await requireSuperAdmin()
   return <AppLayout title="Simulador de Chatbot">{children}</AppLayout>
 }

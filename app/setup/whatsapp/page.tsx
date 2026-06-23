@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { QrCode, Smartphone, AlertCircle, CheckCircle2, RefreshCw } from 'lucide-react'
+import { Smartphone, AlertCircle, CheckCircle2, RefreshCw } from 'lucide-react'
 
 export default function WhatsAppSetupPage() {
   const [status, setStatus] = useState<string>('loading')
@@ -20,7 +20,11 @@ export default function WhatsAppSetupPage() {
       } else {
         setQr(null)
       }
+
+      // Notify Sidebar
+      globalThis.dispatchEvent(new CustomEvent('wa-status-change', { detail: { connected: data.status === 'connected' } }))
     } catch (err) {
+      console.error('[whatsapp] fetchStatus failed:', err)
       setStatus('offline')
       setMessage('Fallo al conectar con el servidor')
     }
@@ -76,7 +80,7 @@ export default function WhatsAppSetupPage() {
             onClick={fetchStatus}
             disabled={status === 'loading'}
           >
-            <RefreshCw size={14} className={status === 'loading' ? 'animate-spin' : ''} />
+            <RefreshCw size={14} style={{ animation: status === 'loading' ? 'spin 1s linear infinite' : 'none' }} />
             Actualizar
           </button>
         </div>
@@ -84,7 +88,7 @@ export default function WhatsAppSetupPage() {
           
           {status === 'loading' && (
             <div className="flex flex-col items-center gap-4 text-muted">
-              <RefreshCw size={32} className="animate-spin" />
+              <RefreshCw size={32} style={{ animation: 'spin 1s linear infinite' }} />
               <p>{message || 'Conectando con el microservicio...'}</p>
             </div>
           )}
@@ -110,7 +114,7 @@ export default function WhatsAppSetupPage() {
 
           {status === 'starting' && (
             <div className="flex flex-col items-center gap-4 text-amber-500">
-              <RefreshCw size={48} className="animate-spin" />
+              <RefreshCw size={48} style={{ animation: 'spin 1s linear infinite', color: '#f59e0b' }} />
               <h4 className="font-medium text-primary">Iniciando Cliente WhatsApp...</h4>
               <p className="text-sm text-muted">{message}</p>
             </div>
@@ -119,7 +123,10 @@ export default function WhatsAppSetupPage() {
           {status === 'scan_required' && qr && (
             <div className="flex flex-col items-center gap-4">
               <div className="p-4 bg-white rounded-xl shadow-sm border">
-                <img src={qr} alt="WhatsApp QR Code" className="w-64 h-64" />
+                {/* ponytail: guard ensures only base64 data URLs reach src — nosec */}
+                {qr.startsWith('data:image/') && (
+                  <img src={qr} alt="WhatsApp QR Code" className="w-64 h-64" /> // nosec
+                )}
               </div>
               <h4 className="font-medium">Escanea este código</h4>
               <p className="text-sm text-muted max-w-sm">

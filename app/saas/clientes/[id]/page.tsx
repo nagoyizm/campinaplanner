@@ -30,7 +30,8 @@ export default async function ClienteDetailPage({ params }: { params: Promise<{ 
     { id: 'room', name: 'Habitaciones', desc: 'Unidades físicas (ej. C1)' },
     { id: 'rate', name: 'Tarifas', desc: 'Precios base (opcional)' },
     { id: 'guest', name: 'Huéspedes', desc: 'Base de datos de clientes' },
-    { id: 'reservation', name: 'Reservas', desc: 'Historial de reservas' }
+    { id: 'reservation', name: 'Reservas', desc: 'Historial de reservas' },
+    { id: 'inventario', name: 'Inventario', desc: 'Productos e insumos' }
   ]
 
   return (

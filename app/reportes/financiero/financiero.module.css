@@ -52,8 +52,6 @@
 /* Table */
 .tableWrapper {
   overflow-x: auto;
-  max-height: calc(100vh - 420px);
-  overflow-y: auto;
 }
 
 .resultCount { font-size: 13px; font-weight: 500; color: var(--text-secondary); }

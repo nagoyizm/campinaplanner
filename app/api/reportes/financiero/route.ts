@@ -8,6 +8,8 @@ export async function GET(req: NextRequest) {
   const startDate = searchParams.get('startDate')
   const endDate = searchParams.get('endDate')
   const queryBy = searchParams.get('queryBy') || 'arrival' // arrival | departure | both
+  const unitTypeId = searchParams.get('unitTypeId') || 'all'
+  const roomId = searchParams.get('roomId') || 'all'
 
   if (!startDate || !endDate) {
     return NextResponse.json({ error: 'startDate y endDate son requeridos' }, { status: 400 })
@@ -30,8 +32,15 @@ export async function GET(req: NextRequest) {
     }
   }
 
+  const roomFilter: any = { organizationId }
+  if (roomId !== 'all') {
+    roomFilter.id = roomId
+  } else if (unitTypeId !== 'all') {
+    roomFilter.unitTypeId = unitTypeId
+  }
+
   const rows = await prisma.reservationRoom.findMany({
-    where: { room: { organizationId }, ...dateFilter },
+    where: { room: roomFilter, ...dateFilter },
     include: {
       reservation: { 
         include: { 
@@ -76,8 +85,15 @@ export async function GET(req: NextRequest) {
     }
   })
 
+  const countFilter: any = { organizationId, active: true }
+  if (roomId !== 'all') {
+    countFilter.id = roomId
+  } else if (unitTypeId !== 'all') {
+    countFilter.unitTypeId = unitTypeId
+  }
+
   const totalActiveRooms = await prisma.room.count({
-    where: { organizationId, active: true }
+    where: countFilter
   })
 
   return NextResponse.json({ rows: data, totalActiveRooms })

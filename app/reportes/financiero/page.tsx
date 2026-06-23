@@ -79,6 +79,24 @@ export default function ReporteFinancieroPage() {
   const [searched, setSearched] = useState(false)
   const [filter, setFilter] = useState('')
 
+  const [setupRooms, setSetupRooms] = useState<any[]>([])
+  const [setupUnitTypes, setSetupUnitTypes] = useState<any[]>([])
+  const [selectedUnitType, setSelectedUnitType] = useState('all')
+  const [selectedRoom, setSelectedRoom] = useState('all')
+
+  useEffect(() => {
+    fetch('/api/setup/rooms').then(r => r.json()).then(data => {
+      setSetupRooms(data || [])
+      const utMap = new Map()
+      data?.forEach((r: any) => {
+        if (r.unitType && !utMap.has(r.unitType.id)) {
+          utMap.set(r.unitType.id, r.unitType)
+        }
+      })
+      setSetupUnitTypes(Array.from(utMap.values()))
+    }).catch(console.error)
+  }, [])
+
   const handlePreset = (p: typeof DATE_PRESETS[0], label: string) => {
     setPreset(label)
     setStartDate(format(p.start, 'yyyy-MM-dd'))
@@ -89,7 +107,11 @@ export default function ReporteFinancieroPage() {
     setLoading(true)
     setSearched(true)
     try {
-      const params = new URLSearchParams({ startDate, endDate, queryBy })
+      const params = new URLSearchParams({ 
+        startDate, endDate, queryBy, 
+        unitTypeId: selectedUnitType, 
+        roomId: selectedRoom 
+      })
       const res = await fetch(`/api/reportes/financiero?${params}`)
       if (!res.ok) throw new Error('Error cargando reporte')
       const data = await res.json()
@@ -107,7 +129,11 @@ export default function ReporteFinancieroPage() {
   }, [])
 
   const handleExcelExport = () => {
-    const params = new URLSearchParams({ startDate, endDate, queryBy })
+    const params = new URLSearchParams({ 
+        startDate, endDate, queryBy, 
+        unitTypeId: selectedUnitType, 
+        roomId: selectedRoom 
+      })
     window.open(`/api/reportes/financiero/excel?${params}`, '_blank')
   }
 
@@ -263,6 +289,38 @@ export default function ReporteFinancieroPage() {
                   Personalizado
                 </button>
               </div>
+            </div>
+
+            {/* Room Filters */}
+            <div className={styles.filterGroup}>
+              <p className="form-label">Grupo de Cabañas</p>
+              <select 
+                className="input" 
+                value={selectedUnitType} 
+                onChange={e => { setSelectedUnitType(e.target.value); setSelectedRoom('all'); }}
+              >
+                <option value="all">Todos los grupos</option>
+                {setupUnitTypes.map(ut => (
+                  <option key={ut.id} value={ut.id}>{ut.name}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className={styles.filterGroup}>
+              <p className="form-label">Cabaña Específica</p>
+              <select 
+                className="input" 
+                value={selectedRoom} 
+                onChange={e => setSelectedRoom(e.target.value)}
+                disabled={selectedUnitType !== 'all'}
+              >
+                <option value="all">Todas</option>
+                {setupRooms
+                  .filter(r => selectedUnitType === 'all' || r.unitTypeId === selectedUnitType)
+                  .map(r => (
+                    <option key={r.id} value={r.id}>{r.name} ({r.code})</option>
+                  ))}
+              </select>
             </div>
 
             {/* Date range */}

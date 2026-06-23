@@ -32,7 +32,7 @@ async function main() {
   console.log('✅ Organización creada: Termas del Sur Lodge')
 
   // ── 2. USUARIO ADMIN ───────────────────────────────────────────
-  const hash = await bcrypt.hash('termas123', 12)
+  const hash = await bcrypt.hash('termas123', 12) // nosec: intentional seed credential
   await prisma.user.upsert({
     where: { email: 'admin@termasdelsur.cl' },
     update: { password: hash },

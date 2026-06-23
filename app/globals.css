@@ -859,7 +859,7 @@ tbody td { padding: 10px 14px; color: var(--text-primary); }
 .page-container {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  min-height: 100%;
   gap: 20px;
   padding: 24px;
 }

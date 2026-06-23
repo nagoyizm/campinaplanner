@@ -19,7 +19,39 @@ export default function PizarraClient({ initialMemos, userRole, orgUsers = [] }:
   const [memos, setMemos] = useState<Memo[]>(initialMemos)
   const [newMemo, setNewMemo] = useState('')
   const [targetUserId, setTargetUserId] = useState('')
+  const [sendWsp, setSendWsp] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [timeFilter, setTimeFilter] = useState('mes') // 'hoy', 'semana', 'mes', 'ano', 'siempre'
+
+  const filteredMemos = memos.filter(memo => {
+    const date = new Date(memo.createdAt)
+    const now = new Date()
+    switch (timeFilter) {
+      case 'hoy': {
+        const start = new Date(now)
+        start.setHours(0, 0, 0, 0)
+        return date >= start
+      }
+      case 'semana': {
+        const start = new Date(now)
+        start.setDate(start.getDate() - 7)
+        return date >= start
+      }
+      case 'mes': {
+        const start = new Date(now)
+        start.setMonth(start.getMonth() - 1)
+        return date >= start
+      }
+      case 'ano': {
+        const start = new Date(now)
+        start.setFullYear(start.getFullYear() - 1)
+        return date >= start
+      }
+      case 'siempre':
+      default:
+        return true
+    }
+  })
 
   // Empleados y recepcionistas no pueden publicar memos en este modelo simple, solo leen.
   // Podríamos permitir si quisiéramos, pero según requerimientos el admin publica los memos.
@@ -34,12 +66,13 @@ export default function PizarraClient({ initialMemos, userRole, orgUsers = [] }:
       const res = await fetch('/api/pizarra', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: newMemo, targetUserId: targetUserId || null })
+        body: JSON.stringify({ content: newMemo, targetUserId: targetUserId || null, sendWsp })
       })
       if (!res.ok) throw new Error('Error al publicar')
       const created = await res.json()
       setMemos([created, ...memos])
       setNewMemo('')
+      setSendWsp(false)
       toast.success('Memo publicado')
     } catch {
       toast.error('No se pudo publicar el memo')
@@ -87,6 +120,19 @@ export default function PizarraClient({ initialMemos, userRole, orgUsers = [] }:
               </select>
             </div>
           )}
+          
+          <div style={{ marginTop: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <input 
+              type="checkbox" 
+              id="sendWsp" 
+              checked={sendWsp} 
+              onChange={e => setSendWsp(e.target.checked)} 
+              style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+            />
+            <label htmlFor="sendWsp" style={{ fontSize: '0.9rem', color: 'var(--text-base)', cursor: 'pointer', userSelect: 'none' }}>
+              Notificar también por WhatsApp
+            </label>
+          </div>
           <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '12px' }}>
             <button type="submit" className="btn btn-primary" disabled={loading || !newMemo.trim()}>
               {loading ? 'Publicando...' : <><Send size={16} /> Publicar</>}
@@ -148,14 +194,30 @@ export default function PizarraClient({ initialMemos, userRole, orgUsers = [] }:
         </div>
       )}
 
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+        <h3 style={{ fontSize: '1.25rem', fontWeight: 600, color: 'var(--text-base)', margin: 0 }}>Historial de Memos</h3>
+        <select 
+          className="input" 
+          value={timeFilter} 
+          onChange={(e) => setTimeFilter(e.target.value)}
+          style={{ width: 'auto', minWidth: '150px' }}
+        >
+          <option value="hoy">Del día</option>
+          <option value="semana">De esta semana</option>
+          <option value="mes">Del último mes</option>
+          <option value="ano">Del último año</option>
+          <option value="siempre">Siempre</option>
+        </select>
+      </div>
+
       <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-        {memos.length === 0 ? (
+        {filteredMemos.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '40px', background: 'var(--surface-1)', borderRadius: '16px', color: 'var(--text-muted)' }}>
             <Pin size={48} style={{ opacity: 0.2, marginBottom: '16px', display: 'inline-block' }} />
-            <p>No hay mensajes en la pizarra.</p>
+            <p>No hay mensajes en la pizarra para este periodo.</p>
           </div>
         ) : (
-          memos.map(memo => (
+          filteredMemos.map(memo => (
             <div key={memo.id} style={{ background: 'var(--surface-1)', padding: '20px', borderRadius: '12px', borderLeft: memo.targetUserId ? '4px solid #ef4444' : '4px solid #fde68a', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
               
               {memo.targetUser && (

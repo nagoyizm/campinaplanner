@@ -58,6 +58,7 @@ interface Reservation {
   tax: number
   totalPaid: number
   createdAt: string
+  createdByName?: string | null
 }
 
 export default function ReservasPage() {
@@ -287,6 +288,7 @@ export default function ReservasPage() {
                     <th style={{ textAlign: 'right' }}>Pagado</th>
                     <th style={{ textAlign: 'right' }}>Saldo</th>
                     <th>Estado</th>
+                    <th>Ingresado por</th>
                     <th>Creado</th>
                     <th style={{ textAlign: 'center' }}>Acciones</th>
                   </tr>
@@ -325,6 +327,9 @@ export default function ReservasPage() {
                           <span className={`${styles.statusBadge} ${statusColors[rsv.status]}`}>
                             {statusLabels[rsv.status] ?? rsv.status}
                           </span>
+                        </td>
+                        <td style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
+                          {rsv.createdByName || '—'}
                         </td>
                         <td style={{ fontSize: 11, color: 'var(--text-muted)' }}>
                           {format(new Date(rsv.createdAt), 'dd/MM/yyyy HH:mm')}

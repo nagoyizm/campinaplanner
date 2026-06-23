@@ -64,6 +64,8 @@ export default function AppLayout({ children, title }: AppLayoutProps) {
           <Header title={title} />
           <main className={styles.content}>
             {children}
+            {/* Spacer forzado para asegurar espacio debajo de tablas y listas */}
+            <div style={{ height: '40px', flexShrink: 0, width: '100%' }} aria-hidden="true" />
           </main>
         </div>
       </div>

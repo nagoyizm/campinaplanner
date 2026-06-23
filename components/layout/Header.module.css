@@ -33,6 +33,12 @@
   text-transform: capitalize;
 }
 
+.center {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+
 .right {
   display: flex;
   align-items: center;

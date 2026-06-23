@@ -33,6 +33,8 @@ model Organization {
   auditLogs    AuditLog[]
   saasPayments SaasPayment[]
   memos        Memo[]
+  inventoryItems InventoryItem[]
+  inventoryTransactions InventoryTransaction[]
 }
 
 model User {
@@ -48,11 +50,22 @@ model User {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
+  notifyWspResConf    Boolean @default(false)
+  notifyEmailResConf  Boolean @default(false)
+  notifyWspCheckOut   Boolean @default(false)
+  notifyEmailCheckOut Boolean @default(false)
+  notifyWspCleaning   Boolean @default(false)
+  notifyEmailCleaning Boolean @default(false)
+  notifyWspInvAlert   Boolean @default(false)
+  notifyEmailInvAlert Boolean @default(false)
+
   organization Organization  @relation(fields: [organizationId], references: [id])
   checkIns     Reservation[] @relation("CheckInStaff")
   checkOuts    Reservation[] @relation("CheckOutStaff")
   auditLogs    AuditLog[]
   targetedMemos Memo[]       @relation("TargetUser")
+
+  @@index([organizationId])
 }
 
 model Guest {
@@ -74,6 +87,8 @@ model Guest {
 
   organization Organization   @relation(fields: [organizationId], references: [id])
   reservations Reservation[]
+
+  @@index([organizationId])
 }
 
 model UnitType {
@@ -90,6 +105,8 @@ model UnitType {
   organization Organization @relation(fields: [organizationId], references: [id])
   rooms        Room[]
   rates        Rate[]
+
+  @@index([organizationId])
 }
 
 model Room {
@@ -101,6 +118,8 @@ model Room {
   defaultRateId  String?
   active         Boolean   @default(true)
   cleaningStatus String    @default("clean") // 'clean', 'dirty', 'maintenance'
+  cleaningPriority Boolean @default(false)
+  cleaningNote   String?
   sortOrder      Int       @default(0)
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
@@ -111,6 +130,9 @@ model Room {
   reservationRooms ReservationRoom[]
 
   @@unique([code, organizationId]) // ponytail: two orgs can share "C1"
+  @@index([organizationId])
+  @@index([unitTypeId])
+  @@index([defaultRateId])
 }
 
 model Rate {
@@ -131,6 +153,9 @@ model Rate {
   unitType         UnitType?         @relation(fields: [unitTypeId], references: [id])
   defaultForRooms  Room[]            @relation("DefaultRate")
   reservationRooms ReservationRoom[]
+
+  @@index([organizationId])
+  @@index([unitTypeId])
 }
 
 model Reservation {
@@ -173,6 +198,9 @@ model Reservation {
   guaranteeRsv      String?
   guaranteeGames    String?
 
+  createdByName     String?
+  source            String    @default("Directa")
+
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
 
@@ -184,6 +212,11 @@ model Reservation {
   payments        Payment[]
   extras          Extra[]
   auditLogs       AuditLog[]
+
+  @@index([organizationId])
+  @@index([guestId])
+  @@index([checkInStaffId])
+  @@index([checkOutStaffId])
 }
 
 model ReservationRoom {
@@ -206,6 +239,10 @@ model ReservationRoom {
   reservation   Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
   room          Room        @relation(fields: [roomId], references: [id])
   rate          Rate?       @relation(fields: [rateId], references: [id])
+
+  @@index([reservationId])
+  @@index([roomId])
+  @@index([rateId])
 }
 
 model Payment {
@@ -219,6 +256,8 @@ model Payment {
   createdAt     DateTime  @default(now())
 
   reservation   Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
+
+  @@index([reservationId])
 }
 
 model Extra {
@@ -234,6 +273,9 @@ model Extra {
 
   reservation   Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
   amenity       Amenity?    @relation(fields: [amenityId], references: [id])
+
+  @@index([reservationId])
+  @@index([amenityId])
 }
 
 model Amenity {
@@ -249,6 +291,8 @@ model Amenity {
 
   organization Organization @relation(fields: [organizationId], references: [id])
   extras       Extra[]
+
+  @@index([organizationId])
 }
 
 model AuditLog {
@@ -263,6 +307,10 @@ model AuditLog {
   organization  Organization  @relation(fields: [organizationId], references: [id])
   reservation   Reservation?  @relation(fields: [reservationId], references: [id])
   user          User?         @relation(fields: [userId], references: [id])
+
+  @@index([organizationId])
+  @@index([reservationId])
+  @@index([userId])
 }
 
 model Memo {
@@ -276,6 +324,9 @@ model Memo {
 
   organization Organization @relation(fields: [organizationId], references: [id])
   targetUser   User?        @relation("TargetUser", fields: [targetUserId], references: [id])
+
+  @@index([organizationId])
+  @@index([targetUserId])
 }
 
 // ── SaaS SuperAdmin Models ──────────────────────────────────────
@@ -292,6 +343,8 @@ model SaasPayment {
   updatedAt      DateTime     @updatedAt
 
   organization   Organization @relation(fields: [organizationId], references: [id])
+
+  @@index([organizationId])
 }
 
 model SaasEvent {
@@ -308,4 +361,41 @@ model SaasEvent {
 model WhatsAppSession {
   id    String @id
   data  String @db.Text
+}
+
+model InventoryItem {
+  id              String   @id @default(cuid())
+  organizationId  String
+  name            String
+  category        String   // Ej: 'Limpieza', 'Amenidades', etc.
+  unitCost        Float    // Costo base actual
+  currentQuantity Int      @default(0)
+  minQuantity     Int      @default(0) // Útil a futuro para alertas de stock bajo
+  active          Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  organization    Organization           @relation(fields: [organizationId], references: [id])
+  transactions    InventoryTransaction[]
+
+  @@index([organizationId])
+}
+
+model InventoryTransaction {
+  id              String   @id @default(cuid())
+  organizationId  String
+  itemId          String
+  type            String   // 'purchase' (compra), 'usage' (uso/merma), 'adjustment' (ajuste manual)
+  quantityChange  Int      // Positivo (compras) o Negativo (usos)
+  unitCost        Float    // Costo al momento de la transacción
+  totalCost       Float    // (quantityChange * unitCost). Sirve para sumar gastos.
+  date            DateTime @default(now())
+  notes           String?
+  userId          String?  // Quién hizo el registro
+
+  item            InventoryItem @relation(fields: [itemId], references: [id])
+  organization    Organization  @relation(fields: [organizationId], references: [id])
+
+  @@index([organizationId])
+  @@index([itemId])
 }

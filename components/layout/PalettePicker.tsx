@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { useSession } from 'next-auth/react'
 import { Palette, Check } from 'lucide-react'
 import styles from './PalettePicker.module.css'
@@ -25,6 +26,20 @@ export default function PalettePicker({ currentPalette, collapsed, onPaletteChan
   const role = (session?.user as any)?.role
   const [open, setOpen] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [mounted, setMounted] = useState(false)
+  const triggerRef = useRef<HTMLButtonElement>(null)
+  const [coords, setCoords] = useState({ top: 0, left: 0 })
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  useEffect(() => {
+    if (open && triggerRef.current) {
+      const rect = triggerRef.current.getBoundingClientRect()
+      setCoords({ top: rect.bottom + 8, left: rect.left })
+    }
+  }, [open])
 
   if (role !== 'admin' && role !== 'superadmin') return null
 
@@ -53,6 +68,7 @@ export default function PalettePicker({ currentPalette, collapsed, onPaletteChan
   return (
     <div className={styles.wrapper}>
       <button
+        ref={triggerRef}
         className={styles.trigger}
         onClick={() => setOpen(!open)}
         title="Paleta de colores"
@@ -64,10 +80,10 @@ export default function PalettePicker({ currentPalette, collapsed, onPaletteChan
         )}
       </button>
 
-      {open && (
+      {open && mounted && createPortal(
         <>
           <div className={styles.backdrop} onClick={() => setOpen(false)} />
-          <div className={styles.dropdown}>
+          <div className={styles.dropdown} style={{ top: coords.top, left: coords.left }}>
             <p className={styles.dropdownTitle}>Paleta de colores</p>
             <div className={styles.grid}>
               {PALETTES.map(p => (
@@ -84,7 +100,8 @@ export default function PalettePicker({ currentPalette, collapsed, onPaletteChan
               ))}
             </div>
           </div>
-        </>
+        </>,
+        document.body
       )}
     </div>
   )

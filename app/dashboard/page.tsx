@@ -1,7 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import { requireOrg } from '@/lib/org'
-import { format, startOfDay, endOfDay, addDays, startOfMonth, endOfMonth } from 'date-fns'
-import { es } from 'date-fns/locale'
+import { format } from 'date-fns'
 import { 
   LogIn, 
   LogOut, 
@@ -13,15 +12,8 @@ import {
   FileText, 
   Users, 
   Settings, 
-  ArrowRight,
   Plus,
   Activity,
-  Award,
-  ShieldCheck,
-  Percent,
-  Volume2,
-  Trash2,
-  Moon,
   Clock,
   Sparkles,
   MessageSquare
@@ -63,13 +55,15 @@ function getGreeting(hour: number): string {
 }
 
 export default async function DashboardPage() {
-  const { organizationId } = await requireOrg()
+  const { organizationId, role, name } = await requireOrg()
   const org = await prisma.organization.findUnique({ where: { id: organizationId }, select: { name: true } })
   const orgName = org?.name ?? 'Mi Organización'
+  
+  const userTitle = name ?? (role === 'superadmin' ? 'Administración' : 'Recepción')
   const santiagoToday = getTodayInSantiago()
   const parts = santiagoToday.split('-')
-  const year = parseInt(parts[0])
-  const month = parseInt(parts[1])
+  const year = Number.parseInt(parts[0])
+  const month = Number.parseInt(parts[1])
 
   const todayStart = new Date(`${santiagoToday}T00:00:00.000Z`)
   const todayEnd = new Date(`${santiagoToday}T23:59:59.999Z`)
@@ -87,7 +81,7 @@ export default async function DashboardPage() {
     hour: 'numeric',
     hour12: false,
   })
-  const currentHour = parseInt(formatterHour.format(new Date()))
+  const currentHour = Number.parseInt(formatterHour.format(new Date()))
   const greeting = getGreeting(currentHour)
 
   const santiagoDateWordsRaw = new Intl.DateTimeFormat('es-CL', {
@@ -113,7 +107,7 @@ export default async function DashboardPage() {
     reservationsThisMonth,
     allActiveReservations,
     upcomingArrivals,
-    recentReservations
+    recentReservations,
   ] = await Promise.all([
     // 1. Today's Arrivals
     prisma.reservationRoom.findMany({
@@ -203,7 +197,8 @@ export default async function DashboardPage() {
       },
       orderBy: { createdAt: 'desc' },
       take: 5
-    })
+    }),
+
   ])
 
   // Calculations
@@ -292,7 +287,7 @@ export default async function DashboardPage() {
       {/* Page Header */}
       <div className={styles.header}>
         <div>
-          <h1 className={styles.greeting}>{greeting}, Recepción</h1>
+          <h1 className={styles.greeting}>{greeting}, {userTitle}</h1>
           <p className={styles.subtitle}>
             {santiagoDateWords}
           </p>
@@ -301,6 +296,27 @@ export default async function DashboardPage() {
           <span className={styles.pulseDot}></span>
           <span className={styles.pulseText}>Sistema Online · {orgName}</span>
         </div>
+      </div>
+
+      {/* Quick Actions (Moved to top) */}
+      <div style={{ marginBottom: '12px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+        <Link href="/calendario" className="btn btn-sm" style={{ background: 'var(--brand-500)', color: 'white', border: 'none', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
+          <Plus size={14} /> Nueva Reserva
+        </Link>
+        <Link href="/reportes/financiero" className="btn btn-sm" style={{ background: 'var(--surface-1)', color: 'var(--text-primary)', border: '1px solid var(--border)', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
+          <FileText size={14} /> Reporte Financiero
+        </Link>
+        <Link href="/huespedes" className="btn btn-sm" style={{ background: 'var(--surface-1)', color: 'var(--text-primary)', border: '1px solid var(--border)', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
+          <Users size={14} /> Base de Huéspedes
+        </Link>
+        <Link href="/setup/tarifas" className="btn btn-sm" style={{ background: 'var(--surface-1)', color: 'var(--text-primary)', border: '1px solid var(--border)', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
+          <Settings size={14} /> Configuración
+        </Link>
+        {role === 'superadmin' && (
+          <Link href="/simulador" className="btn btn-sm" style={{ background: 'var(--surface-1)', color: 'var(--text-primary)', border: '1px solid var(--border)', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
+            <MessageSquare size={14} /> Simulador
+          </Link>
+        )}
       </div>
 
       {/* KPI Grid */}
@@ -441,69 +457,6 @@ export default async function DashboardPage() {
               </span>
             </div>
           </div>
-        </div>
-      </div>
-
-      {/* Quick Actions Grid */}
-      <div className={styles.actionsSection}>
-        <h2 className={styles.sectionTitle}>
-          <Activity size={18} style={{ color: 'var(--brand-500)' }} /> Acciones Rápidas
-        </h2>
-        <div className={styles.actionsGrid}>
-          <Link href="/calendario" className={styles.actionButton}>
-            <div className={`${styles.actionIcon} ${styles.bgBrand}`}>
-              <Plus size={20} />
-            </div>
-            <div>
-              <span className={styles.actionTitle}>Nueva Reserva</span>
-              <span className={styles.actionDesc}>Ir al Calendario interactivo</span>
-            </div>
-            <ArrowRight size={16} className={styles.actionArrow} />
-          </Link>
-
-          <Link href="/reportes/financiero" className={styles.actionButton}>
-            <div className={`${styles.actionIcon} ${styles.bgGold}`}>
-              <FileText size={20} />
-            </div>
-            <div>
-              <span className={styles.actionTitle}>Reporte Financiero</span>
-              <span className={styles.actionDesc}>Ver ingresos, pagos y deudas</span>
-            </div>
-            <ArrowRight size={16} className={styles.actionArrow} />
-          </Link>
-
-          <Link href="/huespedes" className={styles.actionButton}>
-            <div className={`${styles.actionIcon} ${styles.bgSuccess}`}>
-              <Users size={20} />
-            </div>
-            <div>
-              <span className={styles.actionTitle}>Base de Huéspedes</span>
-              <span className={styles.actionDesc}>Clientes, notas e historial</span>
-            </div>
-            <ArrowRight size={16} className={styles.actionArrow} />
-          </Link>
-
-          <Link href="/setup/tarifas" className={styles.actionButton}>
-            <div className={`${styles.actionIcon} ${styles.bgMuted}`}>
-              <Settings size={20} />
-            </div>
-            <div>
-              <span className={styles.actionTitle}>Configuración (Setup)</span>
-              <span className={styles.actionDesc}>Tarifas, habitaciones y usuarios</span>
-            </div>
-            <ArrowRight size={16} className={styles.actionArrow} />
-          </Link>
-
-          <Link href="/simulador" className={styles.actionButton}>
-            <div className={`${styles.actionIcon} ${styles.bgBrand}`} style={{ backgroundColor: '#2d7d46' }}>
-              <MessageSquare size={20} />
-            </div>
-            <div>
-              <span className={styles.actionTitle}>Simulador de Bot</span>
-              <span className={styles.actionDesc}>Probar reservas automáticas de WhatsApp</span>
-            </div>
-            <ArrowRight size={16} className={styles.actionArrow} />
-          </Link>
         </div>
       </div>
 
@@ -699,7 +652,7 @@ export default async function DashboardPage() {
                           <div>
                             <span className={styles.rsvNumber}>Rsv #{rsv.id}</span>
                             <span className={styles.recentTime}>
-                              {format(new Date(rsv.createdAt), 'dd/MM HH:mm')}
+                              {format(new Date(rsv.createdAt), 'dd/MM HH:mm')} · {rsv.createdByName || 'Sistema'}
                             </span>
                           </div>
                           <span className={`${styles.statusBadge} ${statusColors[rsv.status]}`}>
@@ -730,70 +683,7 @@ export default async function DashboardPage() {
             </div>
           </div>
 
-          {/* Extended Reports Section (Phase 8 Multi-Report Ecosystem) */}
-          <div className={`card ${styles.dashboardCard}`} style={{ marginTop: 20 }}>
-            <div className="card-header">
-              <h3 className={styles.cardTitle}>
-                <FileText size={18} style={{ color: 'var(--brand-500)' }} /> Ecosistema de Reportes (Extendible)
-              </h3>
-            </div>
-            <div className="card-body" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              <p className={styles.extendibleText}>
-                La Campiña Planner cuenta con un ecosistema de analíticas estructurado de forma modular y altamente escalable para futuras incorporaciones.
-              </p>
-              
-              <div className={styles.reportList}>
-                {/* 1. Reporte Financiero */}
-                <div className={styles.reportItem}>
-                  <div className={styles.reportMeta}>
-                    <span className={styles.reportIconBg} style={{ background: '#eab30820', color: '#eab308' }}>
-                      <DollarSign size={16} />
-                    </span>
-                    <div>
-                      <p className={styles.reportItemTitle}>1. Reporte Financiero y Contable</p>
-                      <p className={styles.reportItemDesc}>Análisis detallado de facturación, cobros, descuentos y exportación completa a Excel y PDF.</p>
-                    </div>
-                  </div>
-                  <Link href="/reportes/financiero" className={styles.reportLink}>
-                    Ver <ArrowRight size={12} />
-                  </Link>
-                </div>
-
-                {/* 2. Reporte de Huéspedes */}
-                <div className={styles.reportItem}>
-                  <div className={styles.reportMeta}>
-                    <span className={styles.reportIconBg} style={{ background: '#10b98120', color: '#10b981' }}>
-                      <Users size={16} />
-                    </span>
-                    <div>
-                      <p className={styles.reportItemTitle}>2. Reporte de Pasajeros (Extensible)</p>
-                      <p className={styles.reportItemDesc}>Métricas de clientes frecuentes, orígenes nacionales, perfiles de conducta y estadísticas de estadía.</p>
-                    </div>
-                  </div>
-                  <span className={styles.devBadge}>Listo</span>
-                </div>
-
-                {/* 3. Reporte de Servicios */}
-                <div className={styles.reportItem}>
-                  <div className={styles.reportMeta}>
-                    <span className={styles.reportIconBg} style={{ background: '#3b82f620', color: '#3b82f6' }}>
-                      <Activity size={16} />
-                    </span>
-                    <div>
-                      <p className={styles.reportItemTitle}>3. Venta de Extras y Amenities (Extensible)</p>
-                      <p className={styles.reportItemDesc}>Venta de leña, desayunos contratados, early check-in/late check-out facturados por período.</p>
-                    </div>
-                  </div>
-                  <span className={styles.devBadge}>Listo</span>
-                </div>
-              </div>
-
-              <div className={styles.reportFooter}>
-                <Award size={14} style={{ color: 'var(--brand-500)' }} />
-                <span>Estructura preparada para integración de gráficos estadísticos en tiempo real.</span>
-              </div>
-            </div>
-          </div>
+          {/* Extended Reports Section Removed as requested */}
 
         </div>
 

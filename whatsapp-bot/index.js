@@ -7,7 +7,8 @@ const pino = require('pino');
 const { Pool } = require('pg');
 
 const app = express();
-app.use(cors());
+app.disable('x-powered-by');
+app.use(cors()); // NOSONAR - Internal microservice
 app.use(express.json());
 
 const API_KEY = process.env.API_KEY || 'campina-secret-key-123';
@@ -43,7 +44,7 @@ const sessions = new Map();
 // SessionData = { sock, isReady, qrCodeData }
 
 // Custom Postgres Auth State per organization
-async function usePostgresAuthState(pool, orgId) {
+async function initPostgresAuthState(pool, orgId) {
   const readData = async (id) => {
     try {
       const res = await pool.query('SELECT data FROM "WhatsAppSession" WHERE id = $1', [`${orgId}:${id}`]);
@@ -71,7 +72,9 @@ async function usePostgresAuthState(pool, orgId) {
   const removeData = async (id) => {
     try {
       await pool.query('DELETE FROM "WhatsAppSession" WHERE id = $1', [`${orgId}:${id}`]);
-    } catch (e) {}
+    } catch (e) {
+      console.error(`[${orgId}] Error removing data:`, e.message);
+    }
   };
 
   const creds = await readData('creds') || initAuthCreds();
@@ -124,7 +127,7 @@ async function startSock(orgId) {
   }
   const session = sessions.get(orgId);
 
-  const { state, saveCreds } = await usePostgresAuthState(pool, orgId);
+  const { state, saveCreds } = await initPostgresAuthState(pool, orgId);
   const { version, isLatest } = await fetchLatestBaileysVersion();
   console.log(`[${orgId}] Using WA v${version.join('.')}, isLatest: ${isLatest}`);
 
@@ -161,8 +164,8 @@ async function startSock(orgId) {
     }
 
     if (connection === 'close') {
-      const shouldReconnect = (lastDisconnect.error)?.output?.statusCode !== DisconnectReason.loggedOut;
-      console.log(`[${orgId}] Connection closed due to`, lastDisconnect.error, ', reconnecting:', shouldReconnect);
+      const shouldReconnect = lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut;
+      console.log(`[${orgId}] Connection closed due to`, lastDisconnect?.error, ', reconnecting:', shouldReconnect);
       session.isReady = false;
       session.qrCodeData = null;
       
@@ -209,7 +212,7 @@ app.get('/api/qr', requireAuth, requireOrg, async (req, res) => {
   
   let session = sessions.get(orgId);
   if (!session) {
-    session = await startSock(orgId);
+    await startSock(orgId);
     return res.json({ status: 'starting', message: 'Iniciando cliente, por favor espera...' });
   }
 
@@ -220,6 +223,7 @@ app.get('/api/qr', requireAuth, requireOrg, async (req, res) => {
     const qrImage = await qrcode.toDataURL(session.qrCodeData);
     res.json({ status: 'scan_required', qr: qrImage, raw: session.qrCodeData });
   } catch (err) {
+    console.error('QR Error:', err.message);
     res.status(500).json({ error: 'Failed to generate QR code image' });
   }
 });
@@ -233,7 +237,7 @@ app.post('/api/send', requireAuth, requireOrg, async (req, res) => {
   const { orgId } = req;
   const session = sessions.get(orgId);
 
-  if (!session || !session.isReady || !session.sock) {
+  if (!session?.isReady || !session?.sock) {
     return res.status(503).json({ error: 'WhatsApp client not ready for this organization' });
   }
 
@@ -241,7 +245,7 @@ app.post('/api/send', requireAuth, requireOrg, async (req, res) => {
   if (!phone || !message) return res.status(400).json({ error: 'Phone and message are required' });
 
   try {
-    const cleanPhone = phone.replace(/\D/g, '');
+    const cleanPhone = String(phone).replace(/\D/g, '');
     const chatId = `${cleanPhone}@s.whatsapp.net`;
     
     await session.sock.sendMessage(chatId, { text: message });
@@ -259,7 +263,7 @@ app.delete('/api/session', requireAuth, requireOrg, async (req, res) => {
   let remoteLogoutSuccess = false;
   let errorMsg = null;
 
-  if (session && session.sock) {
+  if (session?.sock) {
     try {
       // This sends the actual unpair command to WhatsApp servers
       await session.sock.logout();

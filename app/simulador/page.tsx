@@ -1,23 +1,15 @@
-/* eslint-disable */
+/* eslint-disable @typescript-eslint/no-explicit-any, react/no-danger */
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
 import { 
   Send, 
   Bot, 
-  User, 
   MessageSquare, 
   RotateCcw, 
-  HelpCircle, 
   Sparkles,
   ArrowRight,
   Database,
-  Calendar,
-  CheckCircle,
-  AlertTriangle,
-  Play,
-  Moon,
-  Volume2
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import styles from './simulador.module.css'
@@ -82,7 +74,7 @@ export default function SimuladorPage() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ message: 'Hola', state: { step: 'start' } })
         })
-        if (!res.ok) throw new Error()
+        if (!res.ok) throw new Error('Chatbot init failed')
         const data = await res.json()
         setMessages([
           {
@@ -94,6 +86,7 @@ export default function SimuladorPage() {
         ])
         setChatState(data.state)
       } catch (err) {
+        console.error('[chatbot] init error:', err)
         toast.error('Error al inicializar el chatbot')
         setMessages([
           {
@@ -158,6 +151,7 @@ export default function SimuladorPage() {
         toast.success(`¡Reserva #${data.reservationId} creada con éxito! 🎉`, { duration: 5000 })
       }
     } catch (err) {
+      console.error('[chatbot] send error:', err)
       toast.error('El chatbot tuvo un problema al responder')
       setMessages(prev => [
         ...prev,
@@ -196,6 +190,7 @@ export default function SimuladorPage() {
       setChatState(data.state)
       toast.success('Conversación reiniciada')
     } catch (err) {
+      console.error('[chatbot] reset error:', err)
       toast.error('No se pudo reiniciar')
     } finally {
       setBotTyping(false)
@@ -205,18 +200,24 @@ export default function SimuladorPage() {
   // Parse markdown-like **bold** text and split into blocks
   const formatMessageText = (text: string) => {
     if (!text) return ''
-    // Convert **bold** to html strong
-    let html = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-    // Convert *italic* to html em
+    // Strip any pre-existing HTML tags from server text, then apply only bold/italic
+    // ponytail: bot text is server-controlled but we sanitize defensively
+    const stripped = text.replace(/<[^>]*>/g, '')
+    let html = stripped.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
     html = html.replace(/\*(.*?)\*/g, '<em>$1</em>')
-    
-    return html.split('\n').map((line, idx) => (
-      <span 
-        key={idx} 
-        dangerouslySetInnerHTML={{ __html: line }} 
-        style={{ display: 'block', minHeight: line === '' ? '12px' : 'auto' }} 
-      />
-    ))
+
+    return html.split('\n').map((line, idx) => {
+      // ponytail: lines come from splitting bot text — no stable ID exists
+      // eslint-disable-next-line react/no-array-index-key
+      return (
+        <span
+          key={`line-${idx}`}
+          // eslint-disable-next-line react/no-danger
+          dangerouslySetInnerHTML={{ __html: line }}
+          style={{ display: 'block', minHeight: line === '' ? '12px' : 'auto' }}
+        />
+      )
+    })
   }
 
   // Chat Suggestion Chips
@@ -317,18 +318,19 @@ export default function SimuladorPage() {
             {messages.map((msg) => {
               const isBot = msg.sender === 'bot'
               const isSys = msg.sender === 'system'
+              let rowClass = styles.rowUser
+              if (isBot) rowClass = styles.rowBot
+              else if (isSys) rowClass = styles.rowSys
+
+              let bubbleClass = styles.bubbleUser
+              if (isBot) bubbleClass = styles.bubbleBot
+              else if (isSys) bubbleClass = styles.bubbleSys
               return (
-                <div 
-                  key={msg.id} 
-                  className={`
-                    ${styles.messageRow} 
-                    ${isBot ? styles.rowBot : isSys ? styles.rowSys : styles.rowUser}
-                  `}
+                <div
+                  key={msg.id}
+                  className={`${styles.messageRow} ${rowClass}`}
                 >
-                  <div className={`
-                    ${styles.messageBubble} 
-                    ${isBot ? styles.bubbleBot : isSys ? styles.bubbleSys : styles.bubbleUser}
-                  `}>
+                  <div className={`${styles.messageBubble} ${bubbleClass}`}>
                     <div className={styles.messageText}>
                       {formatMessageText(msg.text)}
                     </div>
@@ -355,9 +357,9 @@ export default function SimuladorPage() {
 
           {/* Suggestions Bar */}
           <div className={styles.suggestionsBar}>
-            {getSuggestions().map((sug, idx) => (
-              <button 
-                key={idx} 
+            {getSuggestions().map((sug) => (
+              <button
+                key={sug}
                 className={styles.suggestionChip}
                 onClick={() => handleSend(sug)}
                 disabled={botTyping}
@@ -432,11 +434,11 @@ export default function SimuladorPage() {
                 <div className={styles.dataRow}>
                   <span>Pasajeros:</span>
                   <strong>
-                    {chatState.adults !== undefined ? (
+                    {chatState.adults === undefined ? '—' : (
                       <span className={styles.dataExtracted}>
                         {chatState.adults}A, {chatState.children || 0}N, {chatState.pets || 0}M
                       </span>
-                    ) : '—'}
+                    )}
                   </strong>
                 </div>
 

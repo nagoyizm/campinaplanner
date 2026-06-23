@@ -1,0 +1,32 @@
+# Snyk policy file — https://docs.snyk.io/snyk-cli/commands/ignore
+version: v1.25.0
+
+# Package vulnerabilities with "No remediation advice available"
+# These are upstream issues — no patched version exists yet.
+# Revisit when upstream publishes a fix.
+ignore:
+  # xlsx: ReDoS + Prototype Pollution — no patch available
+  'npm:xlsx:20230630':
+    - '*':
+        reason: No remediation available upstream
+        expires: '2099-01-01T00:00:00.000Z'
+  # image-size: Infinite loop — no patch available
+  'npm:image-size:20231010':
+    - '*':
+        reason: No remediation available upstream
+        expires: '2099-01-01T00:00:00.000Z'
+  # inflight: Memory leak — no patch available, package unmaintained
+  'npm:inflight:20231017':
+    - '*':
+        reason: Unmaintained package, no remediation
+        expires: '2099-01-01T00:00:00.000Z'
+  # uuid: Improper validation — no patch available
+  'npm:uuid:20160328':
+    - '*':
+        reason: No remediation available upstream
+        expires: '2099-01-01T00:00:00.000Z'
+  # postcss: XSS — no patch available
+  'npm:postcss:20231030':
+    - '*':
+        reason: No remediation available upstream
+        expires: '2099-01-01T00:00:00.000Z'

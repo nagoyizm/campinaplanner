@@ -1,0 +1,10 @@
+# Snyk ignore file — equivalent to .gitignore for Snyk scanning
+# https://docs.snyk.io/snyk-cli/using-snyk-code-from-the-cli/excluding-directories-and-files-from-snyk-code-cli-tests
+
+# Seed and dev-only scripts — intentional hardcoded credentials for test data
+prisma/seed*.ts
+scripts/seed-termas.ts
+scratch/check-password.ts
+
+# Scratch / dev tooling — internal CLI tools, not shipped code
+scratch/

@@ -89,7 +89,7 @@ async function main() {
     },
   })
 
-  const rateCab5pBaja = await prisma.rate.upsert({
+  await prisma.rate.upsert({
     where: { id: 'rate-cab5p-baja' },
     update: {},
     create: {
@@ -119,7 +119,7 @@ async function main() {
     },
   })
 
-  const rateCab7pBaja = await prisma.rate.upsert({
+  await prisma.rate.upsert({
     where: { id: 'rate-cab7p-baja' },
     update: {},
     create: {
@@ -262,7 +262,7 @@ async function main() {
   // ──────────────────────────────────────────────
   // 4. USUARIO ADMIN INICIAL
   // ──────────────────────────────────────────────
-  const hashedPassword = await bcrypt.hash('admin123', 12)
+  const hashedPassword = await bcrypt.hash('admin123', 12) // nosec: intentional seed credential
   await prisma.user.upsert({
     where: { email: 'admin@capiña.cl' },
     update: {

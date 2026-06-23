@@ -28,7 +28,7 @@ async function main() {
   console.log('✔ Organización Termas del Sur creada.')
 
   // 2. Crear Usuarios (Admin, Recepción, Empleado)
-  const pwd = await hash('termas123', 10)
+  const pwd = await hash('termas123', 10) // nosec: intentional seed credential
   await prisma.user.createMany({
     data: [
       { name: 'Admin Termas', email: 'admin@termas.cl', password: pwd, role: 'admin', roleName: 'Administrador', organizationId: orgId },
@@ -118,28 +118,36 @@ async function main() {
       else if (arrival <= TODAY && departure > TODAY) status = 'checked_in'
 
       const isSuite = room.unitTypeId === utSuite.id
-      const price = isSuite ? 95000 : (isHighSeason ? 120000 : 80000)
+      const cabinPrice = isHighSeason ? 120000 : 80000
+      const price = isSuite ? 95000 : cabinPrice
       const unitTotal = price * stayDays
+
+      const adults = isSuite ? 2 : 4
+      const children = isSuite ? 0 : 2
+      const rateId = isSuite ? rateSuite.id : (isHighSeason ? rateAlta.id : rateBaja.id)
+      let totalPaid = 0
+      if (status === 'checked_out') totalPaid = unitTotal
+      else if (status === 'checked_in') totalPaid = unitTotal / 2
 
       await prisma.reservation.create({
         data: {
           organizationId: orgId,
           guestId: guest.id,
           status: status,
-          adults: isSuite ? 2 : 4,
-          children: isSuite ? 0 : 2,
+          adults,
+          children,
           unitTotal: unitTotal,
-          totalPaid: status === 'checked_out' ? unitTotal : (status === 'checked_in' ? unitTotal / 2 : 0),
+          totalPaid,
           rooms: {
             create: {
               roomId: room.id,
               arrival: arrival,
               departure: departure,
               nights: stayDays,
-              adults: isSuite ? 2 : 4,
-              children: isSuite ? 0 : 2,
+              adults,
+              children,
               unitTotal: unitTotal,
-              rateId: isSuite ? rateSuite.id : (isHighSeason ? rateAlta.id : rateBaja.id)
+              rateId
             }
           }
         }

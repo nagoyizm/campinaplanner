@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useRef, Fragment, useEffect } from 'react'
+import { useState, useCallback, useRef, Fragment, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   format, addDays, addMonths, startOfMonth,
@@ -12,12 +12,13 @@ import {
   ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, RotateCcw,
   Plus, RefreshCw, Printer, Crown, Volume2,
   Trash2, AlertTriangle, Star, Dog, Clock, Sunrise,
-  Repeat, Loader2, ShieldCheck, ShieldAlert
+  Repeat, Loader2, ShieldCheck, ShieldAlert, Filter
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import styles from './Calendario.module.css'
 import ReservaModal from '@/components/reservas/ReservaModal'
 import QuickReservaModal from '@/components/reservas/QuickReservaModal'
+import BloqueoModal from '@/components/reservas/BloqueoModal'
 
 // ── Types ────────────────────────────────────────────────────────
 interface Room {
@@ -106,8 +107,12 @@ export default function CalendarioClient({ rooms, reservas, fechaBase, todayStr 
   } | null>(null)
   const [selectedReservaId, setSelectedReservaId] = useState<number | null>(null)
   const [quickModalRsv, setQuickModalRsv] = useState<any>(null)
-  const [dragStart, setDragStart] = useState<{ roomId: string; date: Date } | null>(null)
-  const [dragEnd, setDragEnd] = useState<Date | null>(null)
+  const [actionSelectModalOpen, setActionSelectModalOpen] = useState<{ roomId: string; date: Date } | null>(null)
+  const [bloqueoModalOpen, setBloqueoModalOpen] = useState<{ roomId: string; date: Date } | null>(null)
+  
+  // Pan states
+  const [panStart, setPanStart] = useState<{ x: number; date: Date } | null>(null)
+  const panAccumulator = useRef(0)
   const [refreshing, setRefreshing] = useState(false)
   const [hoverRsv, setHoverRsv] = useState<{ rsv: ReservationRoom; x: number; y: number } | null>(null)
 
@@ -124,26 +129,35 @@ export default function CalendarioClient({ rooms, reservas, fechaBase, todayStr 
   const [rescheduling, setRescheduling] = useState(false)
   const clickStartRef = useRef<{ x: number; y: number } | null>(null)
 
+  // Filters state
+  const [statusFilter, setStatusFilter] = useState<string[]>([])
+  const [isRoomFilterOpen, setIsRoomFilterOpen] = useState(false)
+  const unitTypes = useMemo(() => Array.from(
+    new Map(rooms.map(r => [r.unitType.id, r.unitType])).values()
+  ), [rooms])
+  const [unitTypeFilter, setUnitTypeFilter] = useState<string[]>(() => unitTypes.map(u => u.id))
+
+  const visibleReservas = useMemo(() => {
+    if (statusFilter.length === 0) return reservas
+    return reservas.filter(r => statusFilter.includes(r.reservation.status))
+  }, [reservas, statusFilter])
+
   // Is this day "Today" in Santiago?
   const isTodaySantiago = useCallback((d: Date) => {
     return isSameDay(d, parseUTCDate(todayStr))
   }, [todayStr])
 
   // Generate days array
-  const daysToShow = viewMode === 'month' ? getDaysInMonth(currentDate) : 7
-  const startDay = viewMode === 'month' ? startOfMonth(currentDate) : startOfWeek(currentDate, { weekStartsOn: 1 })
+  // Siempre 30 días, comenzando 3 días antes de la fecha base (currentDate)
+  const daysToShow = viewMode === 'month' ? 30 : 7
+  const startDay = viewMode === 'month' ? addDays(currentDate, -3) : startOfWeek(currentDate, { weekStartsOn: 1 })
   const days = Array.from({ length: daysToShow }, (_, i) => addDays(startDay, i))
-
-  // Group rooms by unit type
-  const unitTypes = Array.from(
-    new Map(rooms.map(r => [r.unitType.id, r.unitType])).values()
-  )
 
   // Find reservations for a specific room/day
   const getReservationForCell = useCallback(
     (roomId: string, day: Date): ReservationRoom | null => {
       return (
-        reservas.find((r) => {
+        visibleReservas.find((r) => {
           if (r.roomId !== roomId) return false
           const arr = parseUTCDate(r.arrival)
           const dep = parseUTCDate(r.departure)
@@ -155,7 +169,7 @@ export default function CalendarioClient({ rooms, reservas, fechaBase, todayStr 
         }) ?? null
       )
     },
-    [reservas]
+    [visibleReservas]
   )
 
   // Is this the first day of a reservation block?
@@ -194,6 +208,11 @@ export default function CalendarioClient({ rooms, reservas, fechaBase, todayStr 
     setCurrentDate(newDate)
     router.push(`/calendario?fecha=${format(newDate, 'yyyy-MM-dd')}`)
   }
+  const goToPrev14 = () => setCurrentDate(prev => addDays(prev, -14))
+  const goToPrev7 = () => setCurrentDate(prev => addDays(prev, -7))
+  const goToNext7 = () => setCurrentDate(prev => addDays(prev, 7))
+  const goToNext14 = () => setCurrentDate(prev => addDays(prev, 14))
+
   const goToToday = () => {
     const today = new Date()
     setCurrentDate(today)
@@ -206,33 +225,27 @@ export default function CalendarioClient({ rooms, reservas, fechaBase, todayStr 
     setTimeout(() => setRefreshing(false), 800)
   }
 
-  // ── Cell click → new reservation ─────────────────────────────
+  // ── Cell click → Open Action Selector ─────────────────────────────
   const handleCellClick = (roomId: string, day: Date, existingRsv: ReservationRoom | null) => {
+    // Si estábamos haciendo pan y movimos el mouse, no hacemos clic
+    if (panStart && Math.abs(panAccumulator.current) > 5) return;
+    
     if (existingRsv) {
-      // Open quick modal
       setQuickModalRsv(existingRsv.reservation)
     } else {
-      // New reservation
-      setSelectedReservaId(null)
-      setSelectedCell({
-        roomId,
-        arrival: day,
-        departure: addDays(day, 1),
-      })
-      setModalOpen(true)
+      setActionSelectModalOpen({ roomId, date: day })
     }
   }
 
-  // ── Drag to select range ──────────────────────────────────────
-  const handleMouseDown = (roomId: string, day: Date) => {
-    setDragStart({ roomId, date: day })
-    setDragEnd(day)
+  // ── Pan/Drag to scroll ──────────────────────────────────────
+  const handleMouseDown = (e: React.MouseEvent, roomId: string, day: Date) => {
+    // Only if left click
+    if (e.button !== 0) return
+    setPanStart({ x: e.clientX, date: currentDate })
+    panAccumulator.current = 0
   }
 
   const handleMouseEnter = (roomId: string, day: Date) => {
-    if (dragStart && dragStart.roomId === roomId) {
-      setDragEnd(day)
-    }
     if (activeDrag) {
       setActiveDrag(prev => {
         if (!prev) return null
@@ -245,30 +258,59 @@ export default function CalendarioClient({ rooms, reservas, fechaBase, todayStr 
     }
   }
 
-  const handleMouseUp = (roomId: string, day: Date) => {
-    if (dragStart && dragStart.roomId === roomId) {
-      const start = dragStart.date < day ? dragStart.date : day
-      const end = dragStart.date < day ? day : dragStart.date
-      const existingRsv = getReservationForCell(roomId, start)
-      if (!existingRsv) {
-        setSelectedCell({
-          roomId,
-          arrival: start,
-          departure: addDays(end, 1),
-        })
-        setSelectedReservaId(null)
-        setModalOpen(true)
+  useEffect(() => {
+    const handleGlobalMouseMove = (e: MouseEvent) => {
+      if (!panStart) return
+      const diffX = e.clientX - panStart.x
+      panAccumulator.current = diffX
+      const daysShift = -Math.round(diffX / 46)
+      if (daysShift !== 0) {
+        setCurrentDate(addDays(panStart.date, daysShift))
       }
     }
-    setDragStart(null)
-    setDragEnd(null)
-  }
+    const handleGlobalMouseUp = () => {
+      if (panStart) {
+        setTimeout(() => setPanStart(null), 0) // Delay to prevent click
+      }
+    }
+
+    if (panStart) {
+      window.addEventListener('mousemove', handleGlobalMouseMove)
+      window.addEventListener('mouseup', handleGlobalMouseUp)
+      return () => {
+        window.removeEventListener('mousemove', handleGlobalMouseMove)
+        window.removeEventListener('mouseup', handleGlobalMouseUp)
+      }
+    }
+  }, [panStart])
+
+  // Wheel to scroll
+  useEffect(() => {
+    const handleWheel = (e: WheelEvent) => {
+      if (modalOpen || actionSelectModalOpen || bloqueoModalOpen || quickModalRsv) return; // Prevent when modals are open
+      
+      // Prevent native scroll to use wheel for date shifting
+      e.preventDefault();
+      
+      // Use deltaX if available, otherwise use deltaY (standard mouse wheel)
+      const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+      panAccumulator.current += delta;
+      
+      if (Math.abs(panAccumulator.current) >= 30) {
+        const daysShift = Math.round(panAccumulator.current / 30);
+        setCurrentDate(prev => addDays(prev, daysShift));
+        panAccumulator.current = 0;
+      }
+    }
+    const gridEl = document.getElementById('calendario-grid-wrapper')
+    if (gridEl) {
+      gridEl.addEventListener('wheel', handleWheel, { passive: false })
+      return () => gridEl.removeEventListener('wheel', handleWheel)
+    }
+  }, [modalOpen, actionSelectModalOpen, bloqueoModalOpen, quickModalRsv])
 
   const isDragSelected = (roomId: string, day: Date) => {
-    if (!dragStart || !dragEnd || dragStart.roomId !== roomId) return false
-    const s = dragStart.date < dragEnd ? dragStart.date : dragEnd
-    const e = dragStart.date < dragEnd ? dragEnd : dragStart.date
-    return day >= s && day <= e
+    return false // Removed legacy drag selection
   }
 
   // Rescheduling/Resizing handlers
@@ -491,16 +533,28 @@ export default function CalendarioClient({ rooms, reservas, fechaBase, todayStr 
             >Semana</button>
           </div>
 
-          <button className="btn btn-secondary btn-sm" onClick={goToPrev} id="cal-prev" title="Anterior">
-            <ChevronLeft size={16} />
+          <button className="btn btn-secondary btn-sm" onClick={goToPrev} id="cal-prev" title="- 1 Mes">
+            <ChevronsLeft size={16} />
+          </button>
+          <button className="btn btn-secondary btn-sm" onClick={goToPrev14} title="- 14 Días" style={{ fontSize: '11px', padding: '0 6px' }}>
+            -14d
+          </button>
+          <button className="btn btn-secondary btn-sm" onClick={goToPrev7} title="- 7 Días" style={{ fontSize: '11px', padding: '0 6px' }}>
+            -7d
           </button>
           <span className={styles.monthLabel}>
             {viewMode === 'month' 
               ? format(currentDate, 'MMMM yyyy', { locale: es })
               : `${format(startDay, 'd MMM', { locale: es })} - ${format(addDays(startDay, 6), 'd MMM yyyy', { locale: es })}`}
           </span>
-          <button className="btn btn-secondary btn-sm" onClick={goToNext} id="cal-next" title="Siguiente">
-            <ChevronRight size={16} />
+          <button className="btn btn-secondary btn-sm" onClick={goToNext7} title="+ 7 Días" style={{ fontSize: '11px', padding: '0 6px' }}>
+            +7d
+          </button>
+          <button className="btn btn-secondary btn-sm" onClick={goToNext14} title="+ 14 Días" style={{ fontSize: '11px', padding: '0 6px' }}>
+            +14d
+          </button>
+          <button className="btn btn-secondary btn-sm" onClick={goToNext} id="cal-next" title="+ 1 Mes">
+            <ChevronsRight size={16} />
           </button>
           <button className="btn btn-secondary btn-sm" onClick={goToToday} id="cal-today">
             Hoy
@@ -522,15 +576,69 @@ export default function CalendarioClient({ rooms, reservas, fechaBase, todayStr 
       </div>
 
       {/* ── Calendar Grid ── */}
-      <div className={styles.gridWrapper}>
+      <div className={styles.gridWrapper} id="calendario-grid-wrapper">
         <div
           className={styles.grid}
           style={{ gridTemplateColumns: `130px repeat(${daysToShow}, minmax(46px, 1fr))` }}
-          onMouseLeave={() => { setDragStart(null); setDragEnd(null) }}
         >
           {/* ── Header Row ── */}
-          <div className={styles.cornerCell}>
-            <span className={styles.cornerText}>Habitación</span>
+          <div className={styles.cornerCell} style={{ padding: '8px' }}>
+            <button 
+              onClick={() => setIsRoomFilterOpen(!isRoomFilterOpen)}
+              style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                width: '100%', padding: '6px 8px', borderRadius: '8px',
+                background: unitTypeFilter.length === unitTypes.length ? 'var(--surface-2)' : 'var(--brand-50)',
+                border: unitTypeFilter.length === unitTypes.length ? '1px solid var(--border)' : '1px solid var(--brand-200)',
+                color: unitTypeFilter.length === unitTypes.length ? 'var(--text-primary)' : 'var(--brand-700)',
+                cursor: 'pointer', transition: 'all 0.2s', fontWeight: 600, fontSize: '13px'
+              }}
+              onMouseEnter={(e) => {
+                if (unitTypeFilter.length === unitTypes.length) {
+                  e.currentTarget.style.background = 'var(--surface-3)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (unitTypeFilter.length === unitTypes.length) {
+                  e.currentTarget.style.background = 'var(--surface-2)';
+                }
+              }}
+            >
+              <span>Habitación</span>
+              <Filter size={14} style={{ opacity: unitTypeFilter.length === unitTypes.length ? 0.5 : 1 }} />
+            </button>
+            {isRoomFilterOpen && (
+              <>
+                <div 
+                  style={{ position: 'fixed', inset: 0, zIndex: 90 }} 
+                  onClick={() => setIsRoomFilterOpen(false)} 
+                />
+                <div style={{
+                  position: 'absolute', top: '100%', left: 0, 
+                  background: 'var(--surface-1)', border: '1px solid var(--border)', 
+                  borderRadius: 8, padding: 12, zIndex: 9999,
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                  minWidth: 200, display: 'flex', flexDirection: 'column', gap: 8
+                }}>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 4 }}>Filtrar Tipos</div>
+                  {unitTypes.map(ut => (
+                    <label key={ut.id} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, cursor: 'pointer' }}>
+                      <input 
+                        type="checkbox" 
+                        checked={unitTypeFilter.includes(ut.id)}
+                        onChange={(e) => {
+                          setUnitTypeFilter(prev => {
+                            if (e.target.checked) return [...prev, ut.id]
+                            return prev.filter(id => id !== ut.id)
+                          })
+                        }}
+                      />
+                      {ut.name}
+                    </label>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
           {days.map((day) => (
             <div
@@ -543,7 +651,7 @@ export default function CalendarioClient({ rooms, reservas, fechaBase, todayStr 
           ))}
 
           {/* ── Room Rows ── */}
-          {unitTypes.map((ut) => {
+          {unitTypes.filter(ut => unitTypeFilter.includes(ut.id)).map((ut) => {
             const unitRooms = rooms.filter(r => r.unitTypeId === ut.id)
             return (
               <Fragment key={`ut-group-${ut.id}`}>
@@ -631,9 +739,8 @@ export default function CalendarioClient({ rooms, reservas, fechaBase, todayStr 
                             ${isPreviewCell ? styles.dragSelected : ''}
                           `}
                           onClick={() => !activeDrag && handleCellClick(room.id, day, rsv)}
-                          onMouseDown={() => !rsv && !activeDrag && handleMouseDown(room.id, day)}
+                          onMouseDown={(e) => !rsv && !activeDrag && handleMouseDown(e, room.id, day)}
                           onMouseEnter={() => handleMouseEnter(room.id, day)}
-                          onMouseUp={() => !activeDrag && handleMouseUp(room.id, day)}
                         >
                           {/* Original Reservation Block (hide if being dragged/resized) */}
                           {rsv && isFirst && status && (!activeDrag || activeDrag.rsv.reservationId !== rsv.reservationId) && (
@@ -716,18 +823,73 @@ export default function CalendarioClient({ rooms, reservas, fechaBase, todayStr 
 
       {/* ── Legend ── */}
       <div className={styles.legend}>
-        {Object.entries(STATUS_CONFIG).map(([key, val]) => (
-          <div key={key} className={styles.legendItem}>
-            <span className={styles.legendDot} style={{ background: val.color }} />
-            <span>{val.label}</span>
-          </div>
-        ))}
+        {Object.entries(STATUS_CONFIG).map(([key, val]) => {
+          const isSelected = statusFilter.length === 0 || statusFilter.includes(key);
+          const isHighlight = statusFilter.includes(key);
+          return (
+            <div 
+              key={key} 
+              className={styles.legendItem} 
+              onClick={() => {
+                setStatusFilter(prev => {
+                  if (prev.includes(key)) return prev.filter(k => k !== key)
+                  return [...prev, key]
+                })
+              }}
+              style={{ 
+                cursor: 'pointer', 
+                opacity: isSelected ? 1 : 0.4,
+                transition: 'all 0.2s',
+                padding: '2px 6px',
+                borderRadius: '6px',
+                background: isHighlight ? 'var(--surface-3)' : 'transparent',
+                border: isHighlight ? '1px solid var(--border)' : '1px solid transparent'
+              }}
+            >
+              <span className={styles.legendDot} style={{ background: val.color }} />
+              <span>{val.label}</span>
+            </div>
+          )
+        })}
         <div className={styles.legendSeparator} />
         <div className={styles.legendItem}><ShieldCheck size={12} style={{color:'#10b981'}} /><span>Garantía Pagada</span></div>
         <div className={styles.legendItem}><ShieldAlert size={12} style={{color:'#ef4444'}} /><span>Sin Garantía</span></div>
       </div>
 
-      {/* ── Modal ── */}
+      {/* ── Modals ── */}
+      {actionSelectModalOpen && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => setActionSelectModalOpen(null)}>
+          <div style={{ background: 'var(--surface-1)', padding: 24, borderRadius: 12, width: 320, boxShadow: '0 10px 25px rgba(0,0,0,0.2)' }} onClick={e => e.stopPropagation()}>
+            <h3 style={{ marginTop: 0, marginBottom: 16 }}>¿Qué deseas hacer?</h3>
+            <p style={{ color: 'var(--text-secondary)', fontSize: 14, marginBottom: 20 }}>Selecciona la acción para el {format(actionSelectModalOpen.date, 'dd/MM/yyyy')}.</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <button className="btn btn-primary" onClick={() => {
+                setSelectedCell({ roomId: actionSelectModalOpen.roomId, arrival: actionSelectModalOpen.date, departure: addDays(actionSelectModalOpen.date, 1) })
+                setSelectedReservaId(null)
+                setModalOpen(true)
+                setActionSelectModalOpen(null)
+              }}>Hacer Reserva</button>
+              <button className="btn btn-secondary" onClick={() => {
+                setBloqueoModalOpen(actionSelectModalOpen)
+                setActionSelectModalOpen(null)
+              }} style={{ borderColor: 'var(--border)' }}>Bloquear Fecha</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {bloqueoModalOpen && (
+        <BloqueoModal 
+          defaultRoomId={bloqueoModalOpen.roomId}
+          defaultArrival={bloqueoModalOpen.date}
+          onClose={() => setBloqueoModalOpen(null)}
+          onSave={() => {
+            setBloqueoModalOpen(null)
+            router.refresh()
+          }}
+        />
+      )}
+
       {modalOpen && (
         <ReservaModal
           reservaId={selectedReservaId}

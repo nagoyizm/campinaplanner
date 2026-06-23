@@ -8,7 +8,8 @@ import RoomCardClient from './RoomCardClient'
 export const dynamic = 'force-dynamic'
 
 export default async function HabitacionesPage() {
-  const { organizationId } = await requireOrg()
+  const { organizationId, role } = await requireOrg()
+  const isAdmin = role === 'admin' || role === 'superadmin'
   const today = startOfDay(new Date())
 
   // Fetch all rooms with their unit types
@@ -35,7 +36,9 @@ export default async function HabitacionesPage() {
     },
     orderBy: [
       { unitType: { sortOrder: 'asc' } },
-      { sortOrder: 'asc' }
+      { cleaningPriority: 'desc' },
+      { sortOrder: 'asc' },
+      { name: 'asc' }
     ]
   })
 
@@ -56,6 +59,7 @@ export default async function HabitacionesPage() {
   const cleanRooms = rooms.filter(r => (r as any).cleaningStatus === 'clean').length
   const dirtyRooms = rooms.filter(r => (r as any).cleaningStatus === 'dirty').length
   const maintenanceRooms = rooms.filter(r => (r as any).cleaningStatus === 'maintenance').length
+  const priorityRooms = rooms.filter(r => (r as any).cleaningPriority).length
 
   return (
     <div className="container" style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }}>
@@ -115,6 +119,14 @@ export default async function HabitacionesPage() {
           <span style={{ fontSize: '2rem', fontWeight: 800, color: '#991b1b', lineHeight: 1 }}>{dirtyRooms}</span>
         </div>
 
+        <div style={{ background: '#fef2f2', padding: '16px', borderRadius: '12px', border: '1px solid #f87171', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+            <AlertCircle size={14} color="#ef4444" />
+            <p style={{ color: '#b91c1c', fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', margin: 0 }}>Urgencias</p>
+          </div>
+          <span style={{ fontSize: '2rem', fontWeight: 800, color: '#ef4444', lineHeight: 1 }}>{priorityRooms}</span>
+        </div>
+
         <div style={{ background: '#f3f4f6', padding: '16px', borderRadius: '12px', border: '1px solid #d1d5db', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
             <AlertCircle size={14} color="#4b5563" />
@@ -154,6 +166,7 @@ export default async function HabitacionesPage() {
                       room={room}
                       isOccupied={isOccupied}
                       guestName={guestName}
+                      isAdmin={isAdmin}
                     />
                   )
                 })}

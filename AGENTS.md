@@ -57,3 +57,7 @@ Rules:
 
 ## Graphify Skill
 You have access to the Graphify CLI. When the user asks to build a knowledge graph, analyze the codebase relationships, or trace an architectural path, you MUST run `C:\Users\aaaa\AppData\Roaming\Python\Python314\Scripts\graphify.exe .` in the terminal. Use `graphify query "..."` to search the generated graph.
+
+## Estructura del Proyecto (Campiña Planner)
+- **Sidebars y Layouts:** En este proyecto, el `AppLayout` (que contiene el `Sidebar` y la barra superior) no se aplica en el `app/layout.tsx` raíz. Se aplica **por directorio** o módulo principal.
+- **REGLA ESTRICTA:** SIEMPRE que crees una nueva pestaña principal (como `app/administracion/page.tsx` o `app/reportes/page.tsx`), **DEBES** crear su correspondiente `layout.tsx` en el mismo directorio que envuelva a `children` con `<AppLayout title="Tu Pestaña">{children}</AppLayout>`, para no perder el menú lateral.

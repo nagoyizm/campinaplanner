@@ -98,6 +98,8 @@ export default function ReservaModal({
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('+56')
   const [nationality, setNationality] = useState('Chile')
+  const [source, setSource] = useState('Directa')
+  const [createdByName, setCreatedByName] = useState('')
   const [address, setAddress] = useState('')
   const [guestNotes, setGuestNotes] = useState('')
   const [referral, setReferral] = useState('')
@@ -183,6 +185,8 @@ export default function ReservaModal({
             setFirstName(data.guest.firstName)
             setLastName(data.guest.lastName)
             setRut(data.guest.rut || '')
+            setSource(data.source || 'Directa')
+            setCreatedByName(data.createdByName || '')
             setEmail(data.guest.email || '')
             setPhone(data.guest.phone || '+56')
             setNationality(data.guest.nationality || 'Chile')
@@ -374,6 +378,7 @@ export default function ReservaModal({
       const payload = {
         reservaId,
         status: newStatus || status,
+        source,
         guest: { id: guestId || null, firstName, lastName, rut, email, phone, nationality, address, notes: guestNotes, referral },
         isVip, isNoisy, isDirty, isDifficult, isNewPax, isRecurring, isWalkIn,
         lateCheckoutHrs: lateCheckoutHrs || null,
@@ -438,7 +443,7 @@ export default function ReservaModal({
                 {reservaId && (
                   <>
                     <span className={styles.headerDot}>·</span>
-                    <span>Total reservas del huésped: —</span>
+                    <span style={{color: 'var(--brand-500)', fontWeight: 500}}>Creada por {createdByName || 'Usuario'} vía {source || 'Directa'}</span>
                   </>
                 )}
               </div>
@@ -651,9 +656,21 @@ export default function ReservaModal({
                       <label className="form-label">Dirección</label>
                       <input className="input" value={address} onChange={e => setAddress(e.target.value)} placeholder="Calle, ciudad" />
                     </div>
-                    <div className="form-group" style={{ gridColumn: '1 / -1' }}>
-                      <label className="form-label">REFERRAL</label>
-                      <input className="input" value={referral} onChange={e => setReferral(e.target.value)} placeholder="Recomendación o empresa..." />
+                    <div className="form-group">
+                      <label className="form-label">Origen (Canal)</label>
+                      <select className="select" value={source} onChange={e => setSource(e.target.value)}>
+                        <option value="Directa">Directa (Recepción/Web)</option>
+                        <option value="Booking.com">Booking.com</option>
+                        <option value="Airbnb">Airbnb</option>
+                        <option value="Expedia">Expedia</option>
+                        <option value="Instagram">Instagram</option>
+                        <option value="Whatsapp">WhatsApp</option>
+                        <option value="Otro">Otro</option>
+                      </select>
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">Referencia / Convenio</label>
+                      <input className="input" value={referral} onChange={e => setReferral(e.target.value)} placeholder="Ej: Municipalidad..." />
                     </div>
                   </div>
 

@@ -32,7 +32,11 @@ export default async function CalendarioPage({
   const rooms = await prisma.room.findMany({
     where: { active: true, organizationId },
     include: { unitType: true },
-    orderBy: { sortOrder: 'asc' },
+    orderBy: [
+      { unitType: { sortOrder: 'asc' } },
+      { sortOrder: 'asc' },
+      { name: 'asc' }
+    ],
   })
 
   const reservas = await prisma.reservationRoom.findMany({

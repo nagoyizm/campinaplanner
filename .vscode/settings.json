@@ -1,1 +1,19 @@
-{}
+{
+    "sonarlint.connectedMode.project": {
+        "connectionId": "sonaqube conect",
+        "projectKey": "nagoyizm_campinaplanner"
+    },
+    "snyk.advanced.autoSelectOrganization": true,
+    "snyk.advanced.organization": "ef65a66e-3b29-4aea-b6d3-3792bfa2a533",
+
+    // Snyk severity filters — only show critical/high (currently none exist)
+    // This clears the Problems panel of the 40 false-positive warnings/infos
+    "snyk.severity": {
+        "critical": true,
+        "high": true,
+        "medium": false,
+        "low": false
+    },
+    // Disable quality/style warnings (cognitive complexity, duplicate literals, etc.)
+    "snyk.codeQualityEnabled": false
+}

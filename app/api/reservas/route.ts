@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { requireOrg } from '@/lib/org'
+import { sendWhatsAppMessage } from '@/lib/whatsapp'
+import { sendEmail } from '@/lib/email'
 
 export async function GET(req: NextRequest) {
   const { organizationId } = await requireOrg()
@@ -40,7 +42,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const { organizationId, userId } = await requireOrg()
+  const { organizationId, userId, name } = await requireOrg()
   const body = await req.json()
 
   // Upsert guest scoped to this org
@@ -82,6 +84,8 @@ export async function POST(req: NextRequest) {
     data: {
       organizationId,
       guestId,
+      source: body.source || 'Directa',
+      createdByName: name || 'Usuario',
       status: body.status,
       isVip: body.isVip,
       isNoisy: body.isNoisy,
@@ -135,6 +139,32 @@ export async function POST(req: NextRequest) {
     where: { id: guestId },
     data: { totalStays: { increment: 1 } },
   })
+
+  // Enviar notificaciones de nueva reserva si el estado es confirmado
+  if (body.status === 'confirmed' || body.status === 'booked') {
+    try {
+      const notifyAdmins = await prisma.user.findMany({
+        where: {
+          organizationId,
+          role: { in: ['admin', 'superadmin'] },
+          OR: [{ notifyWspResConf: true }, { notifyEmailResConf: true }]
+        }
+      })
+
+      const msg = `🔔 *Nueva Reserva:*\nEl huésped ha realizado una reserva (ID: ${reservation.id}) con estado: ${body.status}.`
+
+      for (const admin of notifyAdmins) {
+        if (admin.notifyWspResConf && admin.phone) {
+          await sendWhatsAppMessage(admin.phone, msg, organizationId).catch(console.error)
+        }
+        if (admin.notifyEmailResConf && admin.email) {
+          await sendEmail(admin.email, 'Nueva Reserva Creada', `<p>Se ha creado una nueva reserva con ID: ${reservation.id} y estado ${body.status}</p>`).catch(console.error)
+        }
+      }
+    } catch (notificationError) {
+      console.error('Error al enviar notificaciones de reserva:', notificationError)
+    }
+  }
 
   return NextResponse.json(reservation, { status: 201 })
 }

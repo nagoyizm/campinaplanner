@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
   const { organizationId } = await requireOrg()
   const session = await auth()
   try {
-    const { content, targetUserId } = await req.json()
+    const { content, targetUserId, sendWsp } = await req.json()
     if (!content) return NextResponse.json({ error: 'Falta contenido' }, { status: 400 })
 
     const memo = await prisma.memo.create({
@@ -32,18 +32,20 @@ export async function POST(req: NextRequest) {
     })
 
     // Send WhatsApp Notification
-    if (memo.targetUserId && memo.targetUser?.phone) {
-      const msg = `*Memo de ${memo.author}*\n${memo.content}`
-      await sendWhatsAppMessage(memo.targetUser.phone, msg, organizationId).catch(console.error)
-    } else if (!memo.targetUserId) {
-      const users = await prisma.user.findMany({
-        where: { organizationId, phone: { not: null } }
-      })
-      const msg = `*Memo general de ${memo.author}*\n${memo.content}`
-      const promises = users.map(u => 
-        sendWhatsAppMessage(u.phone as string, msg, organizationId).catch(console.error)
-      )
-      await Promise.all(promises)
+    if (sendWsp) {
+      if (memo.targetUserId && memo.targetUser?.phone) {
+        const msg = `*Memo de ${memo.author}*\n${memo.content}`
+        await sendWhatsAppMessage(memo.targetUser.phone, msg, organizationId).catch(console.error)
+      } else if (!memo.targetUserId) {
+        const users = await prisma.user.findMany({
+          where: { organizationId, phone: { not: null } }
+        })
+        const msg = `*Memo general de ${memo.author}*\n${memo.content}`
+        const promises = users.map(u => 
+          sendWhatsAppMessage(u.phone as string, msg, organizationId).catch(console.error)
+        )
+        await Promise.all(promises)
+      }
     }
 
     return NextResponse.json(memo)

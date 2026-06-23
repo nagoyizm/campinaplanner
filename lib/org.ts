@@ -19,6 +19,7 @@ export async function requireOrg() {
     userId: session.user.id as string,
     role: (session.user as any).role as string,
     orgName: (session.user as any).orgName as string,
+    name: session.user.name as string | undefined,
   }
 }
 export async function requireSuperAdmin() {
