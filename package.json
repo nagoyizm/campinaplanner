@@ -23,7 +23,7 @@
     "@google/generative-ai": "^0.24.1",
     "@prisma/client": "^6.19.3",
     "bcryptjs": "^3.0.3",
-    "date-fns": "^4.3.0",
+    "date-fns": "^4.4.0",
     "dompurify": "^3.4.11",
     "exceljs": "^4.4.0",
     "jspdf": "^4.2.1",
