@@ -222,8 +222,8 @@ export default function SaasCalendarioClient({
       return i
     }))
 
-    setSaving(true)
-    const toastId = toast.loading('Guardando cambios...')
+      setSaving(true)
+      const saveToast = toast.loading('Guardando cambios en el calendario...')
     try {
       const endpoint = item._type === 'payment' ? '/api/saas/payments' : '/api/saas/events'
       const body = {
@@ -240,10 +240,10 @@ export default function SaasCalendarioClient({
       })
 
       if (!res.ok) throw new Error('Error al guardar')
-      toast.success('Cambios guardados', { id: toastId })
+        toast.success('Evento reprogramado con éxito', { id: saveToast })
       router.refresh()
     } catch (err) {
-      toast.error('Ocurrió un error. Se revertirán los cambios.', { id: toastId })
+      toast.error('Ocurrió un error. Se revertirán los cambios.', { id: saveToast })
       setItems(initialItems) // Revert
     } finally {
       setSaving(false)
@@ -304,8 +304,8 @@ export default function SaasCalendarioClient({
       <div className={styles.gridWrapper}>
         <div className={styles.grid}>
           {/* Header Row */}
-          <div style={{ display: 'flex', position: 'sticky', top: 0, zIndex: 10 }}>
-            <div className={styles.cornerCell} style={{ width: '220px', minWidth: '220px' }}>
+          <div style={{ display: 'flex', position: 'sticky', top: 0, zIndex: 10, background: 'color-mix(in srgb, var(--surface-1) 80%, transparent)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}>
+            <div className={styles.cornerCell} style={{ width: '220px', minWidth: '220px', background: 'transparent' }}>
               <span className={styles.cornerText}>Clientes / Eventos</span>
             </div>
             {daysArray.map((day) => {
@@ -330,9 +330,9 @@ export default function SaasCalendarioClient({
 
           {/* Render Rows (Global + Orgs) */}
           {[ { id: 'global', name: 'Eventos Globales', isGlobal: true }, ...orgs.map(o => ({...o, isGlobal: false})) ].map((org) => (
-            <div key={org.id} style={{ display: 'flex', borderBottom: '1px solid var(--border-light)', background: org.isGlobal ? 'var(--surface-2)' : 'transparent' }}>
+            <div key={org.id} style={{ display: 'flex', borderBottom: '1px solid color-mix(in srgb, var(--border-light) 50%, transparent)', background: org.isGlobal ? 'color-mix(in srgb, var(--surface-2) 40%, transparent)' : 'transparent' }}>
               
-              <div style={{ width: '220px', minWidth: '220px', position: 'sticky', left: 0, zIndex: 5, background: org.isGlobal ? 'var(--surface-2)' : 'var(--surface-1)', borderRight: '1px solid var(--border)', padding: '0 12px', display: 'flex', alignItems: 'center', height: rowHeight }}>
+              <div style={{ width: '220px', minWidth: '220px', position: 'sticky', left: 0, zIndex: 5, background: org.isGlobal ? 'color-mix(in srgb, var(--surface-2) 60%, transparent)' : 'color-mix(in srgb, var(--surface-1) 60%, transparent)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', borderRight: '1px solid color-mix(in srgb, var(--border) 50%, transparent)', padding: '0 12px', display: 'flex', alignItems: 'center', height: rowHeight }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', overflow: 'hidden' }}>
                   {org.isGlobal ? <Bell size={16} color="var(--brand-500)"/> : <Building2 size={16} style={{ color: 'var(--text-muted)' }} />}
                   <span style={{ fontSize: org.isGlobal ? '0.9rem' : '0.85rem', fontWeight: org.isGlobal ? 600 : 400, color: 'var(--text-base)' }}>
@@ -389,8 +389,8 @@ export default function SaasCalendarioClient({
                       style={{ 
                         width: colWidth, 
                         minWidth: colWidth, 
-                        borderRight: '1px solid var(--border-light)', 
-                        background: isWeekend(day) ? 'var(--cal-weekend-bg)' : 'transparent', 
+                        borderRight: '1px solid color-mix(in srgb, var(--border-light) 40%, transparent)', 
+                        background: isWeekend(day) ? 'rgba(0,0,0,0.02)' : 'transparent', 
                         height: rowHeight,
                         position: 'relative',
                         cursor: 'pointer'
@@ -416,9 +416,13 @@ export default function SaasCalendarioClient({
                             left: 0,
                             height: rowHeight - 8,
                             width: (colWidth * widthMultiplier) - 4,
-                            background: item._type === 'payment' ? (item.status === 'paid' ? '#16a34a' : '#ca8a04') : '#2563eb',
-                            borderRadius: '4px',
-                            color: '#fff',
+                            background: item._type === 'payment' ? (item.status === 'paid' ? 'rgba(34, 197, 94, 0.70)' : 'rgba(234, 179, 8, 0.70)') : 'rgba(59, 130, 246, 0.70)',
+                            backdropFilter: 'blur(8px)',
+                            WebkitBackdropFilter: 'blur(8px)',
+                            border: `1px solid ${item._type === 'payment' ? (item.status === 'paid' ? 'rgba(34, 197, 94, 0.4)' : 'rgba(234, 179, 8, 0.4)') : 'rgba(59, 130, 246, 0.4)'}`,
+                            borderRadius: '6px',
+                            color: 'var(--text-primary)',
+                            fontWeight: 500,
                             fontSize: '0.75rem',
                             display: 'flex',
                             alignItems: 'center',
@@ -426,7 +430,7 @@ export default function SaasCalendarioClient({
                             cursor: 'grab',
                             userSelect: 'none',
                             zIndex: 2,
-                            boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+                            boxShadow: '0 2px 4px rgba(0,0,0,0.05), inset 0 1px 0 rgba(255,255,255,0.4)',
                             overflow: 'hidden',
                             whiteSpace: 'nowrap',
                             opacity: activeDrag?.item.id === item.id ? 0.3 : 1,
@@ -450,17 +454,21 @@ export default function SaasCalendarioClient({
                             left: 0,
                             height: rowHeight - 8,
                             width: (colWidth * dragPreviewWidth) - 4,
-                            background: dragItem._type === 'payment' ? '#ca8a04' : '#2563eb',
-                            borderRadius: '4px',
-                            color: '#fff',
+                            background: dragItem._type === 'payment' ? 'rgba(234, 179, 8, 0.80)' : 'rgba(59, 130, 246, 0.80)',
+                            backdropFilter: 'blur(8px)',
+                            WebkitBackdropFilter: 'blur(8px)',
+                            border: `1px solid ${dragItem._type === 'payment' ? 'rgba(234, 179, 8, 0.5)' : 'rgba(59, 130, 246, 0.5)'}`,
+                            borderRadius: '6px',
+                            color: 'var(--text-primary)',
+                            fontWeight: 500,
                             fontSize: '0.75rem',
                             display: 'flex',
                             alignItems: 'center',
                             padding: '0 8px',
                             zIndex: 10,
-                            boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+                            boxShadow: '0 4px 12px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.4)',
                             pointerEvents: 'none',
-                            opacity: 0.8
+                            opacity: 0.9
                           }}
                         >
                            {dragItem._type === 'payment' ? `$${dragItem.amount?.toLocaleString()}` : dragItem.title}

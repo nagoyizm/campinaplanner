@@ -1,5 +1,6 @@
 'use client'
 
+import { usePathname } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { SessionProvider } from 'next-auth/react'
 import Sidebar from '@/components/layout/Sidebar'
@@ -15,6 +16,7 @@ interface AppLayoutProps {
 export default function AppLayout({ children, title }: AppLayoutProps) {
   const [theme, setTheme] = useState<'light' | 'dark'>('light')
   const [palette, setPalette] = useState('verde')
+  const pathname = usePathname()
 
   // Load theme
   useEffect(() => {
@@ -50,6 +52,8 @@ export default function AppLayout({ children, title }: AppLayoutProps) {
     localStorage.setItem('theme', next)
   }
 
+  const isCalendarPage = pathname?.startsWith('/calendario') || pathname?.startsWith('/saas/planner')
+
   return (
     <SessionProvider>
       <SessionTimeout />
@@ -62,10 +66,12 @@ export default function AppLayout({ children, title }: AppLayoutProps) {
         />
         <div className={styles.mainArea}>
           <Header title={title} />
-          <main className={styles.content}>
+          <main className={`${styles.content} ${isCalendarPage ? styles.noPadding : ''}`}>
             {children}
             {/* Spacer forzado para asegurar espacio debajo de tablas y listas */}
-            <div style={{ height: '40px', flexShrink: 0, width: '100%' }} aria-hidden="true" />
+            {!isCalendarPage && (
+              <div style={{ height: '24px', flexShrink: 0, width: '100%' }} aria-hidden="true" />
+            )}
           </main>
         </div>
       </div>

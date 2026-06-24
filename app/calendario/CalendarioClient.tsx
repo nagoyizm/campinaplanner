@@ -87,13 +87,13 @@ function formatCLP(n: number) {
 
 // ── Status config ─────────────────────────────────────────────────
 const STATUS_CONFIG: Record<string, { label: string; color: string; textColor: string }> = {
-  booked:      { label: 'Reservado',   color: '#1d4ed8', textColor: '#fff' },
-  confirmed:   { label: 'Confirmado',  color: '#047857', textColor: '#fff' },
-  checked_in:  { label: 'Check-In',    color: '#b45309', textColor: '#fff' },
-  checked_out: { label: 'Check-Out',   color: '#4b5563', textColor: '#fff' },
-  blocked:     { label: 'Bloqueado',   color: '#111827', textColor: '#f9fafb' },
-  cancelled:   { label: 'Cancelado',   color: '#b91c1c', textColor: '#fff' },
-  no_show:     { label: 'No Show',     color: '#6d28d9', textColor: '#fff' },
+  booked:      { label: 'Reservado',   color: 'rgba(59, 130, 246, 0.70)', textColor: 'var(--text-primary)' },
+  confirmed:   { label: 'Confirmado',  color: 'rgba(16, 185, 129, 0.70)', textColor: 'var(--text-primary)' },
+  checked_in:  { label: 'Check-In',    color: 'rgba(245, 158, 11, 0.70)', textColor: 'var(--text-primary)' },
+  checked_out: { label: 'Check-Out',   color: 'rgba(107, 114, 128, 0.70)', textColor: 'var(--text-primary)' },
+  blocked:     { label: 'Bloqueado',   color: 'rgba(31, 41, 55, 0.70)', textColor: 'var(--text-primary)' },
+  cancelled:   { label: 'Cancelado',   color: 'rgba(239, 68, 68, 0.70)', textColor: 'var(--text-primary)' },
+  no_show:     { label: 'No Show',     color: 'rgba(139, 92, 246, 0.70)', textColor: 'var(--text-primary)' },
 }
 
 // ── Main Component ────────────────────────────────────────────────
@@ -391,7 +391,7 @@ export default function CalendarioClient({ rooms, reservas, fechaBase, todayStr 
 
     if (datesChanged && !hasCollision) {
       setRescheduling(true)
-      const saveToast = toast.loading('Guardando cambios en el calendario... 🌲')
+      const saveToast = toast.loading('Guardando cambios en el calendario...')
       try {
         const getRes = await fetch(`/api/reservas/${rsv.reservationId}`)
         if (!getRes.ok) throw new Error('No se pudo obtener la reserva')
@@ -473,7 +473,7 @@ export default function CalendarioClient({ rooms, reservas, fechaBase, todayStr 
 
         if (!putRes.ok) throw new Error('Error al actualizar la reserva')
 
-        toast.success('¡Reserva reprogramada con éxito! 🌲', { id: saveToast })
+        toast.success('Reserva reprogramada con éxito', { id: saveToast })
         router.refresh()
       } catch (err) {
         console.error(err)
@@ -820,41 +820,40 @@ export default function CalendarioClient({ rooms, reservas, fechaBase, todayStr 
           })}
         </div>
       </div>
-
       {/* ── Legend ── */}
-      <div className={styles.legend}>
-        {Object.entries(STATUS_CONFIG).map(([key, val]) => {
-          const isSelected = statusFilter.length === 0 || statusFilter.includes(key);
-          const isHighlight = statusFilter.includes(key);
-          return (
-            <div 
-              key={key} 
-              className={styles.legendItem} 
-              onClick={() => {
-                setStatusFilter(prev => {
-                  if (prev.includes(key)) return prev.filter(k => k !== key)
-                  return [...prev, key]
-                })
-              }}
-              style={{ 
-                cursor: 'pointer', 
-                opacity: isSelected ? 1 : 0.4,
-                transition: 'all 0.2s',
-                padding: '2px 6px',
-                borderRadius: '6px',
-                background: isHighlight ? 'var(--surface-3)' : 'transparent',
-                border: isHighlight ? '1px solid var(--border)' : '1px solid transparent'
-              }}
-            >
-              <span className={styles.legendDot} style={{ background: val.color }} />
-              <span>{val.label}</span>
-            </div>
-          )
-        })}
-        <div className={styles.legendSeparator} />
-        <div className={styles.legendItem}><ShieldCheck size={12} style={{color:'#10b981'}} /><span>Garantía Pagada</span></div>
-        <div className={styles.legendItem}><ShieldAlert size={12} style={{color:'#ef4444'}} /><span>Sin Garantía</span></div>
-      </div>
+        <div className={styles.legend}>
+          {Object.entries(STATUS_CONFIG).map(([key, val]) => {
+            const isSelected = statusFilter.length === 0 || statusFilter.includes(key);
+            const isHighlight = statusFilter.includes(key);
+            return (
+              <div 
+                key={key} 
+                className={styles.legendItem} 
+                onClick={() => {
+                  setStatusFilter(prev => {
+                    if (prev.includes(key)) return prev.filter(k => k !== key)
+                    return [...prev, key]
+                  })
+                }}
+                style={{ 
+                  cursor: 'pointer', 
+                  opacity: isSelected ? 1 : 0.4,
+                  transition: 'all 0.2s',
+                  padding: '2px 6px',
+                  borderRadius: '6px',
+                  background: isHighlight ? 'var(--surface-3)' : 'transparent',
+                  border: isHighlight ? '1px solid var(--border)' : '1px solid transparent'
+                }}
+              >
+                <span className={styles.legendDot} style={{ background: val.color }} />
+                <span>{val.label}</span>
+              </div>
+            )
+          })}
+          <div className={styles.legendSeparator} />
+          <div className={styles.legendItem}><ShieldCheck size={12} style={{color:'#10b981'}} /><span>Garantía Pagada</span></div>
+          <div className={styles.legendItem}><ShieldAlert size={12} style={{color:'#ef4444'}} /><span>Sin Garantía</span></div>
+        </div>
 
       {/* ── Modals ── */}
       {actionSelectModalOpen && (

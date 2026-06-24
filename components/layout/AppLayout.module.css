@@ -21,6 +21,13 @@
   padding-bottom: 40px; /* espacio para que las tablas no choquen con el final */
 }
 
+.noPadding {
+  padding-bottom: 0 !important;
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
 @media (max-width: 768px) {
   .mainArea {
     margin-left: 0;

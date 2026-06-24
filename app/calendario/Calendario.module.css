@@ -1,9 +1,11 @@
 .container {
   display: flex;
   flex-direction: column;
+  flex: 1;
   height: 100%;
   overflow: hidden;
   background: var(--bg);
+  position: relative;
 }
 
 /* ── Toolbar ── */
@@ -49,6 +51,7 @@
 .gridWrapper {
   flex: 1;
   overflow: auto;
+  padding-bottom: 60px; /* Spacer para que la leyenda flotante no tape la última fila */
   position: relative;
 }
 
@@ -64,7 +67,9 @@
   position: sticky;
   left: 0;
   z-index: 20;
-  background: var(--cal-header-bg);
+  background: color-mix(in srgb, var(--cal-header-bg) 80%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   padding: 10px 14px;
   border-right: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
@@ -82,7 +87,9 @@
 
 /* ── Day Headers ── */
 .dayHeader {
-  background: var(--cal-header-bg);
+  background: color-mix(in srgb, var(--cal-header-bg) 80%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   color: var(--cal-header-text);
   text-align: center;
   padding: 6px 2px;
@@ -141,7 +148,9 @@
   position: sticky;
   left: 0;
   z-index: 15;
-  background: var(--surface-1);
+  background: color-mix(in srgb, var(--surface-1) 80%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-right: 2px solid var(--border);
   border-bottom: 1px solid var(--cal-border);
   padding: 0 12px;
@@ -225,7 +234,10 @@
   cursor: pointer;
   transition: filter var(--transition), transform var(--transition);
   overflow: hidden;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05), inset 0 1px 0 rgba(255,255,255,0.4);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(0,0,0,0.1);
   min-width: 0;
 }
 
@@ -276,21 +288,29 @@
 
 /* ── Legend ── */
 .legend {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 16px;
-  padding: 10px 16px;
-  background: var(--surface-1);
-  border-top: 1px solid var(--border-light);
+  padding: 12px 16px;
+  background: color-mix(in srgb, var(--surface-1) 80%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-top: 1px solid color-mix(in srgb, var(--border-light) 50%, transparent);
   flex-wrap: wrap;
-  flex-shrink: 0;
+  z-index: 50;
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.05);
 }
 
 .legendItem {
   display: flex;
   align-items: center;
   gap: 5px;
-  font-size: 11px;
+  font-size: 15px;
   color: var(--text-secondary);
   white-space: nowrap;
 }
