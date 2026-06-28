@@ -34,6 +34,8 @@ interface Extra {
   quantity: number
   unitPrice: number
   total: number
+  notes?: string
+  paymentMethod?: string
 }
 
 const PAYMENT_METHODS = [
@@ -79,13 +81,14 @@ interface ReservaModalProps {
 }
 
 export default function ReservaModal({
-  reservaId,
+  reservaId: initialReservaId,
   defaultRoomId,
   defaultArrival,
   defaultDeparture,
   onClose,
   onSave,
 }: Readonly<ReservaModalProps>) {
+  const [currentResId, setCurrentResId] = useState<number | null>(initialReservaId)
   const [tab, setTab] = useState<'reserva' | 'billing' | 'historial' | 'huesped'>('reserva')
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -220,7 +223,19 @@ export default function ReservaModal({
     setGuaranteeRsv(data.guaranteeRsv || '')
     setGuaranteeGames(data.guaranteeGames || '')
     setDiscounts(data.discounts)
-    setExtras(data.extras || [])
+    
+    const parsedExtras = (data.extras || []).map((e: any) => {
+      let extractedMethod = ''
+      let extractedNotes = e.notes || ''
+      const match = extractedNotes.match(/^\[Pago:\s(.*?)\]\s?(.*)$/)
+      if (match) {
+        extractedMethod = match[1]
+        extractedNotes = match[2]
+      }
+      return { ...e, paymentMethod: extractedMethod, notes: extractedNotes }
+    })
+    setExtras(parsedExtras)
+    
     setTax(data.tax)
     setAuditLog(data.auditLogs || [])
     setRoomLines(data.rooms.map((r: any) => ({
@@ -272,8 +287,8 @@ export default function ReservaModal({
         resolvePaymentOptions(pagosData)
         buildCatalog(invData, amData)
 
-        if (reservaId) {
-          const data = await safeFetchJson(`/api/reservas/${reservaId}`, null)
+        if (currentResId) {
+          const data = await safeFetchJson(`/api/reservas/${currentResId}`, null)
           if (data) populateExistingReservation(data)
         } else {
           setDefaultRoomLine(roomsData, ratesData)
@@ -284,7 +299,7 @@ export default function ReservaModal({
       setLoading(false)
     }
     loadData()
-  }, [reservaId])
+  }, [currentResId])
 
   // ── Guest search ──────────────────────────────────────────────
   useEffect(() => {
@@ -429,7 +444,7 @@ export default function ReservaModal({
 
     setDeleting(true)
     try {
-      const res = await fetch(`/api/reservas/${reservaId}`, {
+      const res = await fetch(`/api/reservas/${currentResId}`, {
         method: 'DELETE',
       })
       if (!res.ok) throw new Error('Error al eliminar reserva')
@@ -442,7 +457,7 @@ export default function ReservaModal({
   }
 
   // ── Save ──────────────────────────────────────────────────────
-  const handleSave = async (newStatus?: string) => {
+  const handleSave = async (closeOnSuccess: boolean = true, newStatus?: string) => {
     if (!firstName || !lastName) {
       toast.error('Nombre y apellido son requeridos')
       return
@@ -455,7 +470,7 @@ export default function ReservaModal({
     setSaving(true)
     try {
       const payload = {
-        reservaId,
+        reservaId: currentResId,
         status: newStatus || status,
         source,
         guest: { id: guestId || null, firstName, lastName, rut, email, phone, nationality, address, notes: guestNotes, referral },
@@ -467,19 +482,44 @@ export default function ReservaModal({
         lostItems, notes, dte, guaranteeRsv, guaranteeGames,
         unitTotal, additionalServices: additionalServicesTotal, discounts, tax,
         rooms: roomLines,
-        extras,
+        extras: extras.map(ext => {
+          let combinedNotes = ext.notes || ''
+          if (ext.paymentMethod) {
+            combinedNotes = `[Pago: ${ext.paymentMethod}] ${combinedNotes}`.trim()
+          }
+          return {
+            id: ext.id,
+            name: ext.name,
+            quantity: ext.quantity,
+            unitPrice: ext.unitPrice,
+            total: ext.total,
+            notes: combinedNotes
+          }
+        }),
       }
 
       const res = await fetch('/api/reservas', {
-        method: reservaId ? 'PUT' : 'POST',
+        method: currentResId ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       })
 
       if (!res.ok) throw new Error('Error guardando reserva')
 
-      toast.success(reservaId ? 'Reserva actualizada' : 'Reserva creada exitosamente')
-      onSave()
+      const savedData = await res.json()
+      if (!currentResId && savedData.id) {
+        setCurrentResId(savedData.id)
+      }
+
+      toast.success(currentResId ? 'Reserva actualizada' : 'Reserva guardada exitosamente')
+      if (closeOnSuccess) {
+        onSave()
+      } else {
+        // Just trigger refresh in parent without closing if possible? 
+        // Wait, parent's onSave might close it automatically if the parent is managing modal state!
+        // We need to just NOT call onSave if we don't want to close it, OR we need the parent to know.
+        // For now, if we don't call onSave, the data is saved in DB, and local state is updated.
+      }
     } catch (e) {
       toast.error(e instanceof Error ? e.message : 'Error al guardar la reserva')
     }
@@ -487,7 +527,7 @@ export default function ReservaModal({
   }
 
   // ── Quick status buttons ──────────────────────────────────────
-  const quickStatus = (s: string) => handleSave(s)
+  const quickStatus = (s: string) => handleSave(true, s)
 
   // ── Render ───────────────────────────────────────────────────
   if (loading) {
@@ -517,7 +557,7 @@ export default function ReservaModal({
         <div className="modal-header">
           <div className={styles.headerLeft}>
             <div className={styles.rsvBadge}>
-              {reservaId ? `Rsv #${reservaId}` : 'Nueva Reserva'}
+              {currentResId ? `Rsv #${currentResId}` : 'Nueva Reserva'}
             </div>
             <div>
               {(firstName || lastName) && (
@@ -527,7 +567,7 @@ export default function ReservaModal({
                 {roomLines.length > 0 && (
                   <span>{roomLines.reduce((s, r) => s + r.nights, 0)} noche(s)</span>
                 )}
-                {reservaId && (
+                {currentResId && (
                   <>
                     <span className={styles.headerDot}>·</span>
                     <span style={{color: 'var(--brand-500)', fontWeight: 500}}>Creada por {createdByName || 'Usuario'} vía {source || 'Directa'}</span>
@@ -538,12 +578,12 @@ export default function ReservaModal({
           </div>
           <div className={styles.headerRight}>
             {/* Quick actions */}
-            {reservaId && status !== 'checked_in' && (
+            {currentResId && status !== 'checked_in' && (
               <button className="btn btn-sm" style={{background:'#f59e0b',color:'#fff'}} onClick={() => quickStatus('checked_in')}>
                 <LogIn size={13} /> Check-In
               </button>
             )}
-            {reservaId && status === 'checked_in' && (
+            {currentResId && status === 'checked_in' && (
               <button className="btn btn-sm" style={{background:'#6b7280',color:'#fff'}} onClick={() => quickStatus('checked_out')}>
                 <LogOut size={13} /> Check-Out
               </button>
@@ -875,73 +915,22 @@ export default function ReservaModal({
 
                 {/* ── Booking Summary ── */}
                 <div className={styles.bookingSummary}>
-                  <div className={styles.summaryTitle}>Booking Summary</div>
+                  <div className={styles.summaryTitle}>Resumen de Reserva</div>
                   <div className={styles.summaryRow}>
                     <span>Total Unidades</span>
                     <span className="currency">{formatCLP(unitTotal)}</span>
                   </div>
-                  <div className={styles.summaryRow} style={{ flexDirection: 'column', alignItems: 'stretch', gap: 8 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontWeight: 600 }}>Servicios Adicionales</span>
-                      <button className="btn btn-secondary" style={{ padding: '2px 8px', fontSize: 12, height: 24 }} onClick={addExtraLine}>
-                        <Plus size={14} /> Agregar
-                      </button>
-                    </div>
-                    {extras.map((ext, idx) => (
-                      <div key={`extra-edit-${ext.name}-${idx}`} style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
-                        <select className="select" style={{ flex: 1, padding: '4px 8px', height: 28 }} value={ext.name} onChange={e => updateExtraLine(idx, 'name', e.target.value)}>
-                          <option value="">Elegir o escribir...</option>
-                          {extraCatalog.map(cat => <option key={cat.name} value={cat.name}>{cat.name}</option>)}
-                        </select>
-                        <input type="number" className="input" style={{ width: 45, padding: '4px', height: 28 }} value={ext.quantity} min={1} onChange={e => updateExtraLine(idx, 'quantity', +e.target.value)} />
-                        <input type="number" className="input" style={{ width: 70, padding: '4px', height: 28 }} value={ext.unitPrice} onChange={e => updateExtraLine(idx, 'unitPrice', +e.target.value)} />
-                        <span style={{ width: 75, textAlign: 'right', fontSize: 13, fontWeight: 500 }}>{formatCLP(ext.total)}</span>
-                        <button className="btn btn-ghost" style={{ padding: 4, color: '#ef4444', height: 28 }} onClick={() => removeExtraLine(idx)}><Trash2 size={14} /></button>
-                      </div>
-                    ))}
-                    <div style={{ textAlign: 'right', fontSize: 14, color: 'var(--text-secondary)' }}>
-                      Total Extras: <span className="currency" style={{ color: 'var(--text-primary)' }}>{formatCLP(additionalServicesTotal)}</span>
-                    </div>
+                  <div className={styles.summaryRow}>
+                    <span>Cargos Adicionales</span>
+                    <span className="currency">{formatCLP(additionalServicesTotal)}</span>
                   </div>
                   <div className={styles.summaryRow}>
                     <span>Descuentos</span>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                      <input
-                        type="number"
-                        className="input"
-                        style={{ width: 50, textAlign: 'right', padding: '4px 8px' }}
-                        placeholder="%"
-                        min={0}
-                        max={100}
-                        onChange={e => {
-                          const pct = +e.target.value;
-                          if (pct >= 0) {
-                            setDiscounts(Math.round(unitTotal * (pct / 100)));
-                          }
-                        }}
-                      />
-                      <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>%</span>
-                      <span style={{ color: '#ef4444', marginLeft: 4 }}>−$</span>
-                      <input
-                        type="number"
-                        className="input"
-                        style={{ width: 90, textAlign: 'right' }}
-                        value={discounts}
-                        min={0}
-                        onChange={e => setDiscounts(+e.target.value)}
-                      />
-                    </div>
+                    <span className="currency" style={{ color: '#ef4444' }}>-{formatCLP(discounts)}</span>
                   </div>
                   <div className={styles.summaryRow}>
-                    <span>Impuesto</span>
-                    <input
-                      type="number"
-                      className="input"
-                      style={{ width: 100, textAlign: 'right' }}
-                      value={tax}
-                      min={0}
-                      onChange={e => setTax(+e.target.value)}
-                    />
+                    <span>Impuestos</span>
+                    <span className="currency">{formatCLP(tax)}</span>
                   </div>
                   <div className={`${styles.summaryRow} ${styles.summaryTotal}`}>
                     <span>Total</span>
@@ -975,6 +964,89 @@ export default function ReservaModal({
           {/* ══ TAB: BILLING ══ */}
           {tab === 'billing' && (
             <div className={styles.tabContent}>
+              <div className={styles.sectionTitle}>Gestión de Cargos y Descuentos</div>
+              
+              <div style={{ marginBottom: 24, padding: 16, backgroundColor: 'var(--surface-2)', borderRadius: 8 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                  <h4 style={{ margin: 0, fontWeight: 600 }}>Cargos Adicionales</h4>
+                  <button className="btn btn-secondary" style={{ padding: '4px 12px', fontSize: 13 }} onClick={addExtraLine}>
+                    <Plus size={14} /> Agregar Cargo
+                  </button>
+                </div>
+                {extras.length === 0 ? (
+                  <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>No hay cargos adicionales.</p>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    {extras.map((ext, idx) => (
+                      <div key={`extra-edit-${ext.name}-${idx}`} style={{ display: 'flex', gap: 8, alignItems: 'center', backgroundColor: 'var(--surface-1)', padding: 8, borderRadius: 6 }}>
+                        <select className="select" style={{ width: 160, padding: '4px 8px', height: 32 }} value={ext.name} onChange={e => updateExtraLine(idx, 'name', e.target.value)}>
+                          <option value="">Elegir cargo...</option>
+                          {extraCatalog.map(cat => <option key={cat.name} value={cat.name}>{cat.name}</option>)}
+                        </select>
+                        <input type="number" className="input" style={{ width: 60, padding: '4px 8px', height: 32 }} value={ext.quantity} min={1} placeholder="Cant" onChange={e => updateExtraLine(idx, 'quantity', e.target.value === '' ? 0 : Number(e.target.value))} />
+                        <input type="number" className="input" style={{ width: 90, padding: '4px 8px', height: 32 }} value={ext.unitPrice} placeholder="Precio" onChange={e => updateExtraLine(idx, 'unitPrice', e.target.value === '' ? 0 : Number(e.target.value))} />
+                        <input type="text" className="input" style={{ flex: 1, padding: '4px 8px', height: 32 }} value={ext.notes || ''} placeholder="Nota..." onChange={e => updateExtraLine(idx, 'notes', e.target.value)} />
+                        <select className="select" style={{ width: 140, padding: '4px 8px', height: 32 }} value={ext.paymentMethod || ''} onChange={e => updateExtraLine(idx, 'paymentMethod', e.target.value)}>
+                          <option value="">Pago (Opcional)</option>
+                          {paymentOptions.methods.map(m => <option key={m} value={m}>{m}</option>)}
+                        </select>
+                        <span style={{ width: 80, textAlign: 'right', fontSize: 13, fontWeight: 600 }}>{formatCLP(ext.total)}</span>
+                        <button className="btn btn-ghost" style={{ padding: 4, color: '#ef4444', height: 32 }} onClick={() => removeExtraLine(idx)}><Trash2 size={16} /></button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <hr style={{ margin: '16px 0', borderColor: 'var(--border-color)' }} />
+                
+                <div style={{ display: 'flex', gap: 32 }}>
+                  <div style={{ flex: 1 }}>
+                    <h4 style={{ margin: '0 0 8px 0', fontWeight: 600 }}>Descuentos Generales</h4>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <input
+                        type="number"
+                        className="input"
+                        style={{ width: 70, textAlign: 'right', padding: '6px 8px' }}
+                        placeholder="%"
+                        min={0}
+                        max={100}
+                        onChange={e => {
+                          const pct = e.target.value === '' ? 0 : Number(e.target.value)
+                          if (pct >= 0) setDiscounts(Math.round(unitTotal * (pct / 100)))
+                        }}
+                      />
+                      <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>%</span>
+                      <span style={{ color: '#ef4444', marginLeft: 8, fontWeight: 600 }}>−$</span>
+                      <input
+                        type="number"
+                        className="input"
+                        style={{ width: 120, textAlign: 'right', padding: '6px 8px' }}
+                        value={discounts || ''}
+                        placeholder="0"
+                        min={0}
+                        onChange={e => setDiscounts(e.target.value === '' ? 0 : Number(e.target.value))}
+                      />
+                    </div>
+                  </div>
+                  
+                  <div style={{ flex: 1 }}>
+                    <h4 style={{ margin: '0 0 8px 0', fontWeight: 600 }}>Impuestos / IVA</h4>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <span style={{ color: '#10b981', fontWeight: 600 }}>+$</span>
+                      <input
+                        type="number"
+                        className="input"
+                        style={{ width: 120, textAlign: 'right', padding: '6px 8px' }}
+                        value={tax || ''}
+                        placeholder="0"
+                        min={0}
+                        onChange={e => setTax(e.target.value === '' ? 0 : Number(e.target.value))}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <div className={styles.sectionTitle}>Folio / Desglose de Cuenta</div>
               
               <div style={{ marginTop: 16, overflowX: 'auto', border: '1px solid var(--border-color)', borderRadius: '8px' }}>
@@ -1119,7 +1191,7 @@ export default function ReservaModal({
         {/* ── Modal Footer ── */}
         <div className="modal-footer" style={{ justifyContent: 'space-between' }}>
           <div>
-            {reservaId && (
+            {currentResId && (
               <button
                 className="btn"
                 style={{ backgroundColor: '#ef4444', color: '#fff', display: 'flex', alignItems: 'center', gap: 6 }}
@@ -1135,17 +1207,25 @@ export default function ReservaModal({
             )}
           </div>
           <div style={{ display: 'flex', gap: 8 }}>
-            <button className="btn btn-secondary" onClick={onClose}>Cancelar</button>
+            <button className="btn btn-secondary" onClick={onClose}>Cerrar</button>
+            <button
+              className="btn btn-secondary"
+              onClick={() => handleSave(false)}
+              disabled={saving}
+              style={{ backgroundColor: 'var(--surface-2)' }}
+            >
+              <Save size={14} /> Guardar
+            </button>
             <button
               className="btn btn-primary"
-              onClick={() => handleSave()}
+              onClick={() => handleSave(true)}
               disabled={saving}
               id="modal-save-reservation"
             >
               {saving ? (
                 <><Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} /> Guardando...</>
               ) : (
-                <><Save size={14} /> {reservaId ? 'Actualizar Reserva' : 'Crear Reserva'}</>
+                <><Save size={14} /> {currentResId ? 'Actualizar y Cerrar' : 'Crear y Cerrar'}</>
               )}
             </button>
           </div>
