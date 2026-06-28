@@ -60,7 +60,7 @@ export default async function GlobalUsersPage() {
                 <td style={{ color: 'var(--text-muted)' }}>{user.roleName}</td>
                 <td>
                   {user.organization.name}
-                  {user.organization.slug === 'system-plannerio' && <span style={{ fontSize: '10px', color: 'var(--brand-500)', marginLeft: '8px' }}>(SYSTEM)</span>}
+                  {user.organization.slug === 'system-habita' && <span style={{ fontSize: '10px', color: 'var(--brand-500)', marginLeft: '8px' }}>(SYSTEM)</span>}
                 </td>
                 <td>
                   <span className={styles.badge} style={{ opacity: user.active ? 1 : 0.5 }}>

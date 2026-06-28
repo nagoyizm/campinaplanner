@@ -8,12 +8,12 @@ async function main() {
 
   // 1. Create System Organization
   const org = await prisma.organization.upsert({
-    where: { slug: 'system-plannerio' },
+    where: { slug: 'system-habita' },
     update: {},
     create: {
       id: 'seed-org-system',
-      name: 'Plannerio Global',
-      slug: 'system-plannerio',
+      name: 'Habita Global',
+      slug: 'system-habita',
       plan: 'enterprise',
     },
   })
@@ -22,11 +22,11 @@ async function main() {
   // 2. Create SuperAdmin User
   const password = await bcrypt.hash('S3cur3P4ssw0rd!2026', 12) // nosec: intentional seed credential
   const user = await prisma.user.upsert({
-    where: { email: 'superadmin@plannerio.cl' },
+    where: { email: 'superadmin@habita.cl' },
     update: {},
     create: {
-      email: 'superadmin@plannerio.cl',
-      name: 'Plannerio SuperAdmin',
+      email: 'superadmin@habita.cl',
+      name: 'Habita SuperAdmin',
       password,
       role: 'superadmin',
       roleName: 'System Admin',

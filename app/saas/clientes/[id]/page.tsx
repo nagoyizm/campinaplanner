@@ -50,7 +50,7 @@ export default async function ClienteDetailPage({ params }: { params: Promise<{ 
           <p className={styles.subtitle}>Slug: {org.slug} • Creado el {format(new Date(org.createdAt), 'dd/MM/yyyy')}</p>
         </div>
         <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-          {org.slug !== 'system-plannerio' && (
+          {org.slug !== 'system-habita' && (
             <PlanSelector orgId={org.id} initialPlan={org.plan} />
           )}
           <button className="btn btn-secondary">Editar Perfil</button>

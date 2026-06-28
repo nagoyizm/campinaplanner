@@ -38,7 +38,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
   try {
     // Proteger cuenta maestra del SaaS de ser borrada
     const orgInfo = await prisma.organization.findUnique({ where: { id } })
-    if (orgInfo?.slug === 'system-plannerio') {
+    if (orgInfo?.slug === 'system-habita') {
       return NextResponse.json({ error: 'No puedes borrar la organización del sistema.' }, { status: 400 })
     }
 

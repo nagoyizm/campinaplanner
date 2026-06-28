@@ -232,13 +232,85 @@
   gap: 2px;
   z-index: 5;
   cursor: pointer;
-  transition: filter var(--transition), transform var(--transition);
+  transition: width 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275), filter var(--transition), transform var(--transition);
   overflow: hidden;
   box-shadow: 0 2px 4px rgba(0,0,0,0.05), inset 0 1px 0 rgba(255,255,255,0.4);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   border: 1px solid rgba(0,0,0,0.1);
   min-width: 0;
+}
+
+.reservationBlock.tooltip:hover::after {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* ── Optimistic UI Animations ── */
+@keyframes bounceSnap {
+  0% {
+    transform: scale(1.05);
+    opacity: 0.8;
+  }
+  40% {
+    transform: scale(0.97);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.optimisticBlock {
+  animation: bounceSnap 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+  z-index: 50 !important;
+}
+
+/* ── Sparkles & Particles ── */
+.sparkles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.sparkles::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: 0 0 0 0px rgba(255, 255, 255, 0.6);
+  animation: ripple 0.6s ease-out forwards;
+}
+
+.sparkles::after {
+  content: '';
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 3px; height: 3px;
+  border-radius: 50%;
+  animation: bang 0.6s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+@keyframes ripple {
+  0% { box-shadow: 0 0 0 0px rgba(255, 255, 255, 0.6); opacity: 1; }
+  100% { box-shadow: 0 0 0 24px rgba(255, 255, 255, 0); opacity: 0; }
+}
+
+@keyframes bang {
+  0% {
+    box-shadow: 
+      0 0 0 -2px #fff, 0 0 0 -2px #fff, 0 0 0 -2px #fff, 0 0 0 -2px #fff, 
+      0 0 0 -2px #fff, 0 0 0 -2px #fff, 0 0 0 -2px #fff, 0 0 0 -2px #fff;
+    opacity: 1;
+  }
+  100% {
+    box-shadow: 
+      -40px -40px 0 -1px #fff, 40px -40px 0 -1px #fff, -40px 40px 0 -1px #fff, 40px 40px 0 -1px #fff,
+      0 -50px 0 -1px #fff, 0 50px 0 -1px #fff, -50px 0 0 -1px #fff, 50px 0 0 -1px #fff;
+    opacity: 0;
+  }
 }
 
 .reservationBlock:hover {

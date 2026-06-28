@@ -49,7 +49,7 @@ export default async function SaasDashboard() {
           </div>
           <div className={styles.statInfo}>
             <h3>Clientes Activos</h3>
-            <p>{orgs.filter(o => o.active && o.slug !== 'system-plannerio').length}</p>
+            <p>{orgs.filter(o => o.active && o.slug !== 'system-habita').length}</p>
           </div>
         </div>
         <div className={styles.statCard}>
@@ -91,7 +91,7 @@ export default async function SaasDashboard() {
               <tr key={org.id}>
                 <td>
                   <strong>{org.name}</strong>
-                  {org.slug === 'system-plannerio' && <span style={{ fontSize: '10px', color: 'var(--brand-500)', marginLeft: '8px' }}>(SYSTEM)</span>}
+                  {org.slug === 'system-habita' && <span style={{ fontSize: '10px', color: 'var(--brand-500)', marginLeft: '8px' }}>(SYSTEM)</span>}
                 </td>
                 <td style={{ color: 'var(--text-muted)' }}>{org.slug}</td>
                 <td>{org._count.rooms}</td>

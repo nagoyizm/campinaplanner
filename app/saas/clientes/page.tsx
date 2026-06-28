@@ -48,7 +48,7 @@ export default async function ClientesPage() {
                 <div>
                   <h3 style={{ margin: '0 0 4px 0', fontSize: '1.1rem', color: 'var(--text-base)' }}>
                     {org.name}
-                    {org.slug === 'system-plannerio' && <span className={styles.badge} style={{ marginLeft: '8px' }}>Sistema</span>}
+                    {org.slug === 'system-habita' && <span className={styles.badge} style={{ marginLeft: '8px' }}>Sistema</span>}
                   </h3>
                   <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.9rem' }}>
                     Slug: {org.slug} • Creado: {format(new Date(org.createdAt), 'dd/MM/yyyy')}
@@ -61,7 +61,7 @@ export default async function ClientesPage() {
                   {org.active ? 'Activo' : 'Inactivo'}
                 </span>
                 
-                {org.slug !== 'system-plannerio' && (
+                {org.slug !== 'system-habita' && (
                   <DeleteButton 
                     endpoint={`/api/saas/clientes/${org.id}`} 
                     confirmMessage={`¿Estás SEGURO de eliminar el cliente ${org.name}? Esta acción borrará permanentemente TODAS sus habitaciones, reservas, usuarios y finanzas asociadas.`} 

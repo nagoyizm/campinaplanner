@@ -18,7 +18,7 @@ export default async function SaasPlannerPage() {
   await requireSuperAdmin()
 
   const orgs = await prisma.organization.findMany({
-    where: { slug: { not: 'system-plannerio' } },
+    where: { slug: { not: 'system-habita' } },
     orderBy: { name: 'asc' }
   })
 

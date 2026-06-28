@@ -127,6 +127,9 @@ export default function CalendarioClient({ rooms, reservas, fechaBase, todayStr 
   } | null>(null)
   const [rescheduling, setRescheduling] = useState(false)
   const clickStartRef = useRef<{ x: number; y: number } | null>(null)
+  
+  // Optimistic UI state mapping reservationRoom.id -> { roomId, arrival, departure, isSaving?: boolean, saved?: boolean }
+  const [optimisticRsvs, setOptimisticRsvs] = useState<Record<string, { roomId: string, arrival: string, departure: string, isSaving?: boolean, saved?: boolean }>>({})
 
   // Filters state
   const [statusFilter, setStatusFilter] = useState<string[]>([])
@@ -137,9 +140,28 @@ export default function CalendarioClient({ rooms, reservas, fechaBase, todayStr 
   const [unitTypeFilter, setUnitTypeFilter] = useState<string[]>(() => unitTypes.map(u => u.id))
 
   const visibleReservas = useMemo(() => {
-    if (statusFilter.length === 0) return reservas
-    return reservas.filter(r => statusFilter.includes(r.reservation.status))
-  }, [reservas, statusFilter])
+    let filtered = reservas
+    if (statusFilter.length > 0) {
+      filtered = filtered.filter(r => statusFilter.includes(r.reservation.status))
+    }
+    if (Object.keys(optimisticRsvs).length > 0) {
+      filtered = filtered.map(r => {
+        const opt = optimisticRsvs[r.id]
+        if (opt) {
+          // Return a modified copy and flag it so we can animate it
+          return { ...r, roomId: opt.roomId, arrival: opt.arrival, departure: opt.departure, _isOptimistic: true, _isSaving: opt.isSaving, _isSaved: opt.saved } as any
+        }
+        return r
+      })
+    }
+    return filtered
+  }, [reservas, statusFilter, optimisticRsvs])
+  
+  // When 'reservas' from the server updates, clear the optimistic state 
+  // because the server state is now the source of truth again.
+  useEffect(() => {
+    setOptimisticRsvs({})
+  }, [reservas])
 
   // Is this day "Today" in Santiago?
   const isTodaySantiago = useCallback((d: Date) => {
@@ -347,7 +369,7 @@ export default function CalendarioClient({ rooms, reservas, fechaBase, todayStr 
 
   const saveReschedule = async (rsv: ReservationRoom, targetRoomId: string, newArrival: Date, newDeparture: Date) => {
     setRescheduling(true)
-    const saveToast = toast.loading('Guardando cambios en el calendario...')
+    // No usamos toast.loading para que sea un guardado silencioso/optimista, a menos que falle.
     try {
       const getRes = await fetch(`/api/reservas/${rsv.reservationId}`)
       if (!getRes.ok) throw new Error('No se pudo obtener la reserva')
@@ -428,12 +450,25 @@ export default function CalendarioClient({ rooms, reservas, fechaBase, todayStr 
       })
 
       if (!putRes.ok) throw new Error('Error al actualizar la reserva')
+      
+      // Set as saved
+      setOptimisticRsvs(prev => ({
+        ...prev,
+        [rsv.id]: { ...prev[rsv.id], isSaving: false, saved: true }
+      }))
 
-      toast.success('Reserva reprogramada con éxito', { id: saveToast })
-      router.refresh()
+      // Wait 1.5s to show the success state before pulling fresh data
+      setTimeout(() => {
+        router.refresh()
+      }, 1500)
     } catch (err) {
       console.error(err)
-      toast.error('Ocurrió un error al reprogramar la reserva.', { id: saveToast })
+      toast.error('Ocurrió un error al reprogramar la reserva. Se restaurarán los datos.')
+      setOptimisticRsvs(prev => {
+        const next = { ...prev }
+        delete next[rsv.id]
+        return next
+      })
     } finally {
       setRescheduling(false)
     }
@@ -483,7 +518,12 @@ export default function CalendarioClient({ rooms, reservas, fechaBase, todayStr 
     const hasCollision = checkCollision(rsv.reservationId, targetRoomId, newArrival, newDeparture)
 
     if (datesChanged && !hasCollision) {
-      await saveReschedule(rsv, targetRoomId, newArrival, newDeparture)
+      // Optimistic update
+      setOptimisticRsvs(prev => ({
+        ...prev,
+        [rsv.id]: { roomId: targetRoomId, arrival: newArrival.toISOString(), departure: newDeparture.toISOString(), isSaving: true, saved: false }
+      }))
+      saveReschedule(rsv, targetRoomId, newArrival, newDeparture).catch(console.error)
     } else if (hasCollision) {
       toast.error('¡Conflicto de fechas en esa habitación! Elige un espacio libre.')
     }
@@ -608,7 +648,7 @@ export default function CalendarioClient({ rooms, reservas, fechaBase, todayStr 
           <div
             role="button" // NOSONAR
             tabIndex={0}
-            className={styles.reservationBlock}
+            className={`${styles.reservationBlock} ${(rsv as any)._isOptimistic ? styles.optimisticBlock : ''}`}
             style={{
               backgroundColor: status.color,
               color: status.textColor,
@@ -634,16 +674,22 @@ export default function CalendarioClient({ rooms, reservas, fechaBase, todayStr 
               }}
             />
             
-            <span className={styles.rsvGuest} style={{ display: 'flex', alignItems: 'center', gap: '4px', overflow: 'hidden' }}>
-              {rsv.reservation.guaranteeRsv === 'true' ? (
+            <span className={styles.rsvGuest} style={{ display: 'flex', alignItems: 'center', gap: '4px', overflow: 'hidden', zIndex: 2 }}>
+              {(rsv as any)._isSaving ? (
+                <RefreshCw size={12} className={styles.spinning} style={{ flexShrink: 0 }} />
+              ) : (rsv as any)._isSaved ? (
+                <ShieldCheck size={12} style={{ color: '#fff', flexShrink: 0 }} />
+              ) : rsv.reservation.guaranteeRsv === 'true' ? (
                 <ShieldCheck size={12} style={{ color: '#10b981', flexShrink: 0 }} data-tooltip="Garantía Pagada" />
               ) : (
                 <ShieldAlert size={12} style={{ color: '#ef4444', flexShrink: 0 }} data-tooltip="Sin Garantía" />
               )}
               <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {rsv.reservation.guest.firstName} {rsv.reservation.guest.lastName}
+                {(rsv as any)._isSaving ? 'Guardando...' : (rsv as any)._isSaved ? '¡Actualizada!' : `${rsv.reservation.guest.firstName} ${rsv.reservation.guest.lastName}`}
               </span>
             </span>
+            
+            {(rsv as any)._isOptimistic && <div className={styles.sparkles} />}
 
             {/* Right Resize Handle */}
             <div

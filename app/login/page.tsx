@@ -47,7 +47,7 @@ export default function LoginPage() {
             <Hotel size={28} />
           </div>
           <div>
-            <h1 className={styles.logoTitle}>PlannerIO</h1>
+            <h1 className={styles.logoTitle}>Habita</h1>
             <p className={styles.logoSub}>Sistema de Gestión de Reservas</p>
           </div>
         </div>
@@ -124,7 +124,7 @@ export default function LoginPage() {
         </form>
 
         <p className={styles.footer}>
-          © {new Date().getFullYear()} PlannerIO. Todos los derechos reservados.
+          © {new Date().getFullYear()} Habita. Todos los derechos reservados.
         </p>
       </div>
     </div>
