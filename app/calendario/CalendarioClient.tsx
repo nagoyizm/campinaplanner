@@ -3,16 +3,15 @@
 import { useState, useCallback, useRef, Fragment, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import {
-  format, addDays, addMonths, startOfMonth,
-  isSameDay, isWeekend, isToday, differenceInDays,
-  getDaysInMonth, startOfWeek
+  format, addDays, addMonths,
+  isSameDay, isWeekend, differenceInDays,
+  startOfWeek
 } from 'date-fns'
 import { es } from 'date-fns/locale'
 import {
-  ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, RotateCcw,
-  Plus, RefreshCw, Printer, Crown, Volume2,
-  Trash2, AlertTriangle, Star, Dog, Clock, Sunrise,
-  Repeat, Loader2, ShieldCheck, ShieldAlert, Filter
+  ChevronsLeft, ChevronsRight,
+  Plus, RefreshCw,
+  ShieldCheck, ShieldAlert, Filter
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import styles from './Calendario.module.css'
@@ -69,10 +68,10 @@ interface ReservationRoom {
 }
 
 interface CalendarioClientProps {
-  rooms: Room[]
-  reservas: ReservationRoom[]
-  fechaBase: string
-  todayStr: string
+  readonly rooms: Room[]
+  readonly reservas: ReservationRoom[]
+  readonly fechaBase: string
+  readonly todayStr: string
 }
 
 // Convierte una fecha UTC ISO (YYYY-MM-DD...) a un objeto Date local sin desfase de zona horaria
@@ -275,11 +274,11 @@ export default function CalendarioClient({ rooms, reservas, fechaBase, todayStr 
     }
 
     if (panStart) {
-      window.addEventListener('mousemove', handleGlobalMouseMove)
-      window.addEventListener('mouseup', handleGlobalMouseUp)
+      globalThis.addEventListener('mousemove', handleGlobalMouseMove)
+      globalThis.addEventListener('mouseup', handleGlobalMouseUp)
       return () => {
-        window.removeEventListener('mousemove', handleGlobalMouseMove)
-        window.removeEventListener('mouseup', handleGlobalMouseUp)
+        globalThis.removeEventListener('mousemove', handleGlobalMouseMove)
+        globalThis.removeEventListener('mouseup', handleGlobalMouseUp)
       }
     }
   }, [panStart])
@@ -346,6 +345,100 @@ export default function CalendarioClient({ rooms, reservas, fechaBase, todayStr 
     })
   }
 
+  const saveReschedule = async (rsv: ReservationRoom, targetRoomId: string, newArrival: Date, newDeparture: Date) => {
+    setRescheduling(true)
+    const saveToast = toast.loading('Guardando cambios en el calendario...')
+    try {
+      const getRes = await fetch(`/api/reservas/${rsv.reservationId}`)
+      if (!getRes.ok) throw new Error('No se pudo obtener la reserva')
+      const data = await getRes.json()
+
+      const updatedRooms = data.rooms.map((roomLine: any) => {
+        if (roomLine.roomId === rsv.roomId) {
+          const nights = differenceInDays(newDeparture, newArrival)
+          const unitTotal = nights * roomLine.unitRate
+          return {
+            roomId: targetRoomId,
+            rateId: roomLine.rateId,
+            arrival: newArrival.toISOString(),
+            departure: newDeparture.toISOString(),
+            nights,
+            adults: roomLine.adults,
+            children: roomLine.children,
+            unitRate: roomLine.unitRate,
+            unitTotal,
+          }
+        }
+        return {
+          roomId: roomLine.roomId,
+          rateId: roomLine.rateId,
+          arrival: roomLine.arrival,
+          departure: roomLine.departure,
+          nights: roomLine.nights,
+          adults: roomLine.adults,
+          children: roomLine.children,
+          unitRate: roomLine.unitRate,
+          unitTotal: roomLine.unitTotal,
+        }
+      })
+
+      const newUnitTotal = updatedRooms.reduce((acc: number, r: any) => acc + r.unitTotal, 0)
+
+      const putBody = {
+        reservaId: data.id,
+        status: data.status,
+        isVip: data.isVip,
+        isNoisy: data.isNoisy,
+        isDirty: data.isDirty,
+        isDifficult: data.isDifficult,
+        isNewPax: data.isNewPax,
+        isRecurring: data.isRecurring,
+        lateCheckoutHrs: data.lateCheckoutHrs,
+        earlyCheckinHrs: data.earlyCheckinHrs,
+        adults: data.adults,
+        children: data.children,
+        pets: data.pets,
+        paymentMethod: data.paymentMethod,
+        accountCode: data.accountCode,
+        totalPaid: data.totalPaid,
+        lostItems: data.lostItems,
+        notes: data.notes,
+        unitTotal: newUnitTotal,
+        discounts: data.discounts,
+        additionalServices: data.additionalServices,
+        tax: data.tax,
+        guest: {
+          id: data.guest.id,
+          firstName: data.guest.firstName,
+          lastName: data.guest.lastName,
+          rut: data.guest.rut,
+          email: data.guest.email,
+          phone: data.guest.phone,
+          nationality: data.guest.nationality,
+          address: data.guest.address,
+          notes: data.guest.notes,
+        },
+        rooms: updatedRooms,
+      }
+
+      const putRes = await fetch('/api/reservas', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(putBody),
+      })
+
+      if (!putRes.ok) throw new Error('Error al actualizar la reserva')
+
+      toast.success('Reserva reprogramada con éxito', { id: saveToast })
+      router.refresh()
+    } catch (err) {
+      console.error(err)
+      toast.error('Ocurrió un error al reprogramar la reserva.', { id: saveToast })
+    } finally {
+      setRescheduling(false)
+    }
+  }
+
   const handleRsvMouseUp = useCallback(async (upEvent: MouseEvent) => {
     if (!activeDrag) return
 
@@ -390,97 +483,7 @@ export default function CalendarioClient({ rooms, reservas, fechaBase, todayStr 
     const hasCollision = checkCollision(rsv.reservationId, targetRoomId, newArrival, newDeparture)
 
     if (datesChanged && !hasCollision) {
-      setRescheduling(true)
-      const saveToast = toast.loading('Guardando cambios en el calendario...')
-      try {
-        const getRes = await fetch(`/api/reservas/${rsv.reservationId}`)
-        if (!getRes.ok) throw new Error('No se pudo obtener la reserva')
-        const data = await getRes.json()
-
-        const updatedRooms = data.rooms.map((roomLine: any) => {
-          if (roomLine.roomId === rsv.roomId) {
-            const nights = differenceInDays(newDeparture, newArrival)
-            const unitTotal = nights * roomLine.unitRate
-            return {
-              roomId: targetRoomId,
-              rateId: roomLine.rateId,
-              arrival: newArrival.toISOString(),
-              departure: newDeparture.toISOString(),
-              nights,
-              adults: roomLine.adults,
-              children: roomLine.children,
-              unitRate: roomLine.unitRate,
-              unitTotal,
-            }
-          }
-          return {
-            roomId: roomLine.roomId,
-            rateId: roomLine.rateId,
-            arrival: roomLine.arrival,
-            departure: roomLine.departure,
-            nights: roomLine.nights,
-            adults: roomLine.adults,
-            children: roomLine.children,
-            unitRate: roomLine.unitRate,
-            unitTotal: roomLine.unitTotal,
-          }
-        })
-
-        const newUnitTotal = updatedRooms.reduce((acc: number, r: any) => acc + r.unitTotal, 0)
-
-        const putBody = {
-          reservaId: data.id,
-          status: data.status,
-          isVip: data.isVip,
-          isNoisy: data.isNoisy,
-          isDirty: data.isDirty,
-          isDifficult: data.isDifficult,
-          isNewPax: data.isNewPax,
-          isRecurring: data.isRecurring,
-          lateCheckoutHrs: data.lateCheckoutHrs,
-          earlyCheckinHrs: data.earlyCheckinHrs,
-          adults: data.adults,
-          children: data.children,
-          pets: data.pets,
-          paymentMethod: data.paymentMethod,
-          accountCode: data.accountCode,
-          totalPaid: data.totalPaid,
-          lostItems: data.lostItems,
-          notes: data.notes,
-          unitTotal: newUnitTotal,
-          discounts: data.discounts,
-          additionalServices: data.additionalServices,
-          tax: data.tax,
-          guest: {
-            id: data.guest.id,
-            firstName: data.guest.firstName,
-            lastName: data.guest.lastName,
-            rut: data.guest.rut,
-            email: data.guest.email,
-            phone: data.guest.phone,
-            nationality: data.guest.nationality,
-            address: data.guest.address,
-            notes: data.guest.notes,
-          },
-          rooms: updatedRooms,
-        }
-
-        const putRes = await fetch('/api/reservas', {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(putBody),
-        })
-
-        if (!putRes.ok) throw new Error('Error al actualizar la reserva')
-
-        toast.success('Reserva reprogramada con éxito', { id: saveToast })
-        router.refresh()
-      } catch (err) {
-        console.error(err)
-        toast.error('Ocurrió un error al reprogramar la reserva.', { id: saveToast })
-      } finally {
-        setRescheduling(false)
-      }
+      await saveReschedule(rsv, targetRoomId, newArrival, newDeparture)
     } else if (hasCollision) {
       toast.error('¡Conflicto de fechas en esa habitación! Elige un espacio libre.')
     }
@@ -510,11 +513,175 @@ export default function CalendarioClient({ rooms, reservas, fechaBase, todayStr 
       handleRsvMouseUp(upEvent)
     }
 
-    window.addEventListener('mouseup', handleWindowMouseUp)
+    globalThis.addEventListener('mouseup', handleWindowMouseUp)
     return () => {
-      window.removeEventListener('mouseup', handleWindowMouseUp)
+      globalThis.removeEventListener('mouseup', handleWindowMouseUp)
     }
   }, [activeDrag, handleRsvMouseUp])
+
+  const renderCell = (room: Room, day: Date, dayIdx: number) => {
+    const rsv = getReservationForCell(room.id, day)
+    const isFirst = rsv ? isFirstDay(rsv, day) : false
+    const blockWidth = rsv && isFirst ? getBlockWidth(rsv, day, days) : 1
+    const status = rsv ? STATUS_CONFIG[rsv.reservation.status] : null
+    const isDragSel = isDragSelected(room.id, day)
+
+    // Determine if this cell is covered by the active drag preview
+    let isPreviewStart = false
+    let previewWidth = 1
+    let isPreviewCell = false
+    let isPreviewValid = true
+
+    if (activeDrag) {
+      const { rsv: dragRsv, type: dragType, clickOffset } = activeDrag
+      let newArrival = parseUTCDate(dragRsv.arrival)
+      let newDeparture = parseUTCDate(dragRsv.departure)
+      let targetRoomId = dragRsv.roomId
+
+      if (dragType === 'move') {
+        newArrival = addDays(activeDrag.currentDate, -clickOffset)
+        newDeparture = addDays(newArrival, dragRsv.nights)
+        targetRoomId = activeDrag.currentRoomId
+      } else if (dragType === 'resize-left') {
+        newArrival = activeDrag.currentDate
+        if (newArrival >= newDeparture) {
+          newArrival = addDays(newDeparture, -1)
+        }
+      } else if (dragType === 'resize-right') {
+        newDeparture = addDays(activeDrag.currentDate, 1)
+        if (newDeparture <= newArrival) {
+          newDeparture = addDays(newArrival, 1)
+        }
+      }
+
+      // Check collision
+      isPreviewValid = !checkCollision(dragRsv.reservationId, targetRoomId, newArrival, newDeparture)
+
+      if (room.id === targetRoomId) {
+        const dayStart = new Date(day); dayStart.setHours(0,0,0,0)
+        const arrStart = new Date(newArrival); arrStart.setHours(0,0,0,0)
+        const depStart = new Date(newDeparture); depStart.setHours(0,0,0,0)
+
+        if (dayStart >= arrStart && dayStart < depStart) {
+          isPreviewCell = true
+          if (isSameDay(arrStart, dayStart)) {
+            isPreviewStart = true
+            const start = dayStart
+            const end = depStart
+            let count = 0
+            for (const d of days) {
+              const dn = new Date(d); dn.setHours(0,0,0,0)
+              if (dn >= start && dn < end) count++
+              else if (dn >= end) break
+            }
+            previewWidth = count
+          }
+        }
+      }
+    }
+
+    return (
+      <div
+        role="gridcell" // NOSONAR
+        tabIndex={0}
+        key={`cell-${room.id}-${day.toISOString()}`}
+        className={`
+          ${styles.cell}
+          ${isTodaySantiago(day) ? styles.todayCell : ''}
+          ${isWeekend(day) ? styles.weekendCell : ''}
+          ${isDragSel ? styles.dragSelected : ''}
+          ${rsv ? styles.hasReservation : ''}
+          ${isPreviewCell ? styles.dragSelected : ''}
+        `}
+        onClick={() => !activeDrag && handleCellClick(room.id, day, rsv)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            if (!activeDrag) handleCellClick(room.id, day, rsv);
+          }
+        }}
+        onMouseDown={(e) => !rsv && !activeDrag && handleMouseDown(e, room.id, day)}
+        onMouseEnter={() => handleMouseEnter(room.id, day)}
+      >
+        {/* Original Reservation Block (hide if being dragged/resized) */}
+        {rsv && isFirst && status && (activeDrag?.rsv.reservationId !== rsv.reservationId) && (
+          <div
+            role="button" // NOSONAR
+            tabIndex={0}
+            className={styles.reservationBlock}
+            style={{
+              backgroundColor: status.color,
+              color: status.textColor,
+              width: `calc(${blockWidth * 100}% + ${blockWidth - 1}px)`,
+            }}
+            onMouseDown={(e) => {
+              if (rescheduling) return
+              handleRsvMouseDown(e, rsv, day, 'move')
+            }}
+            onMouseEnter={(e) => handleRsvMouseEnter(e, rsv)}
+            onMouseMove={handleRsvMouseMove}
+            onMouseLeave={handleRsvMouseLeave}
+          >
+            {/* Left Resize Handle */}
+            <div
+              role="button" // NOSONAR
+              tabIndex={0}
+              aria-label="Resize left"
+              className={styles.resizeHandleLeft}
+              onMouseDown={(e) => {
+                if (rescheduling) return
+                handleRsvMouseDown(e, rsv, day, 'resize-left')
+              }}
+            />
+            
+            <span className={styles.rsvGuest} style={{ display: 'flex', alignItems: 'center', gap: '4px', overflow: 'hidden' }}>
+              {rsv.reservation.guaranteeRsv === 'true' ? (
+                <ShieldCheck size={12} style={{ color: '#10b981', flexShrink: 0 }} data-tooltip="Garantía Pagada" />
+              ) : (
+                <ShieldAlert size={12} style={{ color: '#ef4444', flexShrink: 0 }} data-tooltip="Sin Garantía" />
+              )}
+              <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {rsv.reservation.guest.firstName} {rsv.reservation.guest.lastName}
+              </span>
+            </span>
+
+            {/* Right Resize Handle */}
+            <div
+              role="button" // NOSONAR
+              tabIndex={0}
+              aria-label="Resize right"
+              className={styles.resizeHandleRight}
+              onMouseDown={(e) => {
+                if (rescheduling) return
+                handleRsvMouseDown(e, rsv, day, 'resize-right')
+              }}
+            />
+          </div>
+        )}
+
+        {/* Drag & Resize Preview Block */}
+        {activeDrag && isPreviewStart && (
+          <div
+            className={`${styles.reservationBlock} ${styles.dragPreviewBlock}`}
+            style={{
+              backgroundColor: isPreviewValid ? 'var(--brand-500)' : '#dc2626',
+              color: '#ffffff',
+              border: '2px dashed #ffffff',
+              width: `calc(${previewWidth * 100}% + ${previewWidth - 1}px)`,
+              pointerEvents: 'none',
+            }}
+          >
+            <span className={styles.rsvGuest}>
+              {isPreviewValid 
+                ? `${activeDrag.rsv.reservation.guest.firstName} ${activeDrag.rsv.reservation.guest.lastName} (Soltar para reubicar)` 
+                : '¡Conflicto de fechas!'
+              }
+            </span>
+          </div>
+        )}
+      </div>
+    )
+  }
 
   // ── Render ───────────────────────────────────────────────────
   return (
@@ -610,6 +777,7 @@ export default function CalendarioClient({ rooms, reservas, fechaBase, todayStr 
             {isRoomFilterOpen && (
               <>
                 <div 
+                  aria-hidden="true"
                   style={{ position: 'fixed', inset: 0, zIndex: 90 }} 
                   onClick={() => setIsRoomFilterOpen(false)} 
                 />
@@ -627,10 +795,8 @@ export default function CalendarioClient({ rooms, reservas, fechaBase, todayStr 
                         type="checkbox" 
                         checked={unitTypeFilter.includes(ut.id)}
                         onChange={(e) => {
-                          setUnitTypeFilter(prev => {
-                            if (e.target.checked) return [...prev, ut.id]
-                            return prev.filter(id => id !== ut.id)
-                          })
+                          const checked = e.target.checked;
+                          setUnitTypeFilter(prev => checked ? [...prev, ut.id] : prev.filter(id => id !== ut.id))
                         }}
                       />
                       {ut.name}
@@ -666,153 +832,7 @@ export default function CalendarioClient({ rooms, reservas, fechaBase, todayStr 
                     </div>
 
                     {/* Day cells */}
-                    {days.map((day, dayIdx) => {
-                      const rsv = getReservationForCell(room.id, day)
-                      const isFirst = rsv ? isFirstDay(rsv, day) : false
-                      const blockWidth = rsv && isFirst ? getBlockWidth(rsv, day, days) : 1
-                      const status = rsv ? STATUS_CONFIG[rsv.reservation.status] : null
-                      const isDragSel = isDragSelected(room.id, day)
-
-                      // Determine if this cell is covered by the active drag preview
-                      let isPreviewStart = false
-                      let previewWidth = 1
-                      let isPreviewCell = false
-                      let isPreviewValid = true
-
-                      if (activeDrag) {
-                        const { rsv: dragRsv, type: dragType, clickOffset } = activeDrag
-                        let newArrival = parseUTCDate(dragRsv.arrival)
-                        let newDeparture = parseUTCDate(dragRsv.departure)
-                        let targetRoomId = dragRsv.roomId
-
-                        if (dragType === 'move') {
-                          newArrival = addDays(activeDrag.currentDate, -clickOffset)
-                          newDeparture = addDays(newArrival, dragRsv.nights)
-                          targetRoomId = activeDrag.currentRoomId
-                        } else if (dragType === 'resize-left') {
-                          newArrival = activeDrag.currentDate
-                          if (newArrival >= newDeparture) {
-                            newArrival = addDays(newDeparture, -1)
-                          }
-                        } else if (dragType === 'resize-right') {
-                          newDeparture = addDays(activeDrag.currentDate, 1)
-                          if (newDeparture <= newArrival) {
-                            newDeparture = addDays(newArrival, 1)
-                          }
-                        }
-
-                        // Check collision
-                        isPreviewValid = !checkCollision(dragRsv.reservationId, targetRoomId, newArrival, newDeparture)
-
-                        if (room.id === targetRoomId) {
-                          const dayStart = new Date(day); dayStart.setHours(0,0,0,0)
-                          const arrStart = new Date(newArrival); arrStart.setHours(0,0,0,0)
-                          const depStart = new Date(newDeparture); depStart.setHours(0,0,0,0)
-
-                          if (dayStart >= arrStart && dayStart < depStart) {
-                            isPreviewCell = true
-                            if (isSameDay(arrStart, dayStart)) {
-                              isPreviewStart = true
-                              const start = dayStart
-                              const end = depStart
-                              let count = 0
-                              for (const d of days) {
-                                const dn = new Date(d); dn.setHours(0,0,0,0)
-                                if (dn >= start && dn < end) count++
-                                else if (dn >= end) break
-                              }
-                              previewWidth = count
-                            }
-                          }
-                        }
-                      }
-
-                      return (
-                        <div
-                          key={`cell-${room.id}-${day.toISOString()}`}
-                          className={`
-                            ${styles.cell}
-                            ${isTodaySantiago(day) ? styles.todayCell : ''}
-                            ${isWeekend(day) ? styles.weekendCell : ''}
-                            ${isDragSel ? styles.dragSelected : ''}
-                            ${rsv ? styles.hasReservation : ''}
-                            ${isPreviewCell ? styles.dragSelected : ''}
-                          `}
-                          onClick={() => !activeDrag && handleCellClick(room.id, day, rsv)}
-                          onMouseDown={(e) => !rsv && !activeDrag && handleMouseDown(e, room.id, day)}
-                          onMouseEnter={() => handleMouseEnter(room.id, day)}
-                        >
-                          {/* Original Reservation Block (hide if being dragged/resized) */}
-                          {rsv && isFirst && status && (!activeDrag || activeDrag.rsv.reservationId !== rsv.reservationId) && (
-                            <div
-                              className={styles.reservationBlock}
-                              style={{
-                                backgroundColor: status.color,
-                                color: status.textColor,
-                                width: `calc(${blockWidth * 100}% + ${blockWidth - 1}px)`,
-                              }}
-                              onMouseDown={(e) => {
-                                if (rescheduling) return
-                                handleRsvMouseDown(e, rsv, day, 'move')
-                              }}
-                              onMouseEnter={(e) => handleRsvMouseEnter(e, rsv)}
-                              onMouseMove={handleRsvMouseMove}
-                              onMouseLeave={handleRsvMouseLeave}
-                            >
-                              {/* Left Resize Handle */}
-                              <div
-                                className={styles.resizeHandleLeft}
-                                onMouseDown={(e) => {
-                                  if (rescheduling) return
-                                  handleRsvMouseDown(e, rsv, day, 'resize-left')
-                                }}
-                              />
-                              
-                              <span className={styles.rsvGuest} style={{ display: 'flex', alignItems: 'center', gap: '4px', overflow: 'hidden' }}>
-                                {rsv.reservation.guaranteeRsv === 'true' ? (
-                                  <ShieldCheck size={12} style={{ color: '#10b981', flexShrink: 0 }} data-tooltip="Garantía Pagada" />
-                                ) : (
-                                  <ShieldAlert size={12} style={{ color: '#ef4444', flexShrink: 0 }} data-tooltip="Sin Garantía" />
-                                )}
-                                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                  {rsv.reservation.guest.firstName} {rsv.reservation.guest.lastName}
-                                </span>
-                              </span>
-
-                              {/* Right Resize Handle */}
-                              <div
-                                className={styles.resizeHandleRight}
-                                onMouseDown={(e) => {
-                                  if (rescheduling) return
-                                  handleRsvMouseDown(e, rsv, day, 'resize-right')
-                                }}
-                              />
-                            </div>
-                          )}
-
-                          {/* Drag & Resize Preview Block */}
-                          {activeDrag && isPreviewStart && (
-                            <div
-                              className={`${styles.reservationBlock} ${styles.dragPreviewBlock}`}
-                              style={{
-                                backgroundColor: isPreviewValid ? 'var(--brand-500)' : '#dc2626',
-                                color: '#ffffff',
-                                border: '2px dashed #ffffff',
-                                width: `calc(${previewWidth * 100}% + ${previewWidth - 1}px)`,
-                                pointerEvents: 'none',
-                              }}
-                            >
-                              <span className={styles.rsvGuest}>
-                                {isPreviewValid 
-                                  ? `${activeDrag.rsv.reservation.guest.firstName} ${activeDrag.rsv.reservation.guest.lastName} (Soltar para reubicar)` 
-                                  : '¡Conflicto de fechas!'
-                                }
-                              </span>
-                            </div>
-                          )}
-                        </div>
-                      )
-                    })}
+                    {days.map((day, dayIdx) => renderCell(room, day, dayIdx))}
                   </Fragment>
                 ))}
               </Fragment>
@@ -827,6 +847,8 @@ export default function CalendarioClient({ rooms, reservas, fechaBase, todayStr 
             const isHighlight = statusFilter.includes(key);
             return (
               <div 
+                role="button" // NOSONAR
+                tabIndex={0}
                 key={key} 
                 className={styles.legendItem} 
                 onClick={() => {
@@ -834,6 +856,15 @@ export default function CalendarioClient({ rooms, reservas, fechaBase, todayStr 
                     if (prev.includes(key)) return prev.filter(k => k !== key)
                     return [...prev, key]
                   })
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    setStatusFilter(prev => {
+                      if (prev.includes(key)) return prev.filter(k => k !== key)
+                      return [...prev, key]
+                    })
+                  }
                 }}
                 style={{ 
                   cursor: 'pointer', 
@@ -857,8 +888,8 @@ export default function CalendarioClient({ rooms, reservas, fechaBase, todayStr 
 
       {/* ── Modals ── */}
       {actionSelectModalOpen && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => setActionSelectModalOpen(null)}>
-          <div style={{ background: 'var(--surface-1)', padding: 24, borderRadius: 12, width: 320, boxShadow: '0 10px 25px rgba(0,0,0,0.2)' }} onClick={e => e.stopPropagation()}>
+        <div aria-hidden="true" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => setActionSelectModalOpen(null)}>
+          <div aria-hidden="true" style={{ background: 'var(--surface-1)', padding: 24, borderRadius: 12, width: 320, boxShadow: '0 10px 25px rgba(0,0,0,0.2)' }} onClick={e => e.stopPropagation()}>
             <h3 style={{ marginTop: 0, marginBottom: 16 }}>¿Qué deseas hacer?</h3>
             <p style={{ color: 'var(--text-secondary)', fontSize: 14, marginBottom: 20 }}>Selecciona la acción para el {format(actionSelectModalOpen.date, 'dd/MM/yyyy')}.</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>

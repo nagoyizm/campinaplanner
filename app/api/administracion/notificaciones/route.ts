@@ -27,6 +27,7 @@ export async function GET() {
     notifyEmailCleaning: user.notifyEmailCleaning,
     notifyWspInvAlert: user.notifyWspInvAlert,
     notifyEmailInvAlert: user.notifyEmailInvAlert,
+    defaultHomePage: user.defaultHomePage || '',
   })
 }
 
@@ -56,6 +57,7 @@ export async function PUT(req: Request) {
       notifyEmailCleaning: body.notifyEmailCleaning,
       notifyWspInvAlert: body.notifyWspInvAlert,
       notifyEmailInvAlert: body.notifyEmailInvAlert,
+      defaultHomePage: body.defaultHomePage || null,
     }
   })
 

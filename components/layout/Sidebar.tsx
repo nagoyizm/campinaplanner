@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useSession } from 'next-auth/react'
+import { useSession, signOut } from 'next-auth/react'
 import {
   LayoutDashboard,
   Calendar,
@@ -14,7 +14,6 @@ import {
   ChevronLeft,
   ChevronRight,
   Hotel,
-  BadgeDollarSign,
   Package,
   LogOut,
   Sun,
@@ -26,10 +25,8 @@ import {
   LineChart,
   ShieldAlert,
   UsersRound,
-  Smartphone,
   Bell,
 } from 'lucide-react'
-import { signOut } from 'next-auth/react'
 import PalettePicker from './PalettePicker'
 import styles from './Sidebar.module.css'
 
@@ -59,41 +56,36 @@ const getHotelNavItems = (role: string) => {
     { href: '/habitaciones', label: 'Habitaciones', icon: Hotel },
     { href: '/huespedes',  label: 'Huéspedes',    icon: Users },
     { href: '/pizarra',    label: 'Pizarra / Memo', icon: MessageSquare },
+    ...(role === 'admin' || role === 'superadmin' ? [
+      { href: '/inventario', label: 'Inventario', icon: Package },
+      { href: '/administracion', label: 'Administración', icon: Bell },
+    ] : []),
+    {
+      label: 'Reportes',
+      icon: BarChart3,
+      children: [
+        { href: '/reportes/financiero', label: 'Financiero' },
+        { href: '/reportes/habitaciones', label: 'Habitaciones' },
+        { href: '/reportes/huespedes', label: 'Huéspedes' },
+        { href: '/reportes/inventario', label: 'Inventario' },
+        { href: '/reportes/fechas', label: 'Fechas' },
+      ],
+    } as any,
+    {
+      label: 'Configuración',
+      icon: Settings,
+      children: [
+        { href: '/setup/tarifas',   label: 'Tarifas' },
+        { href: '/setup/unidades',  label: 'Unidades' },
+        { href: '/setup/rooms',     label: 'Habitaciones' },
+        { href: '/setup/amenities', label: 'Amenities' },
+        { href: '/setup/pagos',     label: 'Pagos y DTE' },
+        { href: '/setup/usuarios',  label: 'Usuarios' },
+        { href: '/setup/whatsapp',  label: 'WhatsApp Bot' },
+      ],
+    } as any,
+    ...(role === 'superadmin' ? [{ href: '/simulador',  label: 'Simulador Bot', icon: MessageSquare } as any] : []),
   ]
-
-  if (role === 'admin' || role === 'superadmin') {
-    nav.push({ href: '/inventario', label: 'Inventario', icon: Package })
-    nav.push({ href: '/administracion', label: 'Administración', icon: Bell })
-  }
-
-  nav.push({
-    label: 'Reportes',
-    icon: BarChart3,
-    children: [
-      { href: '/reportes/financiero', label: 'Financiero' },
-      { href: '/reportes/habitaciones', label: 'Habitaciones' },
-      { href: '/reportes/huespedes', label: 'Huéspedes' },
-      { href: '/reportes/inventario', label: 'Inventario' },
-      { href: '/reportes/fechas', label: 'Fechas' },
-    ],
-  } as any)
-
-  nav.push({
-    label: 'Configuración',
-    icon: Settings,
-    children: [
-      { href: '/setup/tarifas',   label: 'Tarifas' },
-      { href: '/setup/unidades',  label: 'Unidades' },
-      { href: '/setup/rooms',     label: 'Habitaciones' },
-      { href: '/setup/amenities', label: 'Amenities' },
-      { href: '/setup/usuarios',  label: 'Usuarios' },
-      { href: '/setup/whatsapp',  label: 'WhatsApp Bot' },
-    ],
-  } as any)
-
-  if (role === 'superadmin') {
-    nav.push({ href: '/simulador',  label: 'Simulador Bot', icon: MessageSquare } as any)
-  }
 
   return nav
 }
@@ -114,7 +106,7 @@ interface SidebarProps {
   onPaletteChange: (p: string) => void
 }
 
-export default function Sidebar({ theme, onThemeToggle, palette, onPaletteChange }: SidebarProps) {
+export default function Sidebar({ theme, onThemeToggle, palette, onPaletteChange }: Readonly<SidebarProps>) {
   const pathname = usePathname()
   const { data: session } = useSession()
   const orgName = (session?.user as any)?.orgName ?? 'Planner'
@@ -154,8 +146,8 @@ export default function Sidebar({ theme, onThemeToggle, palette, onPaletteChange
         const customEvent = e as CustomEvent
         setWaConnected(customEvent.detail.connected)
       }
-      window.addEventListener('wa-status-change', handleStatusChange)
-      return () => window.removeEventListener('wa-status-change', handleStatusChange)
+      globalThis.addEventListener('wa-status-change', handleStatusChange)
+      return () => globalThis.removeEventListener('wa-status-change', handleStatusChange)
     }
   }, [userRole])
 
@@ -163,7 +155,14 @@ export default function Sidebar({ theme, onThemeToggle, palette, onPaletteChange
     <>
       {/* Mobile overlay */}
       {mobileOpen && (
-        <div className={styles.mobileOverlay} onClick={() => setMobileOpen(false)} />
+        <div 
+          role="button"
+          tabIndex={0}
+          className={styles.mobileOverlay} 
+          onClick={() => setMobileOpen(false)} 
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setMobileOpen(false) }}
+          aria-label="Cerrar menú móvil"
+        />
       )}
 
       {/* Mobile toggle */}

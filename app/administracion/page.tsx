@@ -17,6 +17,7 @@ export default function AdministracionPage() {
     notifyEmailCleaning: false,
     notifyWspInvAlert: false,
     notifyEmailInvAlert: false,
+    defaultHomePage: '',
   })
 
   useEffect(() => {
@@ -70,6 +71,32 @@ export default function AdministracionPage() {
           {saving ? <Loader2 size={16} className="spin" /> : <Save size={16} />}
           Guardar Cambios
         </button>
+      </div>
+
+      <div className="card" style={{ maxWidth: 800, marginTop: 24 }}>
+        <div className="card-header">Página de Inicio Predeterminada</div>
+        <div className="card-body" style={{ padding: '24px' }}>
+          <p style={{ color: 'var(--text-secondary)', fontSize: 14, marginBottom: 16 }}>
+            Elige qué pantalla se abrirá automáticamente al iniciar sesión en la plataforma.
+          </p>
+          <div className="form-group">
+            <label className="form-label">Pantalla de inicio</label>
+            <select 
+              className="select" 
+              value={prefs.defaultHomePage} 
+              onChange={(e) => setPrefs(p => ({ ...p, defaultHomePage: e.target.value }))}
+            >
+              <option value="">Automático (Por Rol)</option>
+              <option value="/dashboard">Dashboard (Home)</option>
+              <option value="/calendario">Calendario</option>
+              <option value="/reservas">Reservas</option>
+              <option value="/recepcion">Recepción</option>
+              <option value="/habitaciones">Habitaciones</option>
+              <option value="/huespedes">Huéspedes</option>
+              <option value="/pizarra">Pizarra / Memo</option>
+            </select>
+          </div>
+        </div>
       </div>
 
       <div className="card" style={{ maxWidth: 800, marginTop: 24 }}>

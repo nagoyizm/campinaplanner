@@ -132,6 +132,14 @@ export async function POST(req: NextRequest) {
           userId,
         },
       },
+      extras: {
+        create: (body.extras || []).map((e: any) => ({
+          name: e.name,
+          quantity: e.quantity,
+          unitPrice: e.unitPrice,
+          total: e.total,
+        })),
+      },
     },
   })
 
@@ -245,6 +253,19 @@ export async function PUT(req: NextRequest) {
       unitTotal: r.unitTotal,
     })),
   })
+
+  await prisma.extra.deleteMany({ where: { reservationId: reservaId } })
+  if (body.extras && body.extras.length > 0) {
+    await prisma.extra.createMany({
+      data: body.extras.map((e: any) => ({
+        reservationId: reservaId,
+        name: e.name,
+        quantity: e.quantity,
+        unitPrice: e.unitPrice,
+        total: e.total,
+      }))
+    })
+  }
 
   const changes: string[] = []
   if (old?.status !== body.status) changes.push(`Estado: ${old?.status} → ${body.status}`)

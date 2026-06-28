@@ -4,10 +4,7 @@ import { requireOrg } from '@/lib/org'
 
 export async function GET(req: Request) {
   try {
-    const { organizationId, role } = await requireOrg()
-    if (role !== 'admin' && role !== 'superadmin') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
-    }
+    const { organizationId } = await requireOrg()
 
     const items = await prisma.inventoryItem.findMany({
       where: { organizationId, active: true },

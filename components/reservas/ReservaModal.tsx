@@ -1,12 +1,11 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { format, differenceInDays, parseISO, addDays } from 'date-fns'
+import { format, differenceInDays, addDays } from 'date-fns'
 import { es } from 'date-fns/locale'
 import {
-  X, Plus, Trash2, Crown, Volume2, AlertTriangle,
-  Star, Repeat, Dog, Clock, Sunrise, Loader2, Save,
-  Check, LogIn, LogOut, Ban
+  X, Plus, Trash2, Loader2, Save,
+  LogIn, LogOut
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import styles from './ReservaModal.module.css'
@@ -27,6 +26,14 @@ interface ReservationRoomLine {
   children: number
   unitRate: number
   unitTotal: number
+}
+
+interface Extra {
+  id?: string
+  name: string
+  quantity: number
+  unitPrice: number
+  total: number
 }
 
 const PAYMENT_METHODS = [
@@ -78,7 +85,7 @@ export default function ReservaModal({
   defaultDeparture,
   onClose,
   onSave,
-}: ReservaModalProps) {
+}: Readonly<ReservaModalProps>) {
   const [tab, setTab] = useState<'reserva' | 'billing' | 'historial' | 'huesped'>('reserva')
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -137,102 +144,142 @@ export default function ReservaModal({
 
   // Financial
   const [discounts, setDiscounts] = useState(0)
-  const [additionalServices, setAdditionalServices] = useState(0)
+  const [extras, setExtras] = useState<Extra[]>([])
   const [tax, setTax] = useState(0)
+  
+  // Catalogs for Extras and Payments
+  const [extraCatalog, setExtraCatalog] = useState<{name: string, price: number}[]>([])
+  const [paymentOptions, setPaymentOptions] = useState<{methods: string[], accounts: string[], dtes: string[]}>({
+    methods: PAYMENT_METHODS,
+    accounts: ACCOUNT_CODES,
+    dtes: DTE_OPTIONS,
+  })
 
   // ── Load data ─────────────────────────────────────────────────
+  const safeFetchJson = async (url: string, fallback: any) => {
+    try {
+      const res = await fetch(url)
+      return await res.json()
+    } catch {
+      return fallback
+    }
+  }
+
+  const setDefaultRoomLine = (roomsData: any[], ratesData: any[]) => {
+    const defaultRoom = roomsData.find((r: Room) => r.id === defaultRoomId) || roomsData[0]
+    const defaultRate = defaultRoom?.defaultRate || ratesData[0]
+    const arr = defaultArrival ? format(defaultArrival, 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd')
+    const dep = defaultDeparture ? format(defaultDeparture, 'yyyy-MM-dd') : format(addDays(new Date(), 1), 'yyyy-MM-dd')
+    const nights = differenceInDays(new Date(dep), new Date(arr)) || 1
+
+    setRoomLines([{
+      roomId: defaultRoom?.id || '',
+      rateId: defaultRate?.id || '',
+      arrival: arr,
+      departure: dep,
+      nights,
+      adults: 2,
+      children: 0,
+      unitRate: defaultRate?.rackRate || 0,
+      unitTotal: (defaultRate?.rackRate || 0) * nights,
+    }])
+  }
+
+  const populateExistingReservation = (data: any) => {
+    setStatus(data.status)
+    setGuestId(data.guestId)
+    setFirstName(data.guest.firstName)
+    setLastName(data.guest.lastName)
+    setRut(data.guest.rut || '')
+    setSource(data.source || 'Directa')
+    setCreatedByName(data.createdByName || '')
+    setEmail(data.guest.email || '')
+    setPhone(data.guest.phone || '+56')
+    setNationality(data.guest.nationality || 'Chile')
+    setAddress(data.guest.address || '')
+    setGuestNotes(data.guest.notes || '')
+    setReferral(data.guest.referral || '')
+    setIsVip(data.isVip)
+    setIsNoisy(data.isNoisy)
+    setIsDirty(data.isDirty)
+    setIsDifficult(data.isDifficult)
+    setIsNewPax(data.isNewPax)
+    setIsRecurring(data.isRecurring)
+    setIsWalkIn(data.isWalkIn)
+    setLateCheckoutHrs(data.lateCheckoutHrs || '')
+    setEarlyCheckinHrs(data.earlyCheckinHrs || '')
+    setAdults(data.adults)
+    setChildren(data.children)
+    setPets(data.pets)
+    setPaymentMethod(data.paymentMethod || '')
+    setAccountCode(data.accountCode || '')
+    setTotalPaid(data.totalPaid)
+    setLostItems(data.lostItems || '')
+    setNotes(data.notes || '')
+    setDte(data.dte || '')
+    setGuaranteeRsv(data.guaranteeRsv || '')
+    setGuaranteeGames(data.guaranteeGames || '')
+    setDiscounts(data.discounts)
+    setExtras(data.extras || [])
+    setTax(data.tax)
+    setAuditLog(data.auditLogs || [])
+    setRoomLines(data.rooms.map((r: any) => ({
+      id: r.id,
+      roomId: r.roomId,
+      rateId: r.rateId || '',
+      arrival: r.arrival.split('T')[0],
+      departure: r.departure.split('T')[0],
+      nights: r.nights,
+      adults: r.adults,
+      children: r.children,
+      unitRate: r.unitRate,
+      unitTotal: r.unitTotal,
+    })))
+  }
+
+  const resolvePaymentOptions = (pagosData: any) => {
+    if (!pagosData) return
+    setPaymentOptions({
+      methods: pagosData.paymentMethods ? pagosData.paymentMethods.split(',') : PAYMENT_METHODS,
+      accounts: pagosData.bankAccounts ? pagosData.bankAccounts.split(',') : ACCOUNT_CODES,
+      dtes: pagosData.dteOptions ? pagosData.dteOptions.split(',') : DTE_OPTIONS,
+    })
+  }
+
+  const buildCatalog = (invData: any, amData: any) => {
+    const catalog = [
+      ...((invData && !invData.error) ? invData.map((i: any) => ({ name: i.name, price: i.unitCost })) : []),
+      ...((amData && !amData.error) ? amData.map((a: any) => ({ name: a.name, price: a.price })) : []),
+    ]
+    setExtraCatalog(catalog)
+  }
+
   useEffect(() => {
     const loadData = async () => {
       setLoading(true)
       try {
-        const [roomsRes, ratesRes] = await Promise.all([
-          fetch('/api/rooms'),
-          fetch('/api/rates'),
+        const [roomsData, ratesData, invData, amData, pagosData] = await Promise.all([
+          safeFetchJson('/api/rooms', []),
+          safeFetchJson('/api/rates', []),
+          safeFetchJson('/api/inventario', []),
+          safeFetchJson('/api/setup/amenities', []),
+          safeFetchJson('/api/setup/pagos', null),
         ])
-        const roomsData = await roomsRes.json()
-        const ratesData = await ratesRes.json()
+        
         setRooms(roomsData)
         setRates(ratesData)
 
-        // Default room line
-        if (!reservaId) {
-          const defaultRoom = roomsData.find((r: Room) => r.id === defaultRoomId) || roomsData[0]
-          const defaultRate = defaultRoom?.defaultRate || ratesData[0]
-          const arr = defaultArrival ? format(defaultArrival, 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd')
-          const dep = defaultDeparture ? format(defaultDeparture, 'yyyy-MM-dd') : format(addDays(new Date(), 1), 'yyyy-MM-dd')
-          const nights = differenceInDays(new Date(dep), new Date(arr)) || 1
+        resolvePaymentOptions(pagosData)
+        buildCatalog(invData, amData)
 
-          setRoomLines([{
-            roomId: defaultRoom?.id || '',
-            rateId: defaultRate?.id || '',
-            arrival: arr,
-            departure: dep,
-            nights,
-            adults: 2,
-            children: 0,
-            unitRate: defaultRate?.rackRate || 0,
-            unitTotal: (defaultRate?.rackRate || 0) * nights,
-          }])
-        }
-
-        // Load existing reservation
         if (reservaId) {
-          const res = await fetch(`/api/reservas/${reservaId}`)
-          const data = await res.json()
-          if (data) {
-            setStatus(data.status)
-            setGuestId(data.guestId)
-            setFirstName(data.guest.firstName)
-            setLastName(data.guest.lastName)
-            setRut(data.guest.rut || '')
-            setSource(data.source || 'Directa')
-            setCreatedByName(data.createdByName || '')
-            setEmail(data.guest.email || '')
-            setPhone(data.guest.phone || '+56')
-            setNationality(data.guest.nationality || 'Chile')
-            setAddress(data.guest.address || '')
-            setGuestNotes(data.guest.notes || '')
-            setReferral(data.guest.referral || '')
-            setIsVip(data.isVip)
-            setIsNoisy(data.isNoisy)
-            setIsDirty(data.isDirty)
-            setIsDifficult(data.isDifficult)
-            setIsNewPax(data.isNewPax)
-            setIsRecurring(data.isRecurring)
-            setIsWalkIn(data.isWalkIn)
-            setLateCheckoutHrs(data.lateCheckoutHrs || '')
-            setEarlyCheckinHrs(data.earlyCheckinHrs || '')
-            setAdults(data.adults)
-            setChildren(data.children)
-            setPets(data.pets)
-            setPaymentMethod(data.paymentMethod || '')
-            setAccountCode(data.accountCode || '')
-            setTotalPaid(data.totalPaid)
-            setLostItems(data.lostItems || '')
-            setNotes(data.notes || '')
-            setDte(data.dte || '')
-            setGuaranteeRsv(data.guaranteeRsv || '')
-            setGuaranteeGames(data.guaranteeGames || '')
-            setDiscounts(data.discounts)
-            setAdditionalServices(data.additionalServices)
-            setTax(data.tax)
-            setAuditLog(data.auditLogs || [])
-            setRoomLines(data.rooms.map((r: any) => ({
-              id: r.id,
-              roomId: r.roomId,
-              rateId: r.rateId || '',
-              arrival: r.arrival.split('T')[0],
-              departure: r.departure.split('T')[0],
-              nights: r.nights,
-              adults: r.adults,
-              children: r.children,
-              unitRate: r.unitRate,
-              unitTotal: r.unitTotal,
-            })))
-          }
+          const data = await safeFetchJson(`/api/reservas/${reservaId}`, null)
+          if (data) populateExistingReservation(data)
+        } else {
+          setDefaultRoomLine(roomsData, ratesData)
         }
       } catch (e) {
-        toast.error('Error cargando datos')
+        toast.error(e instanceof Error ? e.message : 'Error cargando datos')
       }
       setLoading(false)
     }
@@ -341,8 +388,40 @@ export default function ReservaModal({
   }
 
   // ── Calculations ──────────────────────────────────────────────
-  const unitTotal = roomLines.reduce((s, r) => s + r.unitTotal, 0)
-  const postTaxTotal = unitTotal + additionalServices - discounts + tax
+  // ── Extra line management ──────────────────────────────────────
+  const addExtraLine = () => {
+    setExtras(prev => [...prev, { name: '', quantity: 1, unitPrice: 0, total: 0 }])
+  }
+
+  const updateExtraLine = (idx: number, field: keyof Extra, value: any) => {
+    setExtras(prev => {
+      const updated = [...prev]
+      updated[idx] = { ...updated[idx], [field]: value }
+
+      if (field === 'name') {
+        const item = extraCatalog.find(i => i.name === value)
+        if (item) {
+          updated[idx].unitPrice = item.price
+          updated[idx].total = item.price * updated[idx].quantity
+        }
+      }
+
+      if (field === 'quantity' || field === 'unitPrice') {
+        updated[idx].total = updated[idx].quantity * updated[idx].unitPrice
+      }
+
+      return updated
+    })
+  }
+
+  const removeExtraLine = (idx: number) => {
+    setExtras(prev => prev.filter((_, i) => i !== idx))
+  }
+
+  const additionalServicesTotal = extras.reduce((sum, ext) => sum + ext.total, 0)
+  const unitTotal = roomLines.reduce((sum, line) => sum + line.unitTotal, 0)
+  const preTaxTotal = unitTotal + additionalServicesTotal - discounts
+  const postTaxTotal = preTaxTotal + tax
   const amountDue = postTaxTotal - totalPaid
 
   const handleDelete = async () => {
@@ -357,7 +436,7 @@ export default function ReservaModal({
       toast.success('Reserva eliminada exitosamente')
       onSave()
     } catch (e) {
-      toast.error('Error al eliminar la reserva')
+      toast.error(e instanceof Error ? e.message : 'Error al eliminar la reserva')
     }
     setDeleting(false)
   }
@@ -386,8 +465,9 @@ export default function ReservaModal({
         adults, children, pets,
         paymentMethod, accountCode, totalPaid,
         lostItems, notes, dte, guaranteeRsv, guaranteeGames,
-        discounts, additionalServices, tax,
-        unitTotal, rooms: roomLines,
+        unitTotal, additionalServices: additionalServicesTotal, discounts, tax,
+        rooms: roomLines,
+        extras,
       }
 
       const res = await fetch('/api/reservas', {
@@ -401,7 +481,7 @@ export default function ReservaModal({
       toast.success(reservaId ? 'Reserva actualizada' : 'Reserva creada exitosamente')
       onSave()
     } catch (e) {
-      toast.error('Error al guardar la reserva')
+      toast.error(e instanceof Error ? e.message : 'Error al guardar la reserva')
     }
     setSaving(false)
   }
@@ -424,8 +504,15 @@ export default function ReservaModal({
   }
 
   return (
-    <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
-      <div className={`modal modal-xl ${styles.modal}`}>
+    <div className="modal-overlay">
+      <button 
+        type="button"
+        onClick={onClose}
+        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', background: 'transparent', border: 'none', cursor: 'default' }}
+        aria-label="Cerrar modal"
+        tabIndex={-1}
+      />
+      <div className={`modal modal-xl ${styles.modal}`} style={{ position: 'relative', zIndex: 1 }}>
         {/* ── Modal Header ── */}
         <div className="modal-header">
           <div className={styles.headerLeft}>
@@ -520,7 +607,7 @@ export default function ReservaModal({
                   </thead>
                   <tbody>
                     {roomLines.map((line, idx) => (
-                      <tr key={idx}>
+                      <tr key={`${line.roomId}-${line.arrival}-${idx}`}>
                         <td>
                           <input
                             type="date"
@@ -627,38 +714,38 @@ export default function ReservaModal({
 
                   <div className={styles.guestGrid}>
                     <div className="form-group">
-                      <label className="form-label required">Nombre</label>
-                      <input className="input" value={firstName} onChange={e => setFirstName(e.target.value)} placeholder="Juan" />
+                      <label htmlFor="form-control-1" className="form-label required">Nombre</label>
+                      <input id="form-control-1" className="input" value={firstName} onChange={e => setFirstName(e.target.value)} placeholder="Juan" />
                     </div>
                     <div className="form-group">
-                      <label className="form-label required">Apellido</label>
-                      <input className="input" value={lastName} onChange={e => setLastName(e.target.value)} placeholder="Pérez" />
+                      <label htmlFor="form-control-2" className="form-label required">Apellido</label>
+                      <input id="form-control-2" className="input" value={lastName} onChange={e => setLastName(e.target.value)} placeholder="Pérez" />
                     </div>
                     <div className="form-group">
-                      <label className="form-label">RUT</label>
-                      <input className="input" value={rut} onChange={e => setRut(e.target.value)} placeholder="12.345.678-9" />
+                      <label htmlFor="form-control-3" className="form-label">RUT</label>
+                      <input id="form-control-3" className="input" value={rut} onChange={e => setRut(e.target.value)} placeholder="12.345.678-9" />
                     </div>
                     <div className="form-group">
-                      <label className="form-label">Email</label>
-                      <input className="input" type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="correo@ejemplo.cl" />
+                      <label htmlFor="form-control-4" className="form-label">Email</label>
+                      <input id="form-control-4" className="input" type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="correo@ejemplo.cl" />
                     </div>
                     <div className="form-group">
-                      <label className="form-label">Celular</label>
-                      <input className="input" value={phone} onChange={e => setPhone(e.target.value)} placeholder="+569..." />
+                      <label htmlFor="form-control-5" className="form-label">Celular</label>
+                      <input id="form-control-5" className="input" value={phone} onChange={e => setPhone(e.target.value)} placeholder="+569..." />
                     </div>
                     <div className="form-group">
-                      <label className="form-label">Nacionalidad</label>
-                      <select className="select" value={nationality} onChange={e => setNationality(e.target.value)}>
+                      <label htmlFor="form-control-6" className="form-label">Nacionalidad</label>
+                      <select id="form-control-6" className="select" value={nationality} onChange={e => setNationality(e.target.value)}>
                         {NATIONALITIES.map(n => <option key={n} value={n}>{n}</option>)}
                       </select>
                     </div>
                     <div className="form-group" style={{ gridColumn: '1 / -1' }}>
-                      <label className="form-label">Dirección</label>
-                      <input className="input" value={address} onChange={e => setAddress(e.target.value)} placeholder="Calle, ciudad" />
+                      <label htmlFor="form-control-7" className="form-label">Dirección</label>
+                      <input id="form-control-7" className="input" value={address} onChange={e => setAddress(e.target.value)} placeholder="Calle, ciudad" />
                     </div>
                     <div className="form-group">
-                      <label className="form-label">Origen (Canal)</label>
-                      <select className="select" value={source} onChange={e => setSource(e.target.value)}>
+                      <label htmlFor="form-control-8" className="form-label">Origen (Canal)</label>
+                      <select id="form-control-8" className="select" value={source} onChange={e => setSource(e.target.value)}>
                         <option value="Directa">Directa (Recepción/Web)</option>
                         <option value="Booking.com">Booking.com</option>
                         <option value="Airbnb">Airbnb</option>
@@ -669,8 +756,8 @@ export default function ReservaModal({
                       </select>
                     </div>
                     <div className="form-group">
-                      <label className="form-label">Referencia / Convenio</label>
-                      <input className="input" value={referral} onChange={e => setReferral(e.target.value)} placeholder="Ej: Municipalidad..." />
+                      <label htmlFor="form-control-9" className="form-label">Referencia / Convenio</label>
+                      <input id="form-control-9" className="input" value={referral} onChange={e => setReferral(e.target.value)} placeholder="Ej: Municipalidad..." />
                     </div>
                   </div>
 
@@ -707,12 +794,12 @@ export default function ReservaModal({
                   {/* Special hours */}
                   <div className={styles.specialHours}>
                     <div className="form-group">
-                      <label className="form-label">🕐 Late Check-out (hrs)</label>
-                      <input type="number" className="input" min={0} max={12} value={lateCheckoutHrs} onChange={e => setLateCheckoutHrs(e.target.value ? +e.target.value : '')} placeholder="0" />
+                      <label htmlFor="form-control-10" className="form-label">🕐 Late Check-out (hrs)</label>
+                      <input id="form-control-10" type="number" className="input" min={0} max={12} value={lateCheckoutHrs} onChange={e => setLateCheckoutHrs(e.target.value ? +e.target.value : '')} placeholder="0" />
                     </div>
                     <div className="form-group">
-                      <label className="form-label">🌅 Early Check-in (hrs)</label>
-                      <input type="number" className="input" min={0} max={12} value={earlyCheckinHrs} onChange={e => setEarlyCheckinHrs(e.target.value ? +e.target.value : '')} placeholder="0" />
+                      <label htmlFor="form-control-11" className="form-label">🌅 Early Check-in (hrs)</label>
+                      <input id="form-control-11" type="number" className="input" min={0} max={12} value={earlyCheckinHrs} onChange={e => setEarlyCheckinHrs(e.target.value ? +e.target.value : '')} placeholder="0" />
                     </div>
                   </div>
 
@@ -720,16 +807,16 @@ export default function ReservaModal({
                   <div className={styles.sectionTitle} style={{ marginTop: 16 }}>Pasajeros y Mascotas</div>
                   <div className={styles.paxRow}>
                     <div className="form-group">
-                      <label className="form-label">Total Adultos</label>
-                      <input type="number" className="input" min={1} value={adults} onChange={e => handleTotalAdultsChange(+e.target.value)} />
+                      <label htmlFor="form-control-12" className="form-label">Total Adultos</label>
+                      <input id="form-control-12" type="number" className="input" min={1} value={adults} onChange={e => handleTotalAdultsChange(+e.target.value)} />
                     </div>
                     <div className="form-group">
-                      <label className="form-label">Total Niños</label>
-                      <input type="number" className="input" min={0} value={children} onChange={e => handleTotalChildrenChange(+e.target.value)} />
+                      <label htmlFor="form-control-13" className="form-label">Total Niños</label>
+                      <input id="form-control-13" type="number" className="input" min={0} value={children} onChange={e => handleTotalChildrenChange(+e.target.value)} />
                     </div>
                     <div className="form-group">
-                      <label className="form-label">🐕 Mascotas</label>
-                      <input type="number" className="input" min={0} value={pets} onChange={e => setPets(+e.target.value)} />
+                      <label htmlFor="form-control-14" className="form-label">🐕 Mascotas</label>
+                      <input id="form-control-14" type="number" className="input" min={0} value={pets} onChange={e => setPets(+e.target.value)} />
                     </div>
                   </div>
 
@@ -737,31 +824,31 @@ export default function ReservaModal({
                   <div className={styles.sectionTitle} style={{ marginTop: 16 }}>PAGOS, GARANTÍAS y NOTAS</div>
                   <div className={styles.twoColSmall}>
                     <div className="form-group">
-                      <label className="form-label">Forma de pago</label>
-                      <select className="select" value={paymentMethod} onChange={e => setPaymentMethod(e.target.value)}>
+                      <label htmlFor="form-control-15" className="form-label">Forma de pago</label>
+                      <select id="form-control-15" className="select" value={paymentMethod} onChange={e => setPaymentMethod(e.target.value)}>
                         <option value="">Seleccionar...</option>
-                        {PAYMENT_METHODS.map(m => <option key={m} value={m}>{m}</option>)}
+                        {paymentOptions.methods.map(m => <option key={m} value={m}>{m}</option>)}
                       </select>
                     </div>
                     <div className="form-group">
-                      <label className="form-label">CUENTA DESTINO</label>
-                      <select className="select" value={accountCode} onChange={e => setAccountCode(e.target.value)}>
+                      <label htmlFor="form-control-16" className="form-label">CUENTA DESTINO</label>
+                      <select id="form-control-16" className="select" value={accountCode} onChange={e => setAccountCode(e.target.value)}>
                         <option value="">Seleccionar...</option>
-                        {ACCOUNT_CODES.map(m => <option key={m} value={m}>{m}</option>)}
+                        {paymentOptions.accounts.map(m => <option key={m} value={m}>{m}</option>)}
                       </select>
                     </div>
                   </div>
                   <div className={styles.twoColSmall} style={{ marginTop: 12 }}>
                     <div className="form-group">
-                      <label className="form-label">DTE</label>
-                      <select className="select" value={dte} onChange={e => setDte(e.target.value)}>
+                      <label htmlFor="form-control-17" className="form-label">DTE</label>
+                      <select id="form-control-17" className="select" value={dte} onChange={e => setDte(e.target.value)}>
                         <option value="">Seleccionar...</option>
-                        {DTE_OPTIONS.map(m => <option key={m} value={m}>{m}</option>)}
+                        {paymentOptions.dtes.map(m => <option key={m} value={m}>{m}</option>)}
                       </select>
                     </div>
                     <div className="form-group">
-                      <label className="form-label">Objeto perdido</label>
-                      <input className="input" value={lostItems} onChange={e => setLostItems(e.target.value)} placeholder="Descripción..." />
+                      <label htmlFor="form-control-18" className="form-label">Objeto perdido</label>
+                      <input id="form-control-18" className="input" value={lostItems} onChange={e => setLostItems(e.target.value)} placeholder="Descripción..." />
                     </div>
                   </div>
                   <div className={styles.twoColSmall} style={{ marginTop: 12 }}>
@@ -776,13 +863,13 @@ export default function ReservaModal({
                       <label htmlFor="garantia-rsv" className="form-label" style={{ marginBottom: 0, cursor: 'pointer' }}>GARANTÍA RSV</label>
                     </div>
                     <div className="form-group">
-                      <label className="form-label">GARANTÍA JUEGOS</label>
-                      <input className="input" value={guaranteeGames} onChange={e => setGuaranteeGames(e.target.value)} placeholder="Ej: Efectivo $10.000..." />
+                      <label htmlFor="form-control-19" className="form-label">GARANTÍA JUEGOS</label>
+                      <input id="form-control-19" className="input" value={guaranteeGames} onChange={e => setGuaranteeGames(e.target.value)} placeholder="Ej: Efectivo $10.000..." />
                     </div>
                   </div>
                   <div className="form-group" style={{ marginTop: 12 }}>
-                    <label className="form-label">Notas adicionales</label>
-                    <textarea className="textarea" value={notes} onChange={e => setNotes(e.target.value)} placeholder="Notas internas, instrucciones especiales..." style={{ minHeight: 60 }} />
+                    <label htmlFor="form-control-20" className="form-label">Notas adicionales</label>
+                    <textarea id="form-control-20" className="textarea" value={notes} onChange={e => setNotes(e.target.value)} placeholder="Notas internas, instrucciones especiales..." style={{ minHeight: 60 }} />
                   </div>
                 </div>
 
@@ -793,17 +880,27 @@ export default function ReservaModal({
                     <span>Total Unidades</span>
                     <span className="currency">{formatCLP(unitTotal)}</span>
                   </div>
-                  <div className={styles.summaryRow}>
-                    <span>Servicios Adicionales</span>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                      <input
-                        type="number"
-                        className="input"
-                        style={{ width: 100, textAlign: 'right' }}
-                        value={additionalServices}
-                        min={0}
-                        onChange={e => setAdditionalServices(+e.target.value)}
-                      />
+                  <div className={styles.summaryRow} style={{ flexDirection: 'column', alignItems: 'stretch', gap: 8 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontWeight: 600 }}>Servicios Adicionales</span>
+                      <button className="btn btn-secondary" style={{ padding: '2px 8px', fontSize: 12, height: 24 }} onClick={addExtraLine}>
+                        <Plus size={14} /> Agregar
+                      </button>
+                    </div>
+                    {extras.map((ext, idx) => (
+                      <div key={`extra-edit-${ext.name}-${idx}`} style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+                        <select className="select" style={{ flex: 1, padding: '4px 8px', height: 28 }} value={ext.name} onChange={e => updateExtraLine(idx, 'name', e.target.value)}>
+                          <option value="">Elegir o escribir...</option>
+                          {extraCatalog.map(cat => <option key={cat.name} value={cat.name}>{cat.name}</option>)}
+                        </select>
+                        <input type="number" className="input" style={{ width: 45, padding: '4px', height: 28 }} value={ext.quantity} min={1} onChange={e => updateExtraLine(idx, 'quantity', +e.target.value)} />
+                        <input type="number" className="input" style={{ width: 70, padding: '4px', height: 28 }} value={ext.unitPrice} onChange={e => updateExtraLine(idx, 'unitPrice', +e.target.value)} />
+                        <span style={{ width: 75, textAlign: 'right', fontSize: 13, fontWeight: 500 }}>{formatCLP(ext.total)}</span>
+                        <button className="btn btn-ghost" style={{ padding: 4, color: '#ef4444', height: 28 }} onClick={() => removeExtraLine(idx)}><Trash2 size={14} /></button>
+                      </div>
+                    ))}
+                    <div style={{ textAlign: 'right', fontSize: 14, color: 'var(--text-secondary)' }}>
+                      Total Extras: <span className="currency" style={{ color: 'var(--text-primary)' }}>{formatCLP(additionalServicesTotal)}</span>
                     </div>
                   </div>
                   <div className={styles.summaryRow}>
@@ -878,36 +975,96 @@ export default function ReservaModal({
           {/* ══ TAB: BILLING ══ */}
           {tab === 'billing' && (
             <div className={styles.tabContent}>
-              <div className={styles.sectionTitle}>Resumen Financiero</div>
-              <div className={styles.billingGrid}>
-                <div className={styles.billingCard}>
-                  <span>Total Unidades</span>
-                  <strong className="currency">{formatCLP(unitTotal)}</strong>
-                </div>
-                <div className={styles.billingCard}>
-                  <span>Servicios Adicionales</span>
-                  <strong className="currency">{formatCLP(additionalServices)}</strong>
-                </div>
-                <div className={styles.billingCard} style={{ borderColor: '#ef4444' }}>
-                  <span>Descuentos</span>
-                  <strong className="currency" style={{ color: '#ef4444' }}>-{formatCLP(discounts)}</strong>
-                </div>
-                <div className={styles.billingCard}>
-                  <span>Impuesto</span>
-                  <strong className="currency">{formatCLP(tax)}</strong>
-                </div>
-                <div className={styles.billingCard} style={{ borderColor: 'var(--brand-500)' }}>
-                  <span>Total Final</span>
-                  <strong className="currency" style={{ fontSize: '1.2rem' }}>{formatCLP(postTaxTotal)}</strong>
-                </div>
-                <div className={styles.billingCard}>
-                  <span>Total Pagado</span>
-                  <strong className="currency" style={{ color: '#10b981' }}>{formatCLP(totalPaid)}</strong>
-                </div>
-                <div className={styles.billingCard} style={{ borderColor: amountDue > 0 ? '#ef4444' : '#10b981' }}>
-                  <span>Monto Adeudado</span>
-                  <strong className="currency" style={{ color: amountDue > 0 ? '#ef4444' : '#10b981' }}>{formatCLP(amountDue)}</strong>
-                </div>
+              <div className={styles.sectionTitle}>Folio / Desglose de Cuenta</div>
+              
+              <div style={{ marginTop: 16, overflowX: 'auto', border: '1px solid var(--border-color)', borderRadius: '8px' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem', textAlign: 'left' }}>
+                  <thead>
+                    <tr style={{ backgroundColor: 'var(--surface-2)', borderBottom: '1px solid var(--border-color)' }}>
+                      <th style={{ padding: '12px 16px', color: 'var(--text-secondary)' }}>Nro</th>
+                      <th style={{ padding: '12px 16px', color: 'var(--text-secondary)' }}>Descripción</th>
+                      <th style={{ padding: '12px 16px', color: 'var(--text-secondary)', textAlign: 'center' }}>Cantidad</th>
+                      <th style={{ padding: '12px 16px', color: 'var(--text-secondary)', textAlign: 'right' }}>Precio Unit.</th>
+                      <th style={{ padding: '12px 16px', color: 'var(--text-secondary)', textAlign: 'right' }}>Cargos</th>
+                      <th style={{ padding: '12px 16px', color: 'var(--text-secondary)', textAlign: 'right' }}>Pagos</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {/* Habitaciones */}
+                    {roomLines.map((room, idx) => (
+                      <tr key={`room-billing-${room.roomId}-${idx}`} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                        <td style={{ padding: '12px 16px', fontWeight: 500 }}>{idx + 1}</td>
+                        <td style={{ padding: '12px 16px' }}>Habitación {room.roomId} ({room.arrival} a {room.departure})</td>
+                        <td style={{ padding: '12px 16px', textAlign: 'center' }}>{room.nights}</td>
+                        <td style={{ padding: '12px 16px', textAlign: 'right' }}>{formatCLP(room.unitRate)}</td>
+                        <td style={{ padding: '12px 16px', textAlign: 'right', fontWeight: 500 }}>{formatCLP(room.unitTotal)}</td>
+                        <td style={{ padding: '12px 16px', textAlign: 'right' }}></td>
+                      </tr>
+                    ))}
+
+                    {/* Extras */}
+                    {extras.map((ext, idx) => (
+                      <tr key={`extra-billing-${ext.name}-${idx}`} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                        <td style={{ padding: '12px 16px', fontWeight: 500 }}>{roomLines.length + idx + 1}</td>
+                        <td style={{ padding: '12px 16px' }}>{ext.name || 'Extra sin nombre'}</td>
+                        <td style={{ padding: '12px 16px', textAlign: 'center' }}>{ext.quantity}</td>
+                        <td style={{ padding: '12px 16px', textAlign: 'right' }}>{formatCLP(ext.unitPrice)}</td>
+                        <td style={{ padding: '12px 16px', textAlign: 'right', fontWeight: 500 }}>{formatCLP(ext.total)}</td>
+                        <td style={{ padding: '12px 16px', textAlign: 'right' }}></td>
+                      </tr>
+                    ))}
+
+                    {/* Descuentos */}
+                    {discounts > 0 && (
+                      <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
+                        <td style={{ padding: '12px 16px', fontWeight: 500 }}>-</td>
+                        <td style={{ padding: '12px 16px' }}>Descuento aplicado</td>
+                        <td style={{ padding: '12px 16px', textAlign: 'center' }}>1</td>
+                        <td style={{ padding: '12px 16px', textAlign: 'right' }}>-{formatCLP(discounts)}</td>
+                        <td style={{ padding: '12px 16px', textAlign: 'right', fontWeight: 500, color: '#ef4444' }}>-{formatCLP(discounts)}</td>
+                        <td style={{ padding: '12px 16px', textAlign: 'right' }}></td>
+                      </tr>
+                    )}
+
+                    {/* Impuestos */}
+                    {tax > 0 && (
+                      <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
+                        <td style={{ padding: '12px 16px', fontWeight: 500 }}>-</td>
+                        <td style={{ padding: '12px 16px' }}>Impuestos / IVA</td>
+                        <td style={{ padding: '12px 16px', textAlign: 'center' }}>1</td>
+                        <td style={{ padding: '12px 16px', textAlign: 'right' }}>{formatCLP(tax)}</td>
+                        <td style={{ padding: '12px 16px', textAlign: 'right', fontWeight: 500 }}>{formatCLP(tax)}</td>
+                        <td style={{ padding: '12px 16px', textAlign: 'right' }}></td>
+                      </tr>
+                    )}
+
+                    {/* Pagos */}
+                    {totalPaid > 0 && (
+                      <tr style={{ borderBottom: '1px solid var(--border-color)', backgroundColor: 'rgba(16, 185, 129, 0.05)' }}>
+                        <td style={{ padding: '12px 16px', fontWeight: 500 }}>-</td>
+                        <td style={{ padding: '12px 16px' }}>
+                          Pago: {paymentMethod || 'No especificado'} {accountCode ? `(${accountCode})` : ''}
+                        </td>
+                        <td style={{ padding: '12px 16px', textAlign: 'center' }}>1</td>
+                        <td style={{ padding: '12px 16px', textAlign: 'right' }}>{formatCLP(totalPaid)}</td>
+                        <td style={{ padding: '12px 16px', textAlign: 'right' }}></td>
+                        <td style={{ padding: '12px 16px', textAlign: 'right', fontWeight: 600, color: '#10b981' }}>{formatCLP(totalPaid)}</td>
+                      </tr>
+                    )}
+                  </tbody>
+                  <tfoot>
+                    <tr style={{ backgroundColor: 'var(--surface-2)', fontWeight: 600 }}>
+                      <td colSpan={4} style={{ padding: '16px', textAlign: 'right' }}>Totales:</td>
+                      <td style={{ padding: '16px', textAlign: 'right', color: 'var(--text-base)' }}>{formatCLP(postTaxTotal)}</td>
+                      <td style={{ padding: '16px', textAlign: 'right', color: '#10b981' }}>{formatCLP(totalPaid)}</td>
+                    </tr>
+                    <tr>
+                      <td colSpan={6} style={{ padding: '16px', textAlign: 'right', fontSize: '1.1rem' }}>
+                        Monto Adeudado (Amount Due): <strong style={{ color: amountDue > 0 ? '#ef4444' : '#10b981', marginLeft: '8px' }}>{formatCLP(amountDue)}</strong>
+                      </td>
+                    </tr>
+                  </tfoot>
+                </table>
               </div>
             </div>
           )}
@@ -945,8 +1102,8 @@ export default function ReservaModal({
             <div className={styles.tabContent}>
               <div className={styles.sectionTitle}>Notas del Huésped</div>
               <div className="form-group">
-                <label className="form-label">Notas internas del huésped</label>
-                <textarea
+                <label htmlFor="form-control-21" className="form-label">Notas internas del huésped</label>
+                <textarea id="form-control-21"
                   className="textarea"
                   value={guestNotes}
                   onChange={e => setGuestNotes(e.target.value)}

@@ -30,10 +30,15 @@ export default auth((req) => {
   const isRoot = nextUrl.pathname === '/'
   
   const userRole = (req.auth?.user as any)?.role
-  let redirectTarget = '/dashboard'
-  if (userRole === 'superadmin') redirectTarget = '/saas'
-  else if (userRole === 'recepcionista') redirectTarget = '/recepcion'
-  else if (userRole === 'empleado') redirectTarget = '/habitaciones'
+  const userDefaultPage = (req.auth?.user as any)?.defaultHomePage
+
+  let redirectTarget = userDefaultPage || '/dashboard'
+  
+  if (!userDefaultPage) {
+    if (userRole === 'superadmin') redirectTarget = '/saas'
+    else if (userRole === 'recepcionista') redirectTarget = '/recepcion'
+    else if (userRole === 'empleado') redirectTarget = '/habitaciones'
+  }
 
   let response = NextResponse.next({
     request: {

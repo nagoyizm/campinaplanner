@@ -14,6 +14,7 @@ export const authConfig = {
         token.organizationId = (user as any).organizationId
         token.orgName = (user as any).orgName
         token.orgPlan = (user as any).orgPlan
+        token.defaultHomePage = (user as any).defaultHomePage
       }
       return token
     },
@@ -25,6 +26,7 @@ export const authConfig = {
         ;(session.user as any).organizationId = token.organizationId
         ;(session.user as any).orgName = token.orgName
         ;(session.user as any).orgPlan = token.orgPlan
+        ;(session.user as any).defaultHomePage = token.defaultHomePage
       }
       return session
     },

@@ -23,6 +23,10 @@ model Organization {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
+  paymentMethods String @default("Efectivo,Transferencia,Tarjeta de Débito,Tarjeta de Crédito")
+  dteOptions     String @default("Boleta Electrónica,Factura Electrónica")
+  bankAccounts   String @default("Santander,Scotiabank,Banco de Chile,BE Chequera,BE Rut,BE Turismo,BE Turismo (POS/LP),BCI/MACH,Caja")
+
   users        User[]
   unitTypes    UnitType[]
   rooms        Room[]
@@ -47,6 +51,7 @@ model User {
   roleName       String   @default("Recepción")
   active         Boolean  @default(true)
   organizationId String   @default("seed-org-campina")
+  defaultHomePage String?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
