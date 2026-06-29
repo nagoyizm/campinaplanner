@@ -9,9 +9,9 @@ async function main() {
   
   for (const room of rooms) {
     // Extract the first number found in the room name
-    const match = room.name.match(/\d+/)
+    const match = /\d+/.exec(room.name)
     if (match) {
-      const order = parseInt(match[0], 10)
+      const order = Number.parseInt(match[0], 10)
       await prisma.room.update({
         where: { id: room.id },
         data: { sortOrder: order }

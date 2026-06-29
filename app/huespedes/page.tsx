@@ -5,8 +5,8 @@ import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import {
   Search, Plus, Edit2, Trash2, Save, X, Loader2,
-  Upload, ChevronLeft, ChevronRight, Crown, Star,
-  Volume2, AlertTriangle, Repeat, Phone, Mail, Globe
+  ChevronLeft, ChevronRight,
+  Phone, Mail, Globe
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { useSession } from 'next-auth/react'
@@ -108,7 +108,7 @@ export default function HuespedesPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form),
       })
-      if (!res.ok) throw new Error()
+      if (!res.ok) throw new Error('Error al guardar')
       toast.success(editingId ? 'Huésped actualizado' : 'Huésped creado')
       setShowForm(false)
       await load()
@@ -129,9 +129,7 @@ export default function HuespedesPage() {
 
   const totalPages = Math.ceil(total / LIMIT)
 
-  const parseTags = (tags: string): string[] => {
-    try { return JSON.parse(tags) } catch { return [] }
-  }
+
 
   return (
     <div className="page-container">
@@ -161,38 +159,38 @@ export default function HuespedesPage() {
           <div className="card-body">
             <div className={styles.formGrid}>
               <div className="form-group">
-                <label className="form-label required">Nombre</label>
-                <input className="input" value={form.firstName} onChange={e => setForm((f: any) => ({ ...f, firstName: e.target.value }))} placeholder="Juan" />
+                <label htmlFor="firstName" className="form-label required">Nombre</label>
+                <input id="firstName" className="input" value={form.firstName} onChange={e => setForm((f: any) => ({ ...f, firstName: e.target.value }))} placeholder="Juan" />
               </div>
               <div className="form-group">
-                <label className="form-label required">Apellido</label>
-                <input className="input" value={form.lastName} onChange={e => setForm((f: any) => ({ ...f, lastName: e.target.value }))} placeholder="Pérez" />
+                <label htmlFor="lastName" className="form-label required">Apellido</label>
+                <input id="lastName" className="input" value={form.lastName} onChange={e => setForm((f: any) => ({ ...f, lastName: e.target.value }))} placeholder="Pérez" />
               </div>
               <div className="form-group">
-                <label className="form-label">RUT</label>
-                <input className="input" value={form.rut} onChange={e => setForm((f: any) => ({ ...f, rut: e.target.value }))} placeholder="12.345.678-9" />
+                <label htmlFor="rut" className="form-label">RUT</label>
+                <input id="rut" className="input" value={form.rut} onChange={e => setForm((f: any) => ({ ...f, rut: e.target.value }))} placeholder="12.345.678-9" />
               </div>
               <div className="form-group">
-                <label className="form-label">Email</label>
-                <input className="input" type="email" value={form.email} onChange={e => setForm((f: any) => ({ ...f, email: e.target.value }))} placeholder="correo@ejemplo.cl" />
+                <label htmlFor="email" className="form-label">Email</label>
+                <input id="email" className="input" type="email" value={form.email} onChange={e => setForm((f: any) => ({ ...f, email: e.target.value }))} placeholder="correo@ejemplo.cl" />
               </div>
               <div className="form-group">
-                <label className="form-label">Celular</label>
-                <input className="input" value={form.phone} onChange={e => setForm((f: any) => ({ ...f, phone: e.target.value }))} placeholder="+569..." />
+                <label htmlFor="phone" className="form-label">Celular</label>
+                <input id="phone" className="input" value={form.phone} onChange={e => setForm((f: any) => ({ ...f, phone: e.target.value }))} placeholder="+569..." />
               </div>
               <div className="form-group">
-                <label className="form-label">Nacionalidad</label>
-                <select className="select" value={form.nationality} onChange={e => setForm((f: any) => ({ ...f, nationality: e.target.value }))}>
+                <label htmlFor="nationality" className="form-label">Nacionalidad</label>
+                <select id="nationality" className="select" value={form.nationality} onChange={e => setForm((f: any) => ({ ...f, nationality: e.target.value }))}>
                   {NATIONALITIES.map(n => <option key={n} value={n}>{n}</option>)}
                 </select>
               </div>
               <div className="form-group" style={{ gridColumn: '1 / -1' }}>
-                <label className="form-label">Dirección</label>
-                <input className="input" value={form.address} onChange={e => setForm((f: any) => ({ ...f, address: e.target.value }))} placeholder="Calle, ciudad" />
+                <label htmlFor="address" className="form-label">Dirección</label>
+                <input id="address" className="input" value={form.address} onChange={e => setForm((f: any) => ({ ...f, address: e.target.value }))} placeholder="Calle, ciudad" />
               </div>
               <div className="form-group" style={{ gridColumn: '1 / -1' }}>
-                <label className="form-label">Notas internas</label>
-                <textarea className="textarea" value={form.notes} onChange={e => setForm((f: any) => ({ ...f, notes: e.target.value }))} placeholder="Observaciones, preferencias, historial..." style={{ minHeight: 70 }} />
+                <label htmlFor="notes" className="form-label">Notas internas</label>
+                <textarea id="notes" className="textarea" value={form.notes} onChange={e => setForm((f: any) => ({ ...f, notes: e.target.value }))} placeholder="Observaciones, preferencias, historial..." style={{ minHeight: 70 }} />
               </div>
             </div>
           </div>

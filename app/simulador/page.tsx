@@ -211,7 +211,7 @@ export default function SimuladorPage() {
       // eslint-disable-next-line react/no-array-index-key
       return (
         <span
-          key={`line-${idx}`}
+          key={`line-${idx}-${line.slice(0, 10)}`}
           // eslint-disable-next-line react/no-danger
           dangerouslySetInnerHTML={{ __html: line }}
           style={{ display: 'block', minHeight: line === '' ? '12px' : 'auto' }}

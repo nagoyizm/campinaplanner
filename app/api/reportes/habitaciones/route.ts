@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { requireOrg } from '@/lib/org'
-import { eachDayOfInterval, isWithinInterval, startOfDay } from 'date-fns'
+import { eachDayOfInterval } from 'date-fns'
 
 export async function GET(req: NextRequest) {
   const { organizationId } = await requireOrg()

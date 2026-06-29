@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import { Bell, Mail, Smartphone, Loader2, Save } from 'lucide-react'
 import toast from 'react-hot-toast'
-import styles from './administracion.module.css'
 
 export default function AdministracionPage() {
   const [loading, setLoading] = useState(true)
@@ -80,8 +79,9 @@ export default function AdministracionPage() {
             Elige qué pantalla se abrirá automáticamente al iniciar sesión en la plataforma.
           </p>
           <div className="form-group">
-            <label className="form-label">Pantalla de inicio</label>
+            <label htmlFor="defaultHomePage" className="form-label">Pantalla de inicio</label>
             <select 
+              id="defaultHomePage"
               className="select" 
               value={prefs.defaultHomePage} 
               onChange={(e) => setPrefs(p => ({ ...p, defaultHomePage: e.target.value }))}

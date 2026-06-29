@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
   const end = new Date(`${endDate}T23:59:59.999Z`)
 
   // Fetch all non-cancelled reservations in this period to evaluate guest stats
-  const reservations = await prisma.reservation.findMany({
+  await prisma.reservation.findMany({
     where: {
       organizationId,
       status: { not: 'cancelled' },

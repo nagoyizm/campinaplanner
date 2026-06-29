@@ -3,7 +3,8 @@
 import { useState } from 'react'
 import { signIn } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import { Hotel, Eye, EyeOff, Loader2 } from 'lucide-react'
+import Image from 'next/image'
+import { Eye, EyeOff, Loader2 } from 'lucide-react'
 import styles from './login.module.css'
 
 export default function LoginPage() {
@@ -43,8 +44,8 @@ export default function LoginPage() {
       <div className={styles.card}>
         {/* Logo */}
         <div className={styles.logoArea}>
-          <div className={styles.logoIcon}>
-            <Hotel size={28} />
+          <div className={styles.logoIcon} style={{ padding: 0, overflow: 'hidden', background: 'transparent', boxShadow: 'none' }}>
+            <Image src="/logo-habita-round.png" alt="Habita" width={56} height={56} />
           </div>
           <div>
             <h1 className={styles.logoTitle}>Habita</h1>

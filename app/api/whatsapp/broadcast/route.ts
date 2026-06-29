@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
 
     const targetGuests = checkedInReservations
       .map(r => r.guest)
-      .filter(g => g && g.phone) // Ensure guest exists and has a phone
+      .filter(g => g?.phone) // Ensure guest exists and has a phone
     
     // Remove duplicates by phone number
     const uniquePhones = new Map<string, typeof targetGuests[0]>()

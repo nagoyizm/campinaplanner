@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { requireOrg } from '@/lib/org'
 
-const VALID_PALETTES = ['verde', 'azul', 'rojizo', 'crema', 'morado', 'turquesa']
+const VALID_PALETTES = new Set(['verde', 'azul', 'rojizo', 'crema', 'morado', 'turquesa'])
 
 export async function GET() {
   const { organizationId } = await requireOrg()
@@ -20,7 +20,7 @@ export async function PATCH(req: Request) {
   }
 
   const { colorPalette } = await req.json()
-  if (!VALID_PALETTES.includes(colorPalette)) {
+  if (!VALID_PALETTES.has(colorPalette)) {
     return NextResponse.json({ error: 'Paleta inválida' }, { status: 400 })
   }
 

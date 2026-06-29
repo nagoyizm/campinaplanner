@@ -3,25 +3,25 @@
 import { useState } from 'react'
 import { format, addDays, differenceInDays } from 'date-fns'
 import toast from 'react-hot-toast'
-import { X, Calendar as CalendarIcon, ShieldAlert } from 'lucide-react'
+import { X, ShieldAlert } from 'lucide-react'
 
 export default function BloqueoModal({
   defaultRoomId,
   defaultArrival,
   onClose,
   onSave
-}: {
+}: Readonly<{
   defaultRoomId: string
   defaultArrival: Date
   onClose: () => void
   onSave: () => void
-}) {
+}>) {
   const [arrival, setArrival] = useState(format(defaultArrival, 'yyyy-MM-dd'))
   const [departure, setDeparture] = useState(format(addDays(defaultArrival, 1), 'yyyy-MM-dd'))
   const [notes, setNotes] = useState('')
   const [loading, setLoading] = useState(false)
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setLoading(true)
 
@@ -113,8 +113,9 @@ export default function BloqueoModal({
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             <div>
-              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 4 }}>Fecha Inicio</label>
+              <label htmlFor="arrival" style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 4 }}>Fecha Inicio</label>
               <input 
+                id="arrival"
                 type="date" 
                 value={arrival} 
                 onChange={e => setArrival(e.target.value)}
@@ -123,8 +124,9 @@ export default function BloqueoModal({
               />
             </div>
             <div>
-              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 4 }}>Fecha Término</label>
+              <label htmlFor="departure" style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 4 }}>Fecha Término</label>
               <input 
+                id="departure"
                 type="date" 
                 value={departure} 
                 onChange={e => setDeparture(e.target.value)}
@@ -135,8 +137,9 @@ export default function BloqueoModal({
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 4 }}>Motivo (Opcional)</label>
+            <label htmlFor="notes" style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 4 }}>Motivo (Opcional)</label>
             <textarea 
+              id="notes"
               value={notes} 
               onChange={e => setNotes(e.target.value)}
               placeholder="Ej: Mantenimiento, pintura..."

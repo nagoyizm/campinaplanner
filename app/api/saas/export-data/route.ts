@@ -5,7 +5,7 @@ import { requireSuperAdmin } from '@/lib/org'
 export async function GET(req: NextRequest) {
   try {
     await requireSuperAdmin()
-  } catch (e) {
+  } catch {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -42,10 +42,10 @@ export async function GET(req: NextRequest) {
       headers.join(','),
       ...data.map(row => headers.map(fieldName => {
         let val = row[fieldName]
-        if (val === null || val === undefined) val = ''
+        val ??= ''
         if (typeof val === 'object') val = JSON.stringify(val)
         // Escapar comillas dobles y comas para CSV
-        return `"${String(val).replace(/"/g, '""')}"`
+        return `"${String(val).replaceAll('"', '""')}"`
       }).join(','))
     ]
     const csvContent = csvRows.join('\n')

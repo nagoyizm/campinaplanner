@@ -11,7 +11,7 @@ interface DeleteButtonProps {
   title?: string
 }
 
-export default function DeleteButton({ endpoint, confirmMessage, title = 'Eliminar' }: DeleteButtonProps) {
+export default function DeleteButton({ endpoint, confirmMessage, title = 'Eliminar' }: Readonly<DeleteButtonProps>) {
   const [loading, setLoading] = useState(false)
   const router = useRouter()
 
@@ -19,7 +19,7 @@ export default function DeleteButton({ endpoint, confirmMessage, title = 'Elimin
     e.preventDefault() // Prevent navigation if wrapped in a Link
     e.stopPropagation() // Prevent bubbling up to parent Link
 
-    if (!window.confirm(confirmMessage)) return
+    if (!globalThis.confirm(confirmMessage)) return
 
     setLoading(true)
     try {

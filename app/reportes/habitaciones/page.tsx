@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { format, subDays, addDays } from 'date-fns'
-import { Loader2, TrendingUp, DollarSign, BedDouble, Calendar, Hotel } from 'lucide-react'
+import { format, subDays } from 'date-fns'
+import { Loader2, TrendingUp, DollarSign, BedDouble, Hotel } from 'lucide-react'
 import toast from 'react-hot-toast'
 import styles from '../financiero/financiero.module.css'
 

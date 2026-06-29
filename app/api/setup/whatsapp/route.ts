@@ -29,7 +29,7 @@ export async function GET() {
 
     const data = await res.json()
     return NextResponse.json(data)
-  } catch (err) {
+  } catch {
     return NextResponse.json({ status: 'offline', message: 'No se pudo conectar con el microservicio de WhatsApp.' })
   }
 }
@@ -62,7 +62,7 @@ export async function DELETE() {
 
     const data = await res.json()
     return NextResponse.json(data)
-  } catch (err) {
+  } catch {
     return NextResponse.json({ error: 'No se pudo conectar con el microservicio de WhatsApp.' }, { status: 500 })
   }
 }

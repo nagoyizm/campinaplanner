@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
 
-export default function PlanSelector({ orgId, initialPlan }: { orgId: string, initialPlan: string }) {
+export default function PlanSelector({ orgId, initialPlan }: Readonly<{ orgId: string, initialPlan: string }>) {
   const [plan, setPlan] = useState(initialPlan)
   const [loading, setLoading] = useState(false)
   const router = useRouter()
@@ -24,7 +24,7 @@ export default function PlanSelector({ orgId, initialPlan }: { orgId: string, in
       if (!res.ok) throw new Error('Error al actualizar plan')
       toast.success('Plan actualizado correctamente')
       router.refresh()
-    } catch (err) {
+    } catch {
       toast.error('Error al actualizar el plan')
       setPlan(initialPlan) // Revert on failure
     } finally {
@@ -34,8 +34,9 @@ export default function PlanSelector({ orgId, initialPlan }: { orgId: string, in
 
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-      <label style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Suscripción:</label>
+      <label htmlFor="plan" style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Suscripción:</label>
       <select 
+        id="plan"
         value={plan}
         onChange={handlePlanChange}
         disabled={loading}

@@ -13,9 +13,7 @@ const empty = { name: '', email: '', phone: '', password: '', role: 'operator', 
 
 export default function UsuariosPage() {
   const [form, setForm] = useState<any>({ ...empty })
-  const [editingId, setEditingId] = useState<string | null>(null)
   const onFormChange = (field: string, value: any) => {
-    if (field === 'id') setEditingId(value)
     setForm((f: any) => ({ ...f, [field]: value }))
   }
 
@@ -47,37 +45,37 @@ export default function UsuariosPage() {
       formFields={
         <>
           <div className="form-group">
-            <label className="form-label required">Nombre completo</label>
-            <input className="input" value={form.name} onChange={e => onFormChange('name', e.target.value)} placeholder="Ana García" />
+            <label htmlFor="name" className="form-label required">Nombre completo</label>
+            <input id="name" className="input" value={form.name} onChange={e => onFormChange('name', e.target.value)} placeholder="Ana García" />
           </div>
           <div className="form-group">
-            <label className="form-label required">Email</label>
-            <input className="input" type="email" value={form.email} onChange={e => onFormChange('email', e.target.value)} placeholder="ana@capiña.cl" />
+            <label htmlFor="email" className="form-label required">Email</label>
+            <input id="email" className="input" type="email" value={form.email} onChange={e => onFormChange('email', e.target.value)} placeholder="ana@capiña.cl" />
           </div>
           <div className="form-group">
-            <label className="form-label">Celular (WhatsApp)</label>
-            <input className="input" type="tel" value={form.phone || ''} onChange={e => onFormChange('phone', e.target.value)} placeholder="+56912345678" />
+            <label htmlFor="phone" className="form-label">Celular (WhatsApp)</label>
+            <input id="phone" className="input" type="tel" value={form.phone || ''} onChange={e => onFormChange('phone', e.target.value)} placeholder="+56912345678" />
           </div>
           <div className="form-group">
-            <label className="form-label" style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <label htmlFor="password" className="form-label" style={{ display: 'flex', justifyContent: 'space-between' }}>
               Contraseña {form.id && <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>(vacío = no cambiar)</span>}
             </label>
-            <input className="input" type="password" value={form.password} onChange={e => onFormChange('password', e.target.value)} placeholder={form.id ? '(dejar vacío para no cambiar)' : 'Contraseña...'} />
+            <input id="password" className="input" type="password" value={form.password} onChange={e => onFormChange('password', e.target.value)} placeholder={form.id ? '(dejar vacío para no cambiar)' : 'Contraseña...'} />
           </div>
           <div className="form-group">
-            <label className="form-label">Rol del Sistema</label>
-            <select className="select" value={form.role} onChange={e => onFormChange('role', e.target.value)}>
+            <label htmlFor="role" className="form-label">Rol del Sistema</label>
+            <select id="role" className="select" value={form.role} onChange={e => onFormChange('role', e.target.value)}>
               {ROLES.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
             </select>
           </div>
           <div className="form-group">
-            <label className="form-label">Cargo / Puesto</label>
-            <input className="input" value={form.roleName} onChange={e => onFormChange('roleName', e.target.value)} placeholder="Ej: Recepción, Mucama, Gerencia..." />
+            <label htmlFor="roleName" className="form-label">Cargo / Puesto</label>
+            <input id="roleName" className="input" value={form.roleName} onChange={e => onFormChange('roleName', e.target.value)} placeholder="Ej: Recepción, Mucama, Gerencia..." />
           </div>
           <div className="form-group">
             <label className="form-label">Estado</label>
-            <label style={{ display: 'flex', alignItems: 'center', gap: 8, paddingTop: 8, fontSize: 13 }}>
-              <input type="checkbox" checked={form.active} onChange={e => onFormChange('active', e.target.checked)} style={{ accentColor: 'var(--brand-500)' }} />
+            <label htmlFor="active" style={{ display: 'flex', alignItems: 'center', gap: 8, paddingTop: 8, fontSize: 13 }}>
+              <input id="active" type="checkbox" checked={form.active} onChange={e => onFormChange('active', e.target.checked)} style={{ accentColor: 'var(--brand-500)' }} />
               Usuario activo
             </label>
           </div>

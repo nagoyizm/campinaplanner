@@ -21,7 +21,7 @@ interface PalettePickerProps {
   onPaletteChange: (palette: string) => void
 }
 
-export default function PalettePicker({ currentPalette, collapsed, onPaletteChange }: PalettePickerProps) {
+export default function PalettePicker({ currentPalette, collapsed, onPaletteChange }: Readonly<PalettePickerProps>) {
   const { data: session } = useSession()
   const role = (session?.user as any)?.role
   const [open, setOpen] = useState(false)
@@ -49,7 +49,7 @@ export default function PalettePicker({ currentPalette, collapsed, onPaletteChan
     setOpen(false)
 
     // Apply instantly for UX
-    document.documentElement.setAttribute('data-palette', id)
+    document.documentElement.dataset.palette = id
     localStorage.setItem('palette', id)
 
     // Persist to DB
@@ -82,7 +82,7 @@ export default function PalettePicker({ currentPalette, collapsed, onPaletteChan
 
       {open && mounted && createPortal(
         <>
-          <div className={styles.backdrop} onClick={() => setOpen(false)} />
+          <div className={styles.backdrop} onClick={() => setOpen(false)} role="presentation" />
           <div className={styles.dropdown} style={{ top: coords.top, left: coords.left }}>
             <p className={styles.dropdownTitle}>Paleta de colores</p>
             <div className={styles.grid}>

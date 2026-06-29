@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { format, subDays, addDays } from 'date-fns'
+import { format } from 'date-fns'
 import { Loader2, Package, ShoppingCart, TrendingDown, ClipboardList } from 'lucide-react'
 import toast from 'react-hot-toast'
 import styles from '../financiero/financiero.module.css'

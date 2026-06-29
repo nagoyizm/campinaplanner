@@ -33,8 +33,7 @@ export async function GET(req: NextRequest) {
   const itemMap: Record<string, { name: string, category: string, purchases: number, usage: number, netChange: number }> = {}
 
   transactions.forEach(t => {
-    const isPurchase = t.type === 'purchase'
-    const cost = Math.abs(t.totalCost) // Sometimes totalCost might be negative for usage, we'll take absolute to measure volume.
+    // Removed useless variables
     
     // Some systems log totalCost as positive for purchases, and zero or positive for usage cost basis.
     // In our system, totalCost = quantityChange * unitCost.

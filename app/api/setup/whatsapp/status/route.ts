@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { requireOrg } from '@/lib/org'
 
 export async function GET() {
-  const { role, organizationId } = await requireOrg()
+  const { organizationId } = await requireOrg()
   // Allow operators/receptionists to see status too
   
   const apiUrl = process.env.WHATSAPP_API_URL
@@ -27,7 +27,7 @@ export async function GET() {
 
     const data = await res.json()
     return NextResponse.json(data)
-  } catch (err) {
+  } catch {
     return NextResponse.json({ connected: false })
   }
 }

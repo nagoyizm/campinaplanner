@@ -37,8 +37,8 @@ export default function InternalAssistant() {
         inputRef.current?.blur()
       }
     }
-    window.addEventListener('keydown', handler)
-    return () => window.removeEventListener('keydown', handler)
+    globalThis.addEventListener('keydown', handler)
+    return () => globalThis.removeEventListener('keydown', handler)
   }, [])
 
   // Close popover when clicking outside
@@ -145,7 +145,7 @@ export default function InternalAssistant() {
                 dangerouslySetInnerHTML={{
                   __html: result.answer
                     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-                    .replace(/\n/g, '<br/>')
+                    .replaceAll('\n', '<br/>')
                 }}
               />
               {result.route && (

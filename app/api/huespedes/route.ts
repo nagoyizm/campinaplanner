@@ -6,8 +6,8 @@ export async function GET(req: NextRequest) {
   const { organizationId } = await requireOrg()
   const { searchParams } = new URL(req.url)
   const q = searchParams.get('q') || ''
-  const limit = parseInt(searchParams.get('limit') || '20')
-  const page = parseInt(searchParams.get('page') || '1')
+  const limit = Number.parseInt(searchParams.get('limit') || '20')
+  const page = Number.parseInt(searchParams.get('page') || '1')
   const skip = (page - 1) * limit
 
   const where: any = { organizationId }

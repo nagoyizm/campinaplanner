@@ -1,5 +1,5 @@
 import AppLayout from '@/components/layout/AppLayout'
 
-export default function PizarraLayout({ children }: { children: React.ReactNode }) {
+export default function Layout({ children }: Readonly<{ children: React.ReactNode }>) {
   return <AppLayout title="Pizarra / Memo">{children}</AppLayout>
 }

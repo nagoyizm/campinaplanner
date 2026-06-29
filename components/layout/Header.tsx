@@ -10,7 +10,7 @@ interface HeaderProps {
   title?: string
 }
 
-export default function Header({ title }: HeaderProps) {
+export default function Header({ title }: Readonly<HeaderProps>) {
   const { data: session } = useSession()
   const [time, setTime] = useState('')
 

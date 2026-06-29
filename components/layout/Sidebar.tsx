@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { useSession, signOut } from 'next-auth/react'
 import {
@@ -176,9 +177,14 @@ export default function Sidebar({ theme, onThemeToggle, palette, onPaletteChange
 
       <aside className={`${styles.sidebar} ${collapsed ? styles.collapsed : ''} ${mobileOpen ? styles.mobileOpen : ''}`}>
         {/* Logo */}
-        <div className={styles.logoArea}>
-          <div className={styles.logoIcon}>
-            <Hotel size={20} />
+        <div className={styles.logoArea} style={{ flexDirection: collapsed ? 'row' : 'column', alignItems: collapsed ? 'center' : 'flex-start', padding: '16px 14px', gap: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div className={styles.logoIcon} style={{ background: 'transparent', boxShadow: 'none', padding: 0, width: 28, height: 28 }}>
+              <Image src="/logo-habita-round.png" alt="Habita" width={28} height={28} />
+            </div>
+            {!collapsed && (
+              <span style={{ fontSize: '18px', fontWeight: 800, color: 'var(--sidebar-title)', letterSpacing: '-0.02em' }}>Habita</span>
+            )}
           </div>
           {!collapsed && (
             <div className={styles.logoText}>

@@ -1,4 +1,4 @@
-const { PrismaClient } = require('@prisma/client')
+import { PrismaClient } from '@prisma/client'
 const prisma = new PrismaClient()
 
 async function main() {
@@ -32,7 +32,7 @@ async function main() {
   TODAY.setHours(0, 0, 0, 0)
   
   // Helpers de fechas
-  const dateAt = (daysOffset, hours) => {
+  const dateAt = (daysOffset: number, hours: number) => {
     const d = new Date(TODAY)
     d.setDate(d.getDate() + daysOffset)
     d.setHours(hours, 0, 0, 0)
@@ -42,9 +42,9 @@ async function main() {
   let rIdx = 0
   const getRoom = () => rooms[rIdx++ % rooms.length]
   const getGuest = () => guests[Math.floor(Math.random() * guests.length)]
-  const getRate = (roomId) => {
-    const room = rooms.find(r => r.id === roomId)
-    const rate = rates.find(rt => rt.unitTypeId === room.unitTypeId)
+  const getRate = (roomId: string) => {
+    const room = rooms.find((r: any) => r.id === roomId)
+    const rate = rates.find((rt: any) => rt.unitTypeId === room.unitTypeId)
     return rate || rates[0]
   }
 
@@ -114,7 +114,10 @@ async function main() {
     const rate = getRate(room.id)
     const randomOffset = Math.floor(Math.random() * 20) - 10 // Entre -10 y +10 días
     const stay = 2
-    const status = randomOffset < 0 ? (randomOffset + stay < 0 ? 'checked_out' : 'checked_in') : 'confirmed'
+    let status = 'confirmed'
+    if (randomOffset < 0) {
+      status = (randomOffset + stay < 0) ? 'checked_out' : 'checked_in'
+    }
     
     await prisma.reservation.create({
       data: {
@@ -131,3 +134,5 @@ async function main() {
 }
 
 main().finally(() => prisma.$disconnect())
+
+export {}

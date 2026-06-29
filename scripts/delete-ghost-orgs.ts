@@ -1,7 +1,7 @@
-const { PrismaClient } = require('@prisma/client')
+import { PrismaClient } from '@prisma/client'
 const prisma = new PrismaClient()
 
-async function deleteOrg(org) {
+async function deleteOrg(org: any) {
   console.log(`Borrando org fantasma: ${org.name} (${org.slug})`)
   try {
     const orgId = org.id
@@ -13,7 +13,7 @@ async function deleteOrg(org) {
     
     const resvRooms = await prisma.reservationRoom.findMany({ where: { room: { organizationId: orgId } } })
     if (resvRooms.length > 0) {
-      await prisma.reservationRoom.deleteMany({ where: { id: { in: resvRooms.map(r => r.id) } } })
+      await prisma.reservationRoom.deleteMany({ where: { id: { in: resvRooms.map((r: any) => r.id) } } })
     }
     
     await prisma.reservation.deleteMany({ where: { organizationId: orgId } })
@@ -26,7 +26,7 @@ async function deleteOrg(org) {
     
     await prisma.organization.delete({ where: { id: orgId } })
     console.log(`✅ ${org.slug} borrado con éxito.`)
-  } catch (error) {
+  } catch (error: any) {
     console.error(`❌ Error al borrar ${org.slug}:`, error.message)
   }
 }
@@ -38,8 +38,8 @@ async function main() {
     include: { _count: { select: { reservations: true } } }
   })
 
-  // Queremos borrar todo lo que tenga "Termas" en el nombre, pero que NO tenga reservas.
-  const ghostOrgs = allOrgs.filter(org => org.name.includes('Termas') && org._count.reservations === 0)
+  // Filtramos por orgs sin reservas
+  const ghostOrgs = allOrgs.filter((org: any) => org.name.includes('Termas') && org._count.reservations === 0)
 
   for (const org of ghostOrgs) {
     await deleteOrg(org)
@@ -49,3 +49,5 @@ async function main() {
 }
 
 main().finally(() => prisma.$disconnect())
+
+export {}

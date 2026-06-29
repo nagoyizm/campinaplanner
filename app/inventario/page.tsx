@@ -1,6 +1,6 @@
 import { requireOrg } from '@/lib/org'
 import { prisma } from '@/lib/prisma'
-import { Package, DollarSign, ArrowUpRight, ArrowDownRight } from 'lucide-react'
+import { Package, DollarSign, ArrowDownRight } from 'lucide-react'
 import InventoryClient from './InventoryClient'
 import { redirect } from 'next/navigation'
 
