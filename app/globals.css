@@ -997,3 +997,11 @@ tbody td { padding: 10px 14px; color: var(--text-primary); }
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum";
 }
+
+@font-face {
+  font-family: 'mooxy';
+  src: url('/fonts/mooxy.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
