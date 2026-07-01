@@ -64,13 +64,24 @@ export default function ReporteInventarioPage() {
           <div className={styles.filtersGrid}>
             <div className={styles.filterGroup}>
               <p className="form-label">Período</p>
-              <div className={styles.presetRow}>
+              <select
+                className="input"
+                value={preset || 'custom'}
+                onChange={(e) => {
+                  const val = e.target.value
+                  if (val === 'custom') {
+                    setPreset('custom')
+                  } else {
+                    const p = DATE_PRESETS.find(x => x.label === val)
+                    if (p) handlePreset(p, p.label)
+                  }
+                }}
+              >
                 {DATE_PRESETS.map((p) => (
-                  <button key={p.label} className={`btn btn-sm ${preset === p.label ? 'btn-primary' : 'btn-secondary'}`} onClick={() => handlePreset(p, p.label)}>
-                    {p.label}
-                  </button>
+                  <option key={p.label} value={p.label}>{p.label}</option>
                 ))}
-              </div>
+                <option value="custom">Personalizado</option>
+              </select>
             </div>
 
             <div className={styles.filterGroup}>
@@ -82,7 +93,7 @@ export default function ReporteInventarioPage() {
               </div>
             </div>
 
-            <div className={styles.filterGroup} style={{ justifyContent: 'flex-end', alignItems: 'flex-end', display: 'flex' }}>
+            <div className={styles.filterGroup} style={{ marginLeft: 'auto', justifyContent: 'flex-end', alignItems: 'flex-end', display: 'flex' }}>
               <button className="btn btn-primary" onClick={handleShow} disabled={loading} style={{ minWidth: 120 }}>
                 {loading ? <><Loader2 size={15} className="spin" /> Cargando...</> : 'Generar'}
               </button>

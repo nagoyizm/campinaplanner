@@ -272,28 +272,29 @@ export default function ReporteFinancieroPage() {
             {/* Date presets */}
             <div className={styles.filterGroup}>
               <p className="form-label">Fecha</p>
-              <div className={styles.presetRow}>
+              <select
+                className="input"
+                value={preset || 'custom'}
+                onChange={(e) => {
+                  const val = e.target.value
+                  if (val === 'custom') {
+                    setPreset('custom')
+                  } else {
+                    const p = DATE_PRESETS.find(x => x.label === val)
+                    if (p) handlePreset(p, p.label)
+                  }
+                }}
+              >
                 {DATE_PRESETS.map((p) => (
-                  <button
-                    key={p.label}
-                    className={`btn btn-sm ${preset === p.label ? 'btn-primary' : 'btn-secondary'}`}
-                    onClick={() => handlePreset(p, p.label)}
-                  >
-                    {p.label}
-                  </button>
+                  <option key={p.label} value={p.label}>{p.label}</option>
                 ))}
-                <button
-                  className={`btn btn-sm ${preset === 'custom' ? 'btn-primary' : 'btn-secondary'}`}
-                  onClick={() => setPreset('custom')}
-                >
-                  Personalizado
-                </button>
-              </div>
+                <option value="custom">Personalizado</option>
+              </select>
             </div>
 
             {/* Room Filters */}
             <div className={styles.filterGroup}>
-              <p className="form-label">Grupo de Cabañas</p>
+              <p className="form-label">Grupo de Habitaciones</p>
               <select 
                 className="input" 
                 value={selectedUnitType} 
@@ -307,7 +308,7 @@ export default function ReporteFinancieroPage() {
             </div>
 
             <div className={styles.filterGroup}>
-              <p className="form-label">Cabaña Específica</p>
+              <p className="form-label">Habitación Específica</p>
               <select 
                 className="input" 
                 value={selectedRoom} 
@@ -346,28 +347,19 @@ export default function ReporteFinancieroPage() {
             {/* Query by */}
             <div className={styles.filterGroup}>
               <p className="form-label">Consultar por</p>
-              <div className={styles.radioRow}>
-                {[
-                  { value: 'arrival',   label: 'Fecha Llegada' },
-                  { value: 'departure', label: 'Fecha Salida' },
-                  { value: 'both',      label: 'Ambas' },
-                ].map(o => (
-                  <label key={o.value} className={styles.radioLabel}>
-                    <input
-                      type="radio"
-                      name="queryBy"
-                      value={o.value}
-                      checked={queryBy === o.value}
-                      onChange={() => setQueryBy(o.value as any)}
-                    />
-                    {o.label}
-                  </label>
-                ))}
-              </div>
+              <select
+                className="input"
+                value={queryBy}
+                onChange={(e) => setQueryBy(e.target.value as any)}
+              >
+                <option value="arrival">Fecha Llegada</option>
+                <option value="departure">Fecha Salida</option>
+                <option value="both">Ambas</option>
+              </select>
             </div>
 
             {/* Show button */}
-            <div className={styles.filterGroup} style={{ justifyContent: 'flex-end', alignItems: 'flex-end', display: 'flex' }}>
+            <div className={styles.filterGroup} style={{ marginLeft: 'auto', justifyContent: 'flex-end', alignItems: 'flex-end', display: 'flex' }}>
               <button
                 className="btn btn-primary"
                 onClick={handleShow}

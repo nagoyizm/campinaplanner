@@ -6,7 +6,7 @@ import { es } from 'date-fns/locale'
 import {
   Search, Plus, Edit2, Trash2, Save, X, Loader2,
   ChevronLeft, ChevronRight,
-  Phone, Mail, Globe
+  Phone, Mail, Globe, Download
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { useSession } from 'next-auth/react'
@@ -76,6 +76,10 @@ export default function HuespedesPage() {
   useEffect(() => { load() }, [load])
 
   const handleSearch = (v: string) => { setSearch(v); setPage(1) }
+
+  const handleExport = () => {
+    window.open(`/api/huespedes/excel?q=${encodeURIComponent(search)}`, '_blank')
+  }
 
   const handleNew = () => {
     setEditingId(null)
@@ -215,6 +219,9 @@ export default function HuespedesPage() {
             onChange={e => handleSearch(e.target.value)}
           />
         </div>
+        <button className="btn btn-secondary" onClick={handleExport} title="Descargar Base de Datos">
+          <Download size={15} /> Descargar
+        </button>
       </div>
 
       {/* Table */}

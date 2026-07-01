@@ -120,10 +120,10 @@ export default function FinancialCharts({ rows, startDate, endDate }: { rows: Re
       </div>
 
       {/* Charts Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: '20px' }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px' }}>
         
         {/* Timeline Chart */}
-        <div className="card" style={{ padding: '20px', background: 'var(--surface-1)' }}>
+        <div className="card" style={{ flex: '1 1 500px', minWidth: 0, padding: '20px', background: 'var(--surface-1)' }}>
           <h3 style={{ margin: '0 0 20px 0', fontSize: '16px', color: 'var(--text-primary)' }}>Evolución de Ingresos (Llegadas)</h3>
           <div style={{ height: '300px' }}>
             <ResponsiveContainer width="100%" height="100%">
@@ -154,7 +154,7 @@ export default function FinancialCharts({ rows, startDate, endDate }: { rows: Re
         </div>
 
         {/* Room Types Pie */}
-        <div className="card" style={{ padding: '20px', background: 'var(--surface-1)' }}>
+        <div className="card" style={{ flex: '1 1 250px', minWidth: 0, padding: '20px', background: 'var(--surface-1)' }}>
           <h3 style={{ margin: '0 0 20px 0', fontSize: '16px', color: 'var(--text-primary)' }}>Por Tipo de Habitación</h3>
           <div style={{ height: '300px' }}>
             <ResponsiveContainer width="100%" height="100%">
@@ -183,7 +183,7 @@ export default function FinancialCharts({ rows, startDate, endDate }: { rows: Re
         </div>
 
         {/* Payment Methods Pie */}
-        <div className="card" style={{ padding: '20px', background: 'var(--surface-1)' }}>
+        <div className="card" style={{ flex: '1 1 250px', minWidth: 0, padding: '20px', background: 'var(--surface-1)' }}>
           <h3 style={{ margin: '0 0 20px 0', fontSize: '16px', color: 'var(--text-primary)' }}>Por Forma de Pago</h3>
           <div style={{ height: '300px' }}>
             <ResponsiveContainer width="100%" height="100%">
