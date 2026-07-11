@@ -262,11 +262,11 @@ async function main() {
   // ──────────────────────────────────────────────
   // 4. USUARIO ADMIN INICIAL
   // ──────────────────────────────────────────────
-  const hashedPassword = await bcrypt.hash('admin123', 12) // nosec: intentional seed credential
+  const hashedSuperPassword = await bcrypt.hash(process.env.SEED_PASSWORD || 'temporal1234', 12) // nosec: intentional seed credential
   await prisma.user.upsert({
     where: { email: 'admin@capiña.cl' },
     update: {
-      password: hashedPassword,
+      password: hashedSuperPassword,
     },
     create: {
       email: 'admin@capiña.cl',

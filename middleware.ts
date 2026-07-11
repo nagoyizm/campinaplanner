@@ -48,10 +48,10 @@ export default auth((req) => {
 
   // Role-based route protection
   const path = nextUrl.pathname
-  const isSetupRoute = path.startsWith('/setup')
+  const isSetupRoute = path.startsWith('/setup') || path.startsWith('/api/setup')
   const isDashboardRoute = path === '/dashboard' || path.startsWith('/dashboard/')
-  const isReportesRoute = path.startsWith('/reportes')
-  const isSaasRoute = path.startsWith('/saas')
+  const isReportesRoute = path.startsWith('/reportes') || path.startsWith('/api/reportes')
+  const isSaasRoute = path.startsWith('/saas') || path.startsWith('/api/saas')
 
   if (!isLoggedIn && !isPublic) {
     response = NextResponse.redirect(new URL('/login', req.url))
@@ -60,10 +60,26 @@ export default auth((req) => {
   } else if (isLoggedIn && isRoot) {
     response = NextResponse.redirect(new URL(redirectTarget, req.url))
   } else if (isLoggedIn) {
-    if (userRole === 'empleado' && (isDashboardRoute || isReportesRoute || isSetupRoute || isSaasRoute || path.startsWith('/calendario') || path.startsWith('/huespedes') || path.startsWith('/reservas'))) {
-      response = NextResponse.redirect(new URL(redirectTarget, req.url))
-    } else if (userRole === 'recepcionista' && (isSetupRoute || isReportesRoute || isDashboardRoute || isSaasRoute)) {
-      response = NextResponse.redirect(new URL(redirectTarget, req.url))
+    // API Authorization check
+    if (path.startsWith('/api/')) {
+      if (userRole === 'empleado' && (isDashboardRoute || isReportesRoute || isSetupRoute || isSaasRoute)) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+      }
+      if (userRole === 'recepcionista' && (isSetupRoute || isReportesRoute || isDashboardRoute || isSaasRoute)) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+      }
+      if (userRole !== 'superadmin' && isSaasRoute) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+      }
+    } else {
+      // Page Authorization check
+      if (userRole === 'empleado' && (isDashboardRoute || isReportesRoute || isSetupRoute || isSaasRoute || path.startsWith('/calendario') || path.startsWith('/huespedes') || path.startsWith('/reservas'))) {
+        response = NextResponse.redirect(new URL(redirectTarget, req.url))
+      } else if (userRole === 'recepcionista' && (isSetupRoute || isReportesRoute || isDashboardRoute || isSaasRoute)) {
+        response = NextResponse.redirect(new URL(redirectTarget, req.url))
+      } else if (userRole !== 'superadmin' && isSaasRoute) {
+        response = NextResponse.redirect(new URL(redirectTarget, req.url))
+      }
     }
   }
 

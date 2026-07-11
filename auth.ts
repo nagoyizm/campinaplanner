@@ -3,6 +3,7 @@ import Credentials from 'next-auth/providers/credentials'
 import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
 import { authConfig } from './auth.config'
+import { rateLimit } from '@/lib/rate-limit'
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
@@ -13,11 +14,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         email: { label: 'Email', type: 'email' },
         password: { label: 'Contraseña', type: 'password' },
       },
-      async authorize(credentials) {
+      async authorize(credentials, req) {
         if (!credentials?.email || !credentials?.password) return null
 
+        const email = credentials.email as string
+
+        // Rate limiting: max 5 attempts per minute per email
+        if (!rateLimit(`login:${email}`, 5, 60 * 1000)) {
+          throw new Error('Demasiados intentos. Intenta de nuevo en 1 minuto.')
+        }
+
         const user = await prisma.user.findUnique({
-          where: { email: credentials.email as string },
+          where: { email },
           select: {
             id: true, email: true, name: true, role: true,
             roleName: true, active: true, password: true,
@@ -32,7 +40,29 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           credentials.password as string,
           user.password
         )
-        if (!valid) return null
+        
+        if (!valid) {
+          // Log failed attempt async without awaiting to not block response
+          prisma.auditLog.create({
+            data: {
+              organizationId: user.organizationId,
+              userId: user.id,
+              action: 'login_failed',
+              details: 'Intento de inicio de sesión fallido (contraseña incorrecta)',
+            }
+          }).catch(console.error)
+          return null
+        }
+
+        // Log successful login
+        prisma.auditLog.create({
+          data: {
+            organizationId: user.organizationId,
+            userId: user.id,
+            action: 'login_success',
+            details: 'Inicio de sesión exitoso',
+          }
+        }).catch(console.error)
 
         return {
           id: user.id,

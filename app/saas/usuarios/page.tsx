@@ -4,6 +4,7 @@ import styles from '../saas.module.css'
 import { UsersRound } from 'lucide-react'
 import { format } from 'date-fns'
 import DeleteButton from '@/components/ui/DeleteButton'
+import EditUserButton from './EditUserButton'
 
 export const dynamic = 'force-dynamic'
 
@@ -39,7 +40,7 @@ export default async function GlobalUsersPage() {
               <th>Cargo</th>
               <th>Organización</th>
               <th>Estado</th>
-              <th style={{ width: '80px', textAlign: 'center' }}>Acciones</th>
+              <th style={{ width: '120px', textAlign: 'center' }}>Acciones</th>
             </tr>
           </thead>
           <tbody>
@@ -67,7 +68,15 @@ export default async function GlobalUsersPage() {
                     {user.active ? 'Activo' : 'Inactivo'}
                   </span>
                 </td>
-                <td style={{ textAlign: 'center' }}>
+                <td style={{ textAlign: 'center', whiteSpace: 'nowrap' }}>
+                  <EditUserButton user={{
+                    id: user.id,
+                    name: user.name,
+                    email: user.email,
+                    role: user.role,
+                    roleName: user.roleName || '',
+                    active: user.active
+                  }} />
                   <DeleteButton 
                     endpoint={`/api/saas/usuarios/${user.id}`} 
                     confirmMessage={`¿Estás seguro de eliminar permanentemente al usuario ${user.name} (${user.email})?`} 

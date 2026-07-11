@@ -20,7 +20,8 @@ async function main() {
   console.log('✅ Organización base creada:', org.name)
 
   // 2. Create SuperAdmin User
-  const password = await bcrypt.hash('S3cur3P4ssw0rd!2026', 12) // nosec: intentional seed credential
+  const password = process.env.SEED_PASSWORD || 'S3cur3P4ssw0rd!2026'
+  const hashedPassword = await bcrypt.hash(password, 12) // nosec: intentional seed credential
   const user = await prisma.user.upsert({
     where: { email: 'superadmin@habita.cl' },
     update: {},

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { requireOrg } from '@/lib/org'
 import bcrypt from 'bcryptjs'
+import { createUserSchema } from '@/lib/validations'
 
 export async function GET() {
   const { organizationId } = await requireOrg()
@@ -16,20 +17,32 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   const { organizationId } = await requireOrg()
   const body = await req.json()
-  if (!body.password) return NextResponse.json({ error: 'Contraseña requerida' }, { status: 400 })
-  const hashed = await bcrypt.hash(body.password, 12)
-  const user = await prisma.user.create({
-    data: {
-      organizationId,
-      name: body.name,
-      email: body.email,
-      phone: body.phone,
-      password: hashed,
-      role: body.role || 'operator',
-      roleName: body.roleName || 'Recepción',
-      active: body.active !== false,
-    },
-    select: { id: true, name: true, email: true, phone: true, role: true, roleName: true, active: true, createdAt: true },
-  })
-  return NextResponse.json(user, { status: 201 })
+  
+  const parsed = createUserSchema.safeParse(body)
+  if (!parsed.success) {
+    return NextResponse.json({ error: 'Datos inválidos', details: parsed.error.format() }, { status: 400 })
+  }
+  
+  const data = parsed.data
+  const hashed = await bcrypt.hash(data.password, 12)
+  
+  try {
+    const user = await prisma.user.create({
+      data: {
+        organizationId,
+        name: data.name,
+        email: data.email,
+        phone: data.phone,
+        password: hashed,
+        role: data.role,
+        roleName: data.roleName,
+        active: data.active,
+      },
+      select: { id: true, name: true, email: true, phone: true, role: true, roleName: true, active: true, createdAt: true },
+    })
+    return NextResponse.json(user, { status: 201 })
+  } catch (error: any) {
+    if (error.code === 'P2002') return NextResponse.json({ error: 'El email ya está registrado' }, { status: 400 })
+    return NextResponse.json({ error: 'Error al crear usuario' }, { status: 500 })
+  }
 }

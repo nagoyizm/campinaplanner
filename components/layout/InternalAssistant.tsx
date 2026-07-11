@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom'
 import { useRouter } from 'next/navigation'
 import { Search, X, ArrowRight, Sparkles, Loader } from 'lucide-react'
 import styles from './InternalAssistant.module.css'
+import DOMPurify from 'dompurify'
 
 interface AssistantResult {
   answer: string
@@ -143,9 +144,11 @@ export default function InternalAssistant() {
               <p
                 className={styles.answerText}
                 dangerouslySetInnerHTML={{
-                  __html: result.answer
-                    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-                    .replaceAll('\n', '<br/>')
+                  __html: DOMPurify.sanitize(
+                    result.answer
+                      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+                      .replaceAll('\n', '<br/>')
+                  )
                 }}
               />
               {result.route && (

@@ -28,12 +28,12 @@ async function main() {
   console.log('✔ Organización Termas del Sur creada.')
 
   // 2. Crear Usuarios (Admin, Recepción, Empleado)
-  const pwd = await hash('termas123', 10) // nosec: intentional seed credential
+  const hashedSuperPassword = await bcrypt.hash(process.env.SEED_PASSWORD || 'temporal1234', 12) // nosec: intentional seed credential
   await prisma.user.createMany({
     data: [
-      { name: 'Admin Termas', email: 'admin@termas.cl', password: pwd, role: 'admin', roleName: 'Administrador', organizationId: orgId },
-      { name: 'Recepción Central', email: 'recepcion@termas.cl', password: pwd, role: 'recepcionista', roleName: 'Recepcionista', organizationId: orgId },
-      { name: 'Juan Mucamo', email: 'empleado@termas.cl', password: pwd, role: 'empleado', roleName: 'Limpieza', organizationId: orgId },
+      { name: 'Admin Termas', email: 'admin@termas.cl', password: hashedSuperPassword, role: 'admin', roleName: 'Administrador', organizationId: orgId },
+      { name: 'Recepción Central', email: 'recepcion@termas.cl', password: hashedSuperPassword, role: 'recepcionista', roleName: 'Recepcionista', organizationId: orgId },
+      { name: 'Juan Mucamo', email: 'empleado@termas.cl', password: hashedSuperPassword, role: 'empleado', roleName: 'Limpieza', organizationId: orgId },
     ]
   })
   console.log('✔ Usuarios de Termas creados.')

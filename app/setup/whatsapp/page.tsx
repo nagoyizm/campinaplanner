@@ -15,7 +15,7 @@ export default function WhatsAppSetupPage() {
       
       setStatus(data.status)
       setMessage(data.message || '')
-      if (data.qr) {
+      if (data.qr && /^data:image\/[a-z]+;base64,/.test(data.qr)) {
         setQr(data.qr)
       } else {
         setQr(null)
@@ -123,9 +123,9 @@ export default function WhatsAppSetupPage() {
           {status === 'scan_required' && qr && (
             <div className="flex flex-col items-center gap-4">
               <div className="p-4 bg-white rounded-xl shadow-sm border">
-                {/* ponytail: guard ensures only base64 data URLs reach src — nosec */}
+                {/* deepcode ignore DOMXSS: Validated via strict regex */}
                 {qr.startsWith('data:image/') && (
-                  <img src={qr} alt="WhatsApp QR Code" className="w-64 h-64" /> // nosec
+                  <img src={qr} alt="WhatsApp QR Code" className="w-64 h-64" />
                 )}
               </div>
               <h4 className="font-medium">Escanea este código</h4>

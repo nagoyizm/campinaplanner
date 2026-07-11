@@ -14,6 +14,7 @@ import {
 import toast from 'react-hot-toast'
 import styles from './simulador.module.css'
 import Link from 'next/link'
+import DOMPurify from 'dompurify'
 
 interface Message {
   id: string
@@ -213,7 +214,7 @@ export default function SimuladorPage() {
         <span
           key={`line-${idx}-${line.slice(0, 10)}`}
           // eslint-disable-next-line react/no-danger
-          dangerouslySetInnerHTML={{ __html: line }}
+          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(line) }}
           style={{ display: 'block', minHeight: line === '' ? '12px' : 'auto' }}
         />
       )

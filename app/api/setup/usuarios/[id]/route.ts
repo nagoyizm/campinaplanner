@@ -1,27 +1,42 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
+import { updateUserSchema } from '@/lib/validations'
+import { requireOrg } from '@/lib/org'
 
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { organizationId } = await requireOrg()
   const { id } = await params
   const body = await req.json()
+  
+  const parsed = updateUserSchema.safeParse(body)
+  if (!parsed.success) {
+    return NextResponse.json({ error: 'Datos inválidos', details: parsed.error.format() }, { status: 400 })
+  }
+  
   const data: any = {
-    name: body.name,
-    email: body.email,
-    phone: body.phone,
-    role: body.role,
-    roleName: body.roleName,
-    active: body.active !== false,
+    name: parsed.data.name,
+    email: parsed.data.email,
+    phone: parsed.data.phone,
+    role: parsed.data.role,
+    roleName: parsed.data.roleName,
+    active: parsed.data.active !== false,
   }
-  if (body.password) {
-    data.password = await bcrypt.hash(body.password, 12)
+  
+  if (parsed.data.password && parsed.data.password.length >= 6) {
+    data.password = await bcrypt.hash(parsed.data.password, 12)
   }
-  const user = await prisma.user.update({
-    where: { id },
-    data,
-    select: { id: true, name: true, email: true, phone: true, role: true, roleName: true, active: true, createdAt: true },
-  })
-  return NextResponse.json(user)
+  
+  try {
+    const user = await prisma.user.update({
+      where: { id, organizationId },
+      data,
+      select: { id: true, name: true, email: true, phone: true, role: true, roleName: true, active: true, createdAt: true },
+    })
+    return NextResponse.json(user)
+  } catch (error) {
+    return NextResponse.json({ error: 'Error al actualizar usuario' }, { status: 500 })
+  }
 }
 
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
