@@ -183,7 +183,7 @@ export default function Sidebar({ theme, onThemeToggle, palette, onPaletteChange
               <Image src="/logo-habita-round.png" alt="Agendio" width={40} height={40} />
             </div>
             {!collapsed && (
-              <span style={{ fontFamily: '"mooxy", sans-serif', fontSize: '24px', fontWeight: 800, color: 'var(--sidebar-title)', letterSpacing: '0.15em' }}>habita</span>
+              <span style={{ fontFamily: '"mooxy", sans-serif', fontSize: '24px', fontWeight: 800, color: 'var(--sidebar-title)', letterSpacing: '0.15em' }}>Agendio</span>
             )}
           </div>
           {!collapsed && (
