@@ -14,6 +14,7 @@ const cspHeader = `
 `
 
 const nextConfig: NextConfig = {
+  output: 'standalone',
   typescript: {
     // ponytail: build passes locally; Vercel env may differ slightly — ignore TS errors in production build
     ignoreBuildErrors: true,

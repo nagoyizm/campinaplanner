@@ -180,7 +180,7 @@ export default function Sidebar({ theme, onThemeToggle, palette, onPaletteChange
         <div className={styles.logoArea} style={{ flexDirection: collapsed ? 'row' : 'column', alignItems: collapsed ? 'center' : 'flex-start', padding: '16px 14px', gap: '12px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <div className={styles.logoIcon} style={{ background: 'transparent', boxShadow: 'none', padding: 0, width: 40, height: 40 }}>
-              <Image src="/logo-habita-round.png" alt="Habita" width={40} height={40} />
+              <Image src="/logo-habita-round.png" alt="Agendio" width={40} height={40} />
             </div>
             {!collapsed && (
               <span style={{ fontFamily: '"mooxy", sans-serif', fontSize: '24px', fontWeight: 800, color: 'var(--sidebar-title)', letterSpacing: '0.15em' }}>habita</span>

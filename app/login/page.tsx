@@ -40,9 +40,9 @@ export default function LoginPage() {
       {/* Absolute Logo */}
       <div style={{ position: 'absolute', top: '30px', left: '40px', display: 'flex', alignItems: 'center', gap: '10px' }}>
         <div style={{ padding: 0, overflow: 'hidden', background: 'transparent', boxShadow: 'none' }}>
-          <Image src="/logo-habita-round.png" alt="Habita" width={40} height={40} />
+          <Image src="/logo-habita-round.png" alt="Agendio" width={40} height={40} />
         </div>
-        <h1 style={{ fontFamily: '"mooxy", sans-serif', fontSize: '20px', letterSpacing: '0.15em', margin: 0, color: 'rgba(255,255,255,0.9)' }}>habita</h1>
+        <h1 style={{ fontFamily: '"mooxy", sans-serif', fontSize: '20px', letterSpacing: '0.15em', margin: 0, color: 'rgba(255,255,255,0.9)' }}>Agendio</h1>
       </div>
 
       {/* Background decoration */}
@@ -131,7 +131,7 @@ export default function LoginPage() {
         </form>
 
         <p className={styles.footer}>
-          © {new Date().getFullYear()} Habita. Todos los derechos reservados.
+          © {new Date().getFullYear()} Agendio. Todos los derechos reservados.
         </p>
       </div>
     </div>

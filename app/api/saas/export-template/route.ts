@@ -59,7 +59,7 @@ export async function GET(req: NextRequest) {
     }
 
     const workbook = new ExcelJS.Workbook()
-    workbook.creator = 'Habita SaaS'
+    workbook.creator = 'Agendio SaaS'
     const worksheet = workbook.addWorksheet(table.toUpperCase())
 
     // Configurar columnas

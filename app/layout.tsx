@@ -9,14 +9,14 @@ const outfit = Outfit({
 })
 
 export const metadata: Metadata = {
-  title: 'Cabañas La Campiña — Sistema de Reservas',
+  title: 'Agendio - sistema de reservas',
   description: 'Sistema de gestión de reservas para Cabañas La Campiña',
-  keywords: ['reservas', 'cabañas', 'la campiña', 'planner'],
+  keywords: ['reservas', 'cabañas', 'agendio', 'planner'],
   openGraph: {
     title: 'Cabañas La Campiña — Sistema de Reservas',
-    description: 'Sistema de gestión de reservas para Cabañas La Campiña',
-    url: 'https://campinaplanner.vercel.app',
-    siteName: 'Planner La Campiña',
+    description: 'Sistema de gestión de reservas',
+    url: 'https://www.agendio.cl',
+    siteName: 'Agendio',
     images: [
       {
         url: 'https://campinaplanner.vercel.app/og-image.png',
@@ -30,8 +30,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Cabañas La Campiña — Sistema de Reservas',
-    description: 'Sistema de gestión de reservas para Cabañas La Campiña',
+    title: 'Agendio — Sistema de Reservas',
+    description: 'Sistema de gestión de reservas',
     images: ['https://campinaplanner.vercel.app/og-image.png'],
   },
 }
