@@ -42,10 +42,8 @@ export default async function CalendarioPage({
   const reservas = await prisma.reservationRoom.findMany({
     where: {
       room: { organizationId },
-      OR: [
-        { arrival: { lte: addDays(fin, 7), gte: addDays(inicio, -7) } },
-        { departure: { lte: addDays(fin, 7), gte: addDays(inicio, -7) } },
-      ],
+      arrival: { lte: addDays(fin, 14) },
+      departure: { gte: addDays(inicio, -14) },
     },
     include: {
       reservation: {

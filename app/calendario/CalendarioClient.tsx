@@ -193,13 +193,25 @@ export default function CalendarioClient({ rooms, reservas, fechaBase, todayStr 
     [visibleReservas]
   )
 
-  // Is this the first day of a reservation block?
-  const isFirstDay = (r: ReservationRoom, day: Date) => {
+  // Is this the first visible day of a reservation block in the grid?
+  const isFirstDay = (r: ReservationRoom, day: Date, daysArr: Date[]) => {
     const arr = parseUTCDate(r.arrival)
     arr.setHours(0,0,0,0)
+    const dep = parseUTCDate(r.departure)
+    dep.setHours(0,0,0,0)
     const d = new Date(day)
     d.setHours(0,0,0,0)
-    return isSameDay(arr, d)
+
+    if (isSameDay(arr, d)) return true
+
+    if (daysArr.length > 0) {
+      const firstGridDay = new Date(daysArr[0])
+      firstGridDay.setHours(0,0,0,0)
+      if (isSameDay(firstGridDay, d) && arr < firstGridDay && dep > firstGridDay) {
+        return true
+      }
+    }
+    return false
   }
 
   // Calculate width (nights) of reservation block starting from this day
@@ -561,9 +573,13 @@ export default function CalendarioClient({ rooms, reservas, fechaBase, todayStr 
 
   const renderCell = (room: Room, day: Date, dayIdx: number) => {
     const rsv = getReservationForCell(room.id, day)
-    const isFirst = rsv ? isFirstDay(rsv, day) : false
+    const isFirst = rsv ? isFirstDay(rsv, day, days) : false
     const blockWidth = rsv && isFirst ? getBlockWidth(rsv, day, days) : 1
-    const status = rsv ? STATUS_CONFIG[rsv.reservation.status] : null
+    const status = rsv ? (STATUS_CONFIG[rsv.reservation.status] || {
+      label: rsv.reservation.status || 'Reserva',
+      color: 'rgba(107, 114, 128, 0.70)',
+      textColor: 'var(--text-primary)'
+    }) : null
     const isDragSel = isDragSelected(room.id, day)
 
     // Determine if this cell is covered by the active drag preview

@@ -20,6 +20,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     phone: parsed.data.phone,
     role: parsed.data.role,
     roleName: parsed.data.roleName,
+    permissions: typeof parsed.data.permissions === 'object' ? JSON.stringify(parsed.data.permissions) : (parsed.data.permissions || null),
     active: parsed.data.active !== false,
   }
   
@@ -31,7 +32,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     const user = await prisma.user.update({
       where: { id, organizationId },
       data,
-      select: { id: true, name: true, email: true, phone: true, role: true, roleName: true, active: true, createdAt: true },
+      select: { id: true, name: true, email: true, phone: true, role: true, roleName: true, permissions: true, active: true, createdAt: true },
     })
     return NextResponse.json(user)
   } catch (error) {

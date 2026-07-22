@@ -188,9 +188,12 @@ export default async function DashboardPage() {
       take: 10
     }),
 
-    // 8. Recent reservations (last 5 created)
+    // 8. Recent open reservations (last 5 created, open status only)
     prisma.reservation.findMany({
-      where: { organizationId, status: { not: 'blocked' } },
+      where: {
+        organizationId,
+        status: { in: ['booked', 'confirmed', 'checked_in'] }
+      },
       include: {
         guest: true,
         rooms: { include: { room: true } }
@@ -632,13 +635,13 @@ export default async function DashboardPage() {
           <div className={`card ${styles.dashboardCard}`}>
             <div className="card-header">
               <h3 className={styles.cardTitle}>
-                <Sparkles size={18} style={{ color: 'var(--brand-500)' }} /> Últimas Reservas Creadas
+                <Sparkles size={18} style={{ color: 'var(--brand-500)' }} /> Últimas Reservas Abiertas
               </h3>
             </div>
             <div className="card-body" style={{ padding: 0 }}>
               {recentReservations.length === 0 ? (
                 <div style={{ padding: 24, textAlign: 'center', color: 'var(--text-muted)' }}>
-                  No hay reservas registradas en el sistema.
+                  No hay reservas abiertas registradas en el sistema.
                 </div>
               ) : (
                 <div className={styles.recentList}>

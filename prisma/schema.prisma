@@ -49,6 +49,7 @@ model User {
   password       String
   role           String   @default("operator") // superadmin | admin | operator | observer
   roleName       String   @default("Recepción")
+  permissions    String?  @db.Text
   active         Boolean  @default(true)
   organizationId String   @default("seed-org-campina")
   defaultHomePage String?

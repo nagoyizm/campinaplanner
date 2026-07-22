@@ -4,6 +4,56 @@ import { NextResponse } from 'next/server'
 
 const { auth } = NextAuth(authConfig)
 
+// Map: URL path prefix → permission module key
+const PATH_MODULE_MAP: Array<{ prefix: string; module: string }> = [
+  { prefix: '/dashboard',       module: 'dashboard' },
+  { prefix: '/api/dashboard',   module: 'dashboard' },
+  { prefix: '/recepcion',       module: 'recepcion' },
+  { prefix: '/api/recepcion',   module: 'recepcion' },
+  { prefix: '/calendario',      module: 'calendario' },
+  { prefix: '/api/calendario',  module: 'calendario' },
+  { prefix: '/reservas',        module: 'reservas' },
+  { prefix: '/api/reservas',    module: 'reservas' },
+  { prefix: '/habitaciones',    module: 'habitaciones' },
+  { prefix: '/api/habitaciones',module: 'habitaciones' },
+  { prefix: '/huespedes',       module: 'huespedes' },
+  { prefix: '/api/huespedes',   module: 'huespedes' },
+  { prefix: '/pizarra',         module: 'pizarra' },
+  { prefix: '/api/pizarra',     module: 'pizarra' },
+  { prefix: '/inventario',      module: 'inventario' },
+  { prefix: '/api/inventario',  module: 'inventario' },
+  { prefix: '/administracion',  module: 'administracion' },
+  { prefix: '/api/administracion', module: 'administracion' },
+  { prefix: '/reportes',        module: 'reportes' },
+  { prefix: '/api/reportes',    module: 'reportes' },
+  { prefix: '/setup/tarifas',   module: 'setup_tarifas' },
+  { prefix: '/api/setup/tarifas',    module: 'setup_tarifas' },
+  { prefix: '/setup/unidades',  module: 'setup_unidades' },
+  { prefix: '/api/setup/unidades',   module: 'setup_unidades' },
+  { prefix: '/setup/rooms',     module: 'setup_rooms' },
+  { prefix: '/api/setup/rooms',      module: 'setup_rooms' },
+  { prefix: '/setup/amenities', module: 'setup_amenities' },
+  { prefix: '/api/setup/amenities',  module: 'setup_amenities' },
+  { prefix: '/setup/pagos',     module: 'setup_pagos' },
+  { prefix: '/api/setup/pagos',      module: 'setup_pagos' },
+  { prefix: '/setup/usuarios',  module: 'setup_usuarios' },
+  { prefix: '/api/setup/usuarios',   module: 'setup_usuarios' },
+  { prefix: '/setup/whatsapp',  module: 'setup_whatsapp' },
+  { prefix: '/api/setup/whatsapp',   module: 'setup_whatsapp' },
+]
+
+const LEVEL_WEIGHT: Record<string, number> = { none: 0, read: 1, write: 2, full: 3 }
+
+function getModuleForPath(path: string): string | null {
+  const match = PATH_MODULE_MAP.find(m => path === m.prefix || path.startsWith(m.prefix + '/') || path.startsWith(m.prefix + '?'))
+  return match?.module ?? null
+}
+
+function getPermissionLevel(permissions: Record<string, string> | null | undefined, module: string): string {
+  if (!permissions) return 'none'
+  return permissions[module] ?? 'none'
+}
+
 export default auth((req) => {
   // ponytail: nonce-based CSP breaks cached pages on Vercel CDN (script nonce mismatch → JS blocked → login broken)
   // Using 'unsafe-inline' instead since nonce injection via layout.tsx is not wired up
@@ -29,7 +79,8 @@ export default auth((req) => {
   const isPublic = isAuthPage || isApiAuth
   const isRoot = nextUrl.pathname === '/'
   
-  const userRole = (req.auth?.user as any)?.role
+  const userRole = (req.auth?.user as any)?.role as string | undefined
+  const userPermissions = (req.auth?.user as any)?.permissions as Record<string, string> | undefined
   const userDefaultPage = (req.auth?.user as any)?.defaultHomePage
 
   let redirectTarget = userDefaultPage || '/dashboard'
@@ -46,13 +97,6 @@ export default auth((req) => {
     },
   })
 
-  // Role-based route protection
-  const path = nextUrl.pathname
-  const isSetupRoute = path.startsWith('/setup') || path.startsWith('/api/setup')
-  const isDashboardRoute = path === '/dashboard' || path.startsWith('/dashboard/')
-  const isReportesRoute = path.startsWith('/reportes') || path.startsWith('/api/reportes')
-  const isSaasRoute = path.startsWith('/saas') || path.startsWith('/api/saas')
-
   if (!isLoggedIn && !isPublic) {
     response = NextResponse.redirect(new URL('/login', req.url))
   } else if (isLoggedIn && isAuthPage) {
@@ -60,25 +104,36 @@ export default auth((req) => {
   } else if (isLoggedIn && isRoot) {
     response = NextResponse.redirect(new URL(redirectTarget, req.url))
   } else if (isLoggedIn) {
-    // API Authorization check
-    if (path.startsWith('/api/')) {
-      if (userRole === 'empleado' && (isDashboardRoute || isReportesRoute || isSetupRoute || isSaasRoute)) {
-        return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    const path = nextUrl.pathname
+
+    // SaaS routes: only superadmin
+    if ((path.startsWith('/saas') || path.startsWith('/api/saas')) && userRole !== 'superadmin') {
+      if (path.startsWith('/api/')) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+      return NextResponse.redirect(new URL(redirectTarget, req.url))
+    }
+
+    // admin & superadmin bypass all permission checks
+    if (userRole === 'admin' || userRole === 'superadmin') {
+      response.headers.set('Content-Security-Policy', cspHeader)
+      return response
+    }
+
+    // Permissions-based protection
+    const moduleKey = getModuleForPath(path)
+    if (moduleKey && userPermissions) {
+      const level = getPermissionLevel(userPermissions, moduleKey)
+      const isApi = path.startsWith('/api/')
+      const isMutating = isApi && ['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method ?? '')
+
+      if (level === 'none') {
+        // No access at all
+        if (isApi) return NextResponse.json({ error: 'Forbidden: Sin acceso a este módulo' }, { status: 403 })
+        return NextResponse.redirect(new URL(redirectTarget, req.url))
       }
-      if (userRole === 'recepcionista' && (isSetupRoute || isReportesRoute || isDashboardRoute || isSaasRoute)) {
-        return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-      }
-      if (userRole !== 'superadmin' && isSaasRoute) {
-        return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-      }
-    } else {
-      // Page Authorization check
-      if (userRole === 'empleado' && (isDashboardRoute || isReportesRoute || isSetupRoute || isSaasRoute || path.startsWith('/calendario') || path.startsWith('/huespedes') || path.startsWith('/reservas'))) {
-        response = NextResponse.redirect(new URL(redirectTarget, req.url))
-      } else if (userRole === 'recepcionista' && (isSetupRoute || isReportesRoute || isDashboardRoute || isSaasRoute)) {
-        response = NextResponse.redirect(new URL(redirectTarget, req.url))
-      } else if (userRole !== 'superadmin' && isSaasRoute) {
-        response = NextResponse.redirect(new URL(redirectTarget, req.url))
+
+      if (isMutating && LEVEL_WEIGHT[level] < LEVEL_WEIGHT['write']) {
+        // Has read access but not write — block mutating API calls
+        return NextResponse.json({ error: 'Forbidden: Solo lectura — no puede modificar datos' }, { status: 403 })
       }
     }
   }

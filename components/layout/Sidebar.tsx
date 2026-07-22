@@ -30,63 +30,92 @@ import {
 } from 'lucide-react'
 import PalettePicker from './PalettePicker'
 import styles from './Sidebar.module.css'
+import type { UserPermissions } from '@/lib/permissions'
 
-const getHotelNavItems = (role: string) => {
-  if (role === 'empleado') {
-    return [
-      { href: '/pizarra', label: 'Pizarra / Memo', icon: MessageSquare },
-      { href: '/habitaciones', label: 'Habitaciones', icon: Hotel },
-    ]
-  }
+// Map from nav item href → permission module key
+const HREF_TO_MODULE: Record<string, string> = {
+  '/dashboard':          'dashboard',
+  '/recepcion':          'recepcion',
+  '/calendario':         'calendario',
+  '/reservas':           'reservas',
+  '/habitaciones':       'habitaciones',
+  '/huespedes':          'huespedes',
+  '/pizarra':            'pizarra',
+  '/inventario':         'inventario',
+  '/administracion':     'administracion',
+  '/setup/tarifas':      'setup_tarifas',
+  '/setup/unidades':     'setup_unidades',
+  '/setup/rooms':        'setup_rooms',
+  '/setup/amenities':    'setup_amenities',
+  '/setup/pagos':        'setup_pagos',
+  '/setup/usuarios':     'setup_usuarios',
+  '/setup/whatsapp':     'setup_whatsapp',
+}
 
-  if (role === 'recepcionista') {
-    return [
-      { href: '/recepcion', label: 'Recepción', icon: LayoutDashboard },
-      { href: '/calendario', label: 'Calendario',   icon: Calendar },
-      { href: '/reservas',   label: 'Reservas',     icon: BookOpen },
-      { href: '/habitaciones', label: 'Habitaciones', icon: Hotel },
-      { href: '/huespedes',  label: 'Huéspedes',    icon: Users },
-      { href: '/pizarra',    label: 'Pizarra / Memo', icon: MessageSquare },
-    ]
-  }
+const hasAccess = (href: string, permissions: UserPermissions | null | undefined, role: string): boolean => {
+  // superadmin & admin always have full access
+  if (role === 'superadmin' || role === 'admin') return true
+  // No permissions object → fall back to default access based on role-visibility
+  if (!permissions) return true
 
-  const nav = [
-    { href: '/dashboard',  label: 'Home',         icon: LayoutDashboard },
-    { href: '/calendario', label: 'Calendario',   icon: Calendar },
-    { href: '/reservas',   label: 'Reservas',     icon: BookOpen },
-    { href: '/habitaciones', label: 'Habitaciones', icon: Hotel },
-    { href: '/huespedes',  label: 'Huéspedes',    icon: Users },
-    { href: '/pizarra',    label: 'Pizarra / Memo', icon: MessageSquare },
-    ...(role === 'admin' || role === 'superadmin' ? [
-      { href: '/inventario', label: 'Inventario', icon: Package },
-      { href: '/administracion', label: 'Administración', icon: Bell },
-    ] : []),
-    {
-      label: 'Reportes',
-      icon: BarChart3,
-      children: [
-        { href: '/reportes/financiero', label: 'Financiero' },
-        { href: '/reportes/habitaciones', label: 'Habitaciones' },
-        { href: '/reportes/huespedes', label: 'Huéspedes' },
-        { href: '/reportes/inventario', label: 'Inventario' },
-        { href: '/reportes/fechas', label: 'Fechas' },
-      ],
-    } as any,
-    {
-      label: 'Configuración',
-      icon: Settings,
-      children: [
-        { href: '/setup/tarifas',   label: 'Tarifas' },
-        { href: '/setup/unidades',  label: 'Unidades' },
-        { href: '/setup/rooms',     label: 'Habitaciones' },
-        { href: '/setup/amenities', label: 'Amenities' },
-        { href: '/setup/pagos',     label: 'Pagos y DTE' },
-        { href: '/setup/usuarios',  label: 'Usuarios' },
-        { href: '/setup/whatsapp',  label: 'WhatsApp Bot' },
-      ],
-    } as any,
-    ...(role === 'superadmin' ? [{ href: '/simulador',  label: 'Simulador Bot', icon: MessageSquare } as any] : []),
+  const moduleKey = HREF_TO_MODULE[href]
+  if (!moduleKey) return true // unknown routes: allow
+
+  const level = permissions[moduleKey]
+  return level != null && level !== 'none'
+}
+
+const getHotelNavItems = (role: string, permissions: UserPermissions | null | undefined) => {
+  const allNav = [
+    { href: '/dashboard',    label: 'Home',           icon: LayoutDashboard },
+    { href: '/recepcion',    label: 'Recepción',      icon: LayoutDashboard },
+    { href: '/calendario',   label: 'Calendario',     icon: Calendar },
+    { href: '/reservas',     label: 'Reservas',       icon: BookOpen },
+    { href: '/habitaciones', label: 'Habitaciones',   icon: Hotel },
+    { href: '/huespedes',    label: 'Huéspedes',      icon: Users },
+    { href: '/pizarra',      label: 'Pizarra / Memo', icon: MessageSquare },
+    { href: '/inventario',   label: 'Inventario',     icon: Package },
+    { href: '/administracion', label: 'Administración', icon: Bell },
   ]
+
+  // Filter based on permissions
+  const filteredNav = allNav.filter(item => hasAccess(item.href, permissions, role))
+
+  // Reportes sub-nav — check if module has access
+  const reportesItems = [
+    { href: '/reportes/financiero',   label: 'Financiero' },
+    { href: '/reportes/habitaciones', label: 'Habitaciones' },
+    { href: '/reportes/huespedes',    label: 'Huéspedes' },
+    { href: '/reportes/inventario',   label: 'Inventario' },
+    { href: '/reportes/fechas',       label: 'Fechas' },
+  ]
+  const showReportes = role === 'superadmin' || role === 'admin' ||
+    (permissions ? (permissions['reportes'] != null && permissions['reportes'] !== 'none') : true)
+
+  // Configuración sub-nav — filter each child
+  const setupChildren = [
+    { href: '/setup/tarifas',   label: 'Tarifas' },
+    { href: '/setup/unidades',  label: 'Unidades' },
+    { href: '/setup/rooms',     label: 'Habitaciones' },
+    { href: '/setup/amenities', label: 'Amenities' },
+    { href: '/setup/pagos',     label: 'Pagos y DTE' },
+    { href: '/setup/usuarios',  label: 'Usuarios' },
+    { href: '/setup/whatsapp',  label: 'WhatsApp Bot' },
+  ].filter(child => hasAccess(child.href, permissions, role))
+
+  const nav: any[] = [...filteredNav]
+
+  if (showReportes) {
+    nav.push({ label: 'Reportes', icon: BarChart3, children: reportesItems } as any)
+  }
+
+  if (setupChildren.length > 0) {
+    nav.push({ label: 'Configuración', icon: Settings, children: setupChildren } as any)
+  }
+
+  if (role === 'superadmin') {
+    nav.push({ href: '/simulador', label: 'Simulador Bot', icon: MessageSquare } as any)
+  }
 
   return nav
 }
@@ -114,6 +143,7 @@ export default function Sidebar({ theme, onThemeToggle, palette, onPaletteChange
   const orgPlan = (session?.user as any)?.orgPlan
   const planDisplay = orgPlan ? orgPlan.charAt(0).toUpperCase() + orgPlan.slice(1) : 'Reservas'
   const userRole = (session?.user as any)?.role ?? 'operator'
+  const userPermissions: UserPermissions | null = (session?.user as any)?.permissions ?? null
   const [collapsed, setCollapsed] = useState(false)
   const [openDropdown, setOpenDropdown] = useState<string | null>(null)
   const [mobileOpen, setMobileOpen] = useState(false)
@@ -204,7 +234,7 @@ export default function Sidebar({ theme, onThemeToggle, palette, onPaletteChange
         {/* Navigation */}
         <div className={styles.navContent}>
           <div className={styles.navSection}>
-            {(userRole === 'superadmin' ? saasNavItems : getHotelNavItems(userRole)).map((item: any) => {
+            {(userRole === 'superadmin' ? saasNavItems : getHotelNavItems(userRole, userPermissions)).map((item: any) => {
               if (item.children) {
                 const hasActiveChild = item.children.some((c: any) => isActive(c.href))
                 const isOpen = openDropdown === item.label

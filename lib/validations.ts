@@ -9,6 +9,7 @@ export const createUserSchema = z.object({
   phone: z.string().max(20).optional().nullable(),
   role: userRoleEnum.default('operator'),
   roleName: z.string().max(50).default('Recepción'),
+  permissions: z.any().optional().nullable(),
   active: z.boolean().default(true)
 })
 

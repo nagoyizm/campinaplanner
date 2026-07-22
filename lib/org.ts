@@ -18,6 +18,7 @@ export async function requireOrg() {
     organizationId,
     userId: session.user.id as string,
     role: (session.user as any).role as string,
+    permissions: (session.user as any).permissions as Record<string, any> | undefined,
     orgName: (session.user as any).orgName as string,
     name: session.user.name as string | undefined,
   }

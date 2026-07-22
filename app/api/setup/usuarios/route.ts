@@ -8,7 +8,7 @@ export async function GET() {
   const { organizationId } = await requireOrg()
   const users = await prisma.user.findMany({
     where: { organizationId },
-    select: { id: true, name: true, email: true, phone: true, role: true, roleName: true, active: true, createdAt: true },
+    select: { id: true, name: true, email: true, phone: true, role: true, roleName: true, permissions: true, active: true, createdAt: true },
     orderBy: { name: 'asc' },
   })
   return NextResponse.json(users)
@@ -25,6 +25,7 @@ export async function POST(req: NextRequest) {
   
   const data = parsed.data
   const hashed = await bcrypt.hash(data.password, 12)
+  const permissionsStr = typeof data.permissions === 'object' ? JSON.stringify(data.permissions) : (data.permissions || null)
   
   try {
     const user = await prisma.user.create({
@@ -36,9 +37,10 @@ export async function POST(req: NextRequest) {
         password: hashed,
         role: data.role,
         roleName: data.roleName,
+        permissions: permissionsStr,
         active: data.active,
       },
-      select: { id: true, name: true, email: true, phone: true, role: true, roleName: true, active: true, createdAt: true },
+      select: { id: true, name: true, email: true, phone: true, role: true, roleName: true, permissions: true, active: true, createdAt: true },
     })
     return NextResponse.json(user, { status: 201 })
   } catch (error: any) {

@@ -28,7 +28,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           where: { email },
           select: {
             id: true, email: true, name: true, role: true,
-            roleName: true, active: true, password: true,
+            roleName: true, permissions: true, active: true, password: true,
             organizationId: true, defaultHomePage: true,
             organization: { select: { name: true, plan: true } },
           },
@@ -64,12 +64,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           }
         }).catch(console.error)
 
+        const { parsePermissions } = await import('@/lib/permissions')
+
         return {
           id: user.id,
           email: user.email,
           name: user.name,
           role: user.role,
           roleName: user.roleName,
+          permissions: parsePermissions(user.permissions, user.role),
           organizationId: user.organizationId,
           orgName: user.organization.name,
           orgPlan: user.organization.plan,
