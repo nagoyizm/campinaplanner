@@ -27,6 +27,7 @@ import {
   ShieldAlert,
   UsersRound,
   Bell,
+  Mail,
 } from 'lucide-react'
 import PalettePicker from './PalettePicker'
 import styles from './Sidebar.module.css'
@@ -124,6 +125,7 @@ const saasNavItems = [
   { href: '/saas',               label: 'SaaS Dashboard', icon: Globe },
   { href: '/saas/clientes',      label: 'Gestión Clientes',icon: Building2 },
   { href: '/saas/usuarios',      label: 'Usuarios Global', icon: UsersRound },
+  { href: '/saas/correos',       label: 'Correos',         icon: Mail },
   { href: '/saas/planner',       label: 'SaaS Planner',   icon: Calendar },
   { href: '/saas/analiticas',    label: 'Analíticas',     icon: LineChart },
   { href: '/saas/monitorizacion',label: 'Monitorización', icon: ShieldAlert },
