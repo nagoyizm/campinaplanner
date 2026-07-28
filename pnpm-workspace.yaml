@@ -1,0 +1,17 @@
+packages:
+  - '.'
+  - 'mobile'
+
+minimumReleaseAgeExclude:
+  - 'postcss@8.5.24'
+
+onlyBuiltDependencies:
+  - '@prisma/client'
+  - '@prisma/engines'
+  - 'prisma'
+  - 'sharp'
+  - 'core-js'
+
+overrides:
+  uuid: ^14.0.1
+  postcss: ^8.5.24
