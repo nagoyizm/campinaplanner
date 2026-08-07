@@ -18,6 +18,11 @@ export async function GET() {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
+  const org = await prisma.organization.findUnique({
+    where: { id: organizationId },
+    select: { slug: true, name: true }
+  })
+
   return NextResponse.json({
     notifyWspResConf: user.notifyWspResConf,
     notifyEmailResConf: user.notifyEmailResConf,
@@ -28,6 +33,8 @@ export async function GET() {
     notifyWspInvAlert: user.notifyWspInvAlert,
     notifyEmailInvAlert: user.notifyEmailInvAlert,
     defaultHomePage: user.defaultHomePage || '',
+    orgSlug: org?.slug || 'campina',
+    orgName: org?.name || 'Cabañas La Campiña'
   })
 }
 

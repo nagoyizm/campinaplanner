@@ -76,7 +76,8 @@ export default auth((req) => {
 
   const isAuthPage = nextUrl.pathname.startsWith('/login')
   const isApiAuth = nextUrl.pathname.startsWith('/api/auth')
-  const isPublic = isAuthPage || isApiAuth
+  const isPublicBooking = nextUrl.pathname.startsWith('/reservar') || nextUrl.pathname.startsWith('/api/public')
+  const isPublic = isAuthPage || isApiAuth || isPublicBooking
   const isRoot = nextUrl.pathname === '/'
   
   const userRole = (req.auth?.user as any)?.role as string | undefined

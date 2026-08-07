@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Bell, Mail, Smartphone, Loader2, Save } from 'lucide-react'
+import { Bell, Mail, Smartphone, Loader2, Save, Globe, Copy, ExternalLink } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 export default function AdministracionPage() {
@@ -17,6 +17,8 @@ export default function AdministracionPage() {
     notifyWspInvAlert: false,
     notifyEmailInvAlert: false,
     defaultHomePage: '',
+    orgSlug: 'campina',
+    orgName: 'Cabañas La Campiña'
   })
 
   useEffect(() => {
@@ -70,6 +72,46 @@ export default function AdministracionPage() {
           {saving ? <Loader2 size={16} className="spin" /> : <Save size={16} />}
           Guardar Cambios
         </button>
+      </div>
+
+      <div className="card" style={{ maxWidth: 800, marginTop: 24, borderLeft: '4px solid var(--brand-500)' }}>
+        <div className="card-header" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <Globe size={20} color="var(--brand-500)" />
+          Página Pública de Reservas & Cotización de {prefs.orgName}
+        </div>
+        <div className="card-body" style={{ padding: '20px 24px' }}>
+          <p style={{ color: 'var(--text-secondary)', fontSize: 14, marginBottom: 12 }}>
+            Comparte este enlace directo con tus clientes para que consulten disponibilidad por tipo de estancia (cabaña/habitación), coticen su estadía y realicen reservas online automáticamente:
+          </p>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+            <input
+              type="text"
+              readOnly
+              className="select"
+              style={{ flex: 1, minWidth: 260, fontWeight: 600, background: 'var(--bg)' }}
+              value={`${typeof window !== 'undefined' ? window.location.origin : 'https://agendio.cl'}/reservar/${prefs.orgSlug}`}
+            />
+            <button
+              className="btn btn-secondary"
+              onClick={() => {
+                const url = `${window.location.origin}/reservar/${prefs.orgSlug}`
+                navigator.clipboard.writeText(url)
+                toast.success('Enlace público copiado al portapapeles')
+              }}
+            >
+              <Copy size={16} /> Copiar Enlace
+            </button>
+            <a
+              href={`/reservar/${prefs.orgSlug}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn btn-primary"
+              style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 6 }}
+            >
+              <ExternalLink size={16} /> Ver Página Pública
+            </a>
+          </div>
+        </div>
       </div>
 
       <div className="card" style={{ maxWidth: 800, marginTop: 24 }}>
