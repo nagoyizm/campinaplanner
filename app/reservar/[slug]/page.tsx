@@ -76,7 +76,12 @@ export default async function PublicBookingPage({ params }: PageProps) {
     notFound()
   }
 
+  const filteredOrg = {
+    ...org,
+    unitTypes: org.unitTypes.filter(u => u.rooms.length > 0)
+  }
+
   return (
-    <PublicBookingClient initialOrg={org as any} />
+    <PublicBookingClient initialOrg={filteredOrg as any} />
   )
 }

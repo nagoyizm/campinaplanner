@@ -59,7 +59,13 @@ export async function GET(
       return NextResponse.json({ error: 'Recinto no encontrado o inactivo' }, { status: 404 })
     }
 
-    return NextResponse.json(org)
+    // Filter unitTypes to only show stay groups with at least 1 active physical room
+    const filteredOrg = {
+      ...org,
+      unitTypes: org.unitTypes.filter(u => u.rooms.length > 0)
+    }
+
+    return NextResponse.json(filteredOrg)
   } catch (error: any) {
     console.error('Error fetching public recinto info:', error)
     return NextResponse.json({ error: 'Error al obtener información del recinto' }, { status: 500 })
