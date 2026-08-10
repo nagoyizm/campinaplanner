@@ -150,6 +150,7 @@ model Rate {
   extraPersonAdult     Float     @default(0)
   extraPersonChild     Float     @default(0)
   weekendSurcharge     Float     @default(0)
+  petFee               Float     @default(0)   // Cargo adicional por mascota (por estadía)
   includedOccupants    Int       @default(2)
   active               Boolean   @default(true)
   createdAt            DateTime  @default(now())

@@ -7,7 +7,7 @@ import { sendEmail } from '@/lib/email'
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const { slug, unitTypeId, arrival, departure, adults = 1, children = 0, guest } = body
+    const { slug, unitTypeId, arrival, departure, adults = 1, children = 0, pets = 0, guest } = body
 
     if (!slug || !unitTypeId || !arrival || !departure || !guest?.firstName || !guest?.lastName) {
       return NextResponse.json(
@@ -157,6 +157,7 @@ export async function POST(req: NextRequest) {
         createdByName: 'Auto-Reserva Web',
         adults: Number(adults),
         children: Number(children),
+        pets: Number(pets) || 0,
         unitTotal: unitTotal,
         notes: guest.notes || null,
         rooms: {
@@ -203,7 +204,8 @@ export async function POST(req: NextRequest) {
         `• *Contacto:* ${guest.phone || guest.email || 'N/A'}\n` +
         `• *Tipo:* ${unitType.name} (${assignedRoom.name})\n` +
         `• *Fechas:* ${format(arrivalDate, 'dd/MM/yyyy')} al ${format(departureDate, 'dd/MM/yyyy')} (${nights} noche/s)\n` +
-        `• *Total:* ${unitTotal.toLocaleString('es-CL')} CLP`
+        `• *Total:* ${unitTotal.toLocaleString('es-CL')} CLP` +
+        (Number(pets) > 0 ? `\n• *Mascota(s):* ${Number(pets)} 🐾` : '')
 
       for (const admin of adminsToNotify) {
         if (admin.notifyWspResConf && admin.phone) {
@@ -232,6 +234,7 @@ export async function POST(req: NextRequest) {
       departure: format(departureDate, 'yyyy-MM-dd'),
       nights,
       unitTotal,
+      pets: Number(pets) || 0,
       currency: org.currency || 'CLP',
       bankAccounts: org.bankAccounts,
       paymentMethods: org.paymentMethods,
