@@ -105,6 +105,7 @@ model UnitType {
   maxOccupancy   Int      @default(2)
   sortOrder      Int      @default(0)
   active         Boolean  @default(true)
+  imageUrl       String?  // base64 compressed image (max ~300KB)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
@@ -114,6 +115,7 @@ model UnitType {
 
   @@index([organizationId])
 }
+
 
 model Room {
   id             String    @id @default(cuid())

@@ -50,6 +50,7 @@ export default async function PublicBookingPage({ params }: PageProps) {
           description: true,
           maxOccupancy: true,
           sortOrder: true,
+          imageUrl: true,
           rooms: {
             where: { active: true },
             select: { id: true, name: true, code: true }

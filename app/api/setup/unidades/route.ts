@@ -23,6 +23,7 @@ export async function POST(req: NextRequest) {
       maxOccupancy: Number(body.maxOccupancy) || 2,
       sortOrder: Number(body.sortOrder) || 0,
       active: body.active !== false,
+      imageUrl: body.imageUrl || null,
     },
   })
   return NextResponse.json(unit, { status: 201 })

@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect, ReactNode } from 'react'
-import { Plus, Edit2, Trash2, Save, X, Loader2, ChevronDown, ChevronUp } from 'lucide-react'
+import { useState, useEffect, ReactNode, useRef } from 'react'
+import { Plus, Edit2, Trash2, Save, X, Loader2 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import styles from './SetupPage.module.css'
 
@@ -23,6 +23,8 @@ interface SetupPageProps<T extends { id: string | number }> {
   formData: any
   newButtonLabel?: string
   showInactive?: boolean
+  /** Field name on each row that holds an image URL/base64. Enables hover preview. */
+  imageKey?: string
 }
 
 const formatCLP = (n: number) =>
@@ -31,6 +33,7 @@ const formatCLP = (n: number) =>
 export default function SetupPage<T extends { id: string | number; active?: boolean }>({
   title, subtitle, apiPath, columns, formFields, emptyForm,
   onFormChange, formData, newButtonLabel = 'Nuevo', showInactive = true,
+  imageKey,
 }: SetupPageProps<T>) {
   const [items, setItems] = useState<T[]>([])
   const [loading, setLoading] = useState(true)
@@ -39,6 +42,11 @@ export default function SetupPage<T extends { id: string | number; active?: bool
   const [showForm, setShowForm] = useState(false)
   const [hideInactive, setHideInactive] = useState(false)
   const [deleting, setDeleting] = useState<string | number | null>(null)
+
+  // Hover preview state
+  const [hoverImg, setHoverImg] = useState<string | null>(null)
+  const [hoverPos, setHoverPos] = useState<{ x: number; y: number }>({ x: 0, y: 0 })
+  const previewTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const load = async () => {
     setLoading(true)
@@ -96,6 +104,23 @@ export default function SetupPage<T extends { id: string | number; active?: bool
     setDeleting(null)
   }
 
+  const handleRowMouseEnter = (e: React.MouseEvent, row: T) => {
+    if (!imageKey) return
+    const img = (row as any)[imageKey] as string | null | undefined
+    if (!img) return
+    if (previewTimer.current) clearTimeout(previewTimer.current)
+    previewTimer.current = setTimeout(() => {
+      const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
+      setHoverPos({ x: rect.right + 12, y: rect.top + window.scrollY })
+      setHoverImg(img)
+    }, 180)
+  }
+
+  const handleRowMouseLeave = () => {
+    if (previewTimer.current) clearTimeout(previewTimer.current)
+    setHoverImg(null)
+  }
+
   const displayed = hideInactive ? items.filter(i => i.active !== false) : items
 
   const getCellValue = (row: T, col: Column<T>): ReactNode => {
@@ -110,6 +135,16 @@ export default function SetupPage<T extends { id: string | number; active?: bool
 
   return (
     <div className="page-container">
+      {/* Hover image preview — fixed, follows mouse row */}
+      {hoverImg && (
+        <div
+          className={styles.hoverPreview}
+          style={{ top: hoverPos.y, left: hoverPos.x }}
+        >
+          <img src={hoverImg} alt="Vista previa" className={styles.hoverPreviewImg} />
+        </div>
+      )}
+
       <div className="page-header">
         <div>
           <h1 className="page-title">{title}</h1>
@@ -173,7 +208,9 @@ export default function SetupPage<T extends { id: string | number; active?: bool
                 {displayed.map(row => (
                   <tr
                     key={row.id}
-                    className={`${editingId === row.id ? styles.editingRow : ''} ${row.active === false ? styles.inactiveRow : ''}`}
+                    className={`${editingId === row.id ? styles.editingRow : ''} ${row.active === false ? styles.inactiveRow : ''} ${imageKey && (row as any)[imageKey] ? styles.hasImageRow : ''}`}
+                    onMouseEnter={imageKey ? (e) => handleRowMouseEnter(e, row) : undefined}
+                    onMouseLeave={imageKey ? handleRowMouseLeave : undefined}
                   >
                     {columns.map(col => (
                       <td key={String(col.key)} className={col.className}>
