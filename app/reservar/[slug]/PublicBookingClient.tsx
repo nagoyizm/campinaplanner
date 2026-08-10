@@ -1070,7 +1070,7 @@ export default function PublicBookingClient({ initialOrg }: PublicBookingClientP
                         disabled={isSubmitting}
                         style={{ width: '100%', padding: '0.75rem' }}
                       >
-                        {isSubmitting ? 'Procesando Reserva...' : 'Confirmar Reserva Ahora'}
+                        {isSubmitting ? 'Procesando Reserva...' : 'Reservar'}
                       </button>
                     </form>
                   </div>
