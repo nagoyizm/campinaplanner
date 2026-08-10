@@ -55,6 +55,19 @@ function getPermissionLevel(permissions: Record<string, string> | null | undefin
 }
 
 export default auth((req) => {
+  // ── Subdominio reservas.agendio.cl ──────────────────────────────────────────
+  // reservas.agendio.cl/camping-abc → rewrite interno a /reservar/camping-abc
+  // La URL en el navegador permanece como reservas.agendio.cl/camping-abc
+  const hostname = req.headers.get('host') || ''
+  const isReservasSubdomain = hostname === 'reservas.agendio.cl' || hostname.startsWith('reservas.')
+
+  if (isReservasSubdomain) {
+    const url = req.nextUrl.clone()
+    const slug = url.pathname.replace(/^\//, '')
+    url.pathname = slug ? `/reservar/${slug}` : '/reservar'
+    return NextResponse.rewrite(url)
+  }
+  // ───────────────────────────────────────────────────────────────────────────
   // ponytail: nonce-based CSP breaks cached pages on Vercel CDN (script nonce mismatch → JS blocked → login broken)
   // Using 'unsafe-inline' instead since nonce injection via layout.tsx is not wired up
   const cspHeader = `
