@@ -330,8 +330,8 @@
 /* ── Main Container ────────────────────────────────────────── */
 .main {
   max-width: 1280px;
-  margin: 4rem auto 0 auto;
-  padding: 0 1rem;
+  margin: 0 auto;
+  padding: 4rem 1rem 0 1rem;
   position: relative;
   z-index: 10;
 }
