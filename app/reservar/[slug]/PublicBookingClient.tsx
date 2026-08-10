@@ -9,7 +9,8 @@ import {
 import { es } from 'date-fns/locale'
 import {
   Users, CheckCircle2, ChevronLeft, ChevronRight,
-  CreditCard, Copy, Sparkles, Check, Calendar as CalendarIcon
+  CreditCard, Copy, Sparkles, Check, Calendar as CalendarIcon,
+  Sun, Moon
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import styles from './PublicBooking.module.css'
@@ -69,6 +70,19 @@ export default function PublicBookingClient({ initialOrg }: PublicBookingClientP
   const [org] = useState<Organization>(initialOrg)
   // Initially null so calendar is hidden from start
   const [selectedUnitTypeId, setSelectedUnitTypeId] = useState<string | null>(null)
+
+  // Light / dark mode toggle — persists in localStorage
+  const [lightMode, setLightMode] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false
+    return localStorage.getItem('agendio-reservas-theme') === 'light'
+  })
+  const toggleTheme = () => {
+    setLightMode(prev => {
+      const next = !prev
+      localStorage.setItem('agendio-reservas-theme', next ? 'light' : 'dark')
+      return next
+    })
+  }
 
   // Header scroll state for smooth hide on scroll down
   const [scrolled, setScrolled] = useState(false)
@@ -438,7 +452,7 @@ export default function PublicBookingClient({ initialOrg }: PublicBookingClientP
 
   if (bookingSuccess) {
     return (
-      <div className={`${styles.container} ${paletteClass}`}>
+      <div className={`${styles.container} ${paletteClass} ${lightMode ? styles.lightMode : ''}`}>
         <div className={styles.bgDecor1} />
         <div className={styles.bgDecor2} />
         <header className={`${styles.header} ${scrolled ? styles.headerScrolled : ''}`}>
@@ -450,6 +464,14 @@ export default function PublicBookingClient({ initialOrg }: PublicBookingClientP
                 <span className={styles.orgSubtitleInline}>• Reserva Confirmada</span>
               </div>
             </div>
+            <button
+              className={styles.themeToggleBtn}
+              onClick={toggleTheme}
+              title={lightMode ? 'Cambiar a modo oscuro' : 'Cambiar a modo claro'}
+              aria-label={lightMode ? 'Modo oscuro' : 'Modo claro'}
+            >
+              {lightMode ? <Moon size={16} /> : <Sun size={16} />}
+            </button>
           </div>
         </header>
 
@@ -507,7 +529,7 @@ export default function PublicBookingClient({ initialOrg }: PublicBookingClientP
   }
 
   return (
-    <div className={`${styles.container} ${paletteClass}`}>
+    <div className={`${styles.container} ${paletteClass} ${lightMode ? styles.lightMode : ''}`}>
       {/* Background Ambient Orbs (Login Aesthetic) */}
       <div className={styles.bgDecor1} />
       <div className={styles.bgDecor2} />
@@ -522,6 +544,14 @@ export default function PublicBookingClient({ initialOrg }: PublicBookingClientP
               <span className={styles.orgSubtitleInline}>• Reservas & Cotización Directa</span>
             </div>
           </div>
+          <button
+            className={styles.themeToggleBtn}
+            onClick={toggleTheme}
+            title={lightMode ? 'Cambiar a modo oscuro' : 'Cambiar a modo claro'}
+            aria-label={lightMode ? 'Modo oscuro' : 'Modo claro'}
+          >
+            {lightMode ? <Moon size={16} /> : <Sun size={16} />}
+          </button>
         </div>
       </header>
 
