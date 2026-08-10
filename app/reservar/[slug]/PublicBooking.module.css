@@ -457,9 +457,9 @@
 }
 
 .unitCardCompact:hover {
-  transform: translateY(-4px) scale(1.015);
+  transform: translateY(-2px);
   border-color: var(--primary-color);
-  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.55);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.45);
 }
 
 .cardImageWrapper {
@@ -634,7 +634,6 @@
 .sidebarCardCollapsed:hover {
   border-color: var(--primary-color);
   background: rgba(255, 255, 255, 0.08);
-  transform: translateX(3px);
 }
 
 .collapsedTitle {
@@ -1123,41 +1122,33 @@
 @keyframes fadeInSlideDown {
   0% {
     opacity: 0;
-    transform: translateY(-12px) scale(0.98);
+    transform: translateY(-6px);
   }
   100% {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translateY(0);
   }
 }
 
 @keyframes smoothFormEntrance {
   0% {
     opacity: 0;
-    transform: translateX(25px) scale(0.97);
-  }
-  70% {
-    opacity: 1;
-    transform: translateX(-2px) scale(1.005);
+    transform: translateX(14px);
   }
   100% {
     opacity: 1;
-    transform: translateX(0) scale(1);
+    transform: translateX(0);
   }
 }
 
 @keyframes gentleCoupleIn {
   0% {
     opacity: 0;
-    transform: translateX(28px) scale(0.96);
-  }
-  70% {
-    opacity: 1;
-    transform: translateX(-2px) scale(1.005);
+    transform: translateX(14px);
   }
   100% {
     opacity: 1;
-    transform: translateX(0) scale(1);
+    transform: translateX(0);
   }
 }
 
