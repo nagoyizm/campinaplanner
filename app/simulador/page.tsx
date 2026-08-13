@@ -202,20 +202,20 @@ export default function SimuladorPage() {
   // Parse markdown-like **bold** text and split into blocks
   const formatMessageText = (text: string) => {
     if (!text) return ''
-    // Strip any pre-existing HTML tags from server text, then apply only bold/italic
-    // ponytail: bot text is server-controlled but we sanitize defensively
-    const stripped = text.replace(/<[^>]*>/g, '')
-    let html = stripped.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    // Convierte solo markdown bold/italic y sanitiza el resultado con DOMPurify (allowlist).
+    // Toda etiqueta HTML cruda, javascript:, data:, on* etc. es eliminada por DOMPurify.
+    let html = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
     html = html.replace(/\*(.*?)\*/g, '<em>$1</em>')
+    const safe = DOMPurify.sanitize(html, { ALLOWED_TAGS: ['strong', 'em'], ALLOWED_ATTR: [] })
 
-    return html.split('\n').map((line, idx) => {
+    return safe.split('\n').map((line, idx) => {
       // ponytail: lines come from splitting bot text — no stable ID exists
       // eslint-disable-next-line react/no-array-index-key
       return (
         <span
           key={`line-${idx}-${line.slice(0, 10)}`}
           // eslint-disable-next-line react/no-danger
-          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(line) }}
+          dangerouslySetInnerHTML={{ __html: line }}
           style={{ display: 'block', minHeight: line === '' ? '12px' : 'auto' }}
         />
       )

@@ -11,6 +11,24 @@ app.disable('x-powered-by');
 app.use(cors()); // NOSONAR - Internal microservice
 app.use(express.json());
 
+// Simple in-memory rate limiter (suficiente para este microservicio interno).
+// Protege endpoints sensibles: máximo 60 requests cada 60s por IP.
+const rateLimit = (limit = 60, windowMs = 60000) => {
+  const hits = new Map();
+  return (req, res, next) => {
+    const ip = req.ip || req.socket.remoteAddress || 'unknown';
+    const now = Date.now();
+    const bucket = hits.get(ip) || [];
+    const fresh = bucket.filter(t => now - t < windowMs);
+    if (fresh.length >= limit) {
+      return res.status(429).json({ error: 'Too many requests, slow down.' });
+    }
+    fresh.push(now);
+    hits.set(ip, fresh);
+    next();
+  };
+};
+
 const API_KEY = process.env.API_KEY || 'campina-secret-key-123';
 const PORT = process.env.PORT || 3001;
 const DB_URL = process.env.DATABASE_URL;
@@ -52,7 +70,7 @@ async function initPostgresAuthState(pool, orgId) {
         return JSON.parse(res.rows[0].data, BufferJSON.reviver);
       }
     } catch (e) {
-      console.error(`[${orgId}] Error reading auth state:`, e.message);
+      console.error('[%s] Error reading auth state: %s', orgId, e.message);
     }
     return null;
   };
@@ -65,7 +83,7 @@ async function initPostgresAuthState(pool, orgId) {
         [`${orgId}:${id}`, json]
       );
     } catch (e) {
-      console.error(`[${orgId}] Error writing auth state:`, e.message);
+      console.error('[%s] Error writing auth state: %s', orgId, e.message);
     }
   };
 
@@ -73,7 +91,7 @@ async function initPostgresAuthState(pool, orgId) {
     try {
       await pool.query('DELETE FROM "WhatsAppSession" WHERE id = $1', [`${orgId}:${id}`]);
     } catch (e) {
-      console.error(`[${orgId}] Error removing data:`, e.message);
+      console.error('[%s] Error removing data: %s', orgId, e.message);
     }
   };
 
@@ -129,7 +147,7 @@ async function startSock(orgId) {
 
   const { state, saveCreds } = await initPostgresAuthState(pool, orgId);
   const { version, isLatest } = await fetchLatestBaileysVersion();
-  console.log(`[${orgId}] Using WA v${version.join('.')}, isLatest: ${isLatest}`);
+  console.log('[%s] Using WA v%s, isLatest: %s', orgId, version.join('.'), isLatest);
 
   let browserName = 'Campiña Planner';
   try {
@@ -138,7 +156,7 @@ async function startSock(orgId) {
       browserName = res.rows[0].name;
     }
   } catch (e) {
-    console.error(`[${orgId}] Error fetching org name:`, e.message);
+    console.error('[%s] Error fetching org name: %s', orgId, e.message);
   }
 
   const sock = makeWASocket({
@@ -158,14 +176,14 @@ async function startSock(orgId) {
     const { connection, lastDisconnect, qr } = update;
 
     if (qr) {
-      console.log(`[${orgId}] QR Code received, waiting for scan...`);
+      console.log('[%s] QR Code received, waiting for scan...', orgId);
       session.qrCodeData = qr;
       session.isReady = false;
     }
 
     if (connection === 'close') {
       const shouldReconnect = lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut;
-      console.log(`[${orgId}] Connection closed due to`, lastDisconnect?.error, ', reconnecting:', shouldReconnect);
+      console.log('[%s] Connection closed due to %s, reconnecting: %s', orgId, lastDisconnect?.error, shouldReconnect);
       session.isReady = false;
       session.qrCodeData = null;
       
@@ -176,7 +194,7 @@ async function startSock(orgId) {
         sessions.delete(orgId);
       }
     } else if (connection === 'open') {
-      console.log(`[${orgId}] WhatsApp Client is ready!`);
+      console.log('[%s] WhatsApp Client is ready!', orgId);
       session.isReady = true;
       session.qrCodeData = null;
     }
@@ -233,7 +251,7 @@ app.get('/api/status', requireAuth, requireOrg, (req, res) => {
   res.json({ connected: session ? session.isReady : false });
 });
 
-app.post('/api/send', requireAuth, requireOrg, async (req, res) => {
+app.post('/api/send', rateLimit(30, 60000), requireAuth, requireOrg, async (req, res) => {
   const { orgId } = req;
   const session = sessions.get(orgId);
 
@@ -251,12 +269,12 @@ app.post('/api/send', requireAuth, requireOrg, async (req, res) => {
     await session.sock.sendMessage(chatId, { text: message });
     res.json({ success: true, message: 'Message sent successfully' });
   } catch (error) {
-    console.error(`[${orgId}] Error sending message:`, error);
+    console.error('[%s] Error sending message:', orgId, error);
     res.status(500).json({ error: 'Failed to send message', details: error.message });
   }
 });
 
-app.delete('/api/session', requireAuth, requireOrg, async (req, res) => {
+app.delete('/api/session', rateLimit(30, 60000), requireAuth, requireOrg, async (req, res) => {
   const { orgId } = req;
   const session = sessions.get(orgId);
   
@@ -269,7 +287,7 @@ app.delete('/api/session', requireAuth, requireOrg, async (req, res) => {
       await session.sock.logout();
       remoteLogoutSuccess = true;
     } catch (e) {
-      console.error(`[${orgId}] Error during remote logout:`, e.message);
+      console.error('[%s] Error during remote logout: %s', orgId, e.message);
       errorMsg = 'Error de conexión con WhatsApp al intentar desvincular.';
     }
   } else {
@@ -282,7 +300,7 @@ app.delete('/api/session', requireAuth, requireOrg, async (req, res) => {
     try {
       await pool.query('DELETE FROM "WhatsAppSession" WHERE id LIKE $1', [`${orgId}:%`]);
     } catch (e) {
-      console.error(`[${orgId}] Error clearing DB session:`, e.message);
+      console.error('[%s] Error clearing DB session: %s', orgId, e.message);
     }
   }
 

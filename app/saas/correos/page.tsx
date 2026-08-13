@@ -53,8 +53,12 @@ const DEFAULT_SIGNATURE: SignatureConfig = {
 }
 
 function getLogoSrc(url?: string | null): string {
-  if (!url || url.includes('agendio.cl/logo-habita-round.png')) return '/logo-habita-round.png'
-  return url
+  const fallback = '/logo-habita-round.png'
+  if (!url || url.includes('agendio.cl/logo-habita-round.png')) return fallback
+  // Solo permitir http(s) o rutas relativas internas. Bloquea javascript:, data:, vbscript:, etc.
+  if (/^(https?:)?\/\//i.test(url.trim())) return url
+  if (url.trim().startsWith('/')) return url
+  return fallback
 }
 
 export default function CorreosPage() {

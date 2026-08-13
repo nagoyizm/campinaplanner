@@ -142,6 +142,8 @@ Los horarios de entrada y salida varían según la temporada del año:
 // 2. Natural Date Parser
 function extractDates(text: string): { arrival: string, departure: string } | null {
   const clean = text.toLowerCase().trim()
+  // Guard against ReDoS: cap the input size before running regexes over it.
+  if (clean.length > 500) return null
   const currentYear = 2026
 
   // 1. Check for two separate date patterns like "28 de mayo al 3 de junio" or "28 mayo a 3 junio" (include juno/setiembre typos)
@@ -217,6 +219,8 @@ function extractDates(text: string): { arrival: string, departure: string } | nu
 // 3. Natural PAX Parser
 function extractPax(text: string, currentStep?: string): { adults?: number, children?: number, pets?: number } | null {
   const clean = text.toLowerCase()
+  // Guard against ReDoS: cap the input size before running regexes over it.
+  if (clean.length > 500) return null
   
   // Clean all dates and month patterns from the text prior to extracting passenger count
   // to prevent date numbers (like "10" in "10 de junio" or "10 de juno") from being parsed as pax.
@@ -606,7 +610,7 @@ export async function POST(req: NextRequest) {
   try {
     const { message, state: inputState } = await req.json()
     const state: ChatState = inputState || { step: 'start' }
-    const text = message.trim()
+    const text = String(message ?? '').trim().slice(0, 500)
 
     // ── DUAL MODE: LOCAL BOT FALLBACK OR TRUE GEMINI AI AGENT ────────
     const isGeminiApiKeyPresent = !!process.env.GEMINI_API_KEY
