@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { format } from 'date-fns'
 import { X, Calendar, DollarSign, Bell, Trash2, Loader2 } from 'lucide-react'
+import Icon from '@/components/ui/Icon'
 import toast from 'react-hot-toast'
 
 interface OrganizationRow {
@@ -142,11 +143,11 @@ export default function SaasItemModal({ isOpen, onClose, itemType, orgs, initial
         {/* Header */}
         <div style={{ padding: '16px 24px', borderBottom: '1px solid var(--border-light)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--surface-2)' }}>
           <h2 style={{ margin: 0, fontSize: '1.2rem', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-base)' }}>
-            {itemType === 'payment' ? <DollarSign size={20} color="#ca8a04" /> : <Bell size={20} color="#3b82f6" />}
+            {itemType === 'payment' ? <Icon icon={DollarSign} size="xl" color="#ca8a04" /> : <Icon icon={Bell} size="xl" color="#3b82f6" />}
             {isEdit ? 'Editar' : 'Nuevo'} {itemType === 'payment' ? 'Cobro de Suscripción' : 'Evento Global'}
           </h2>
           <button onClick={onClose} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}>
-            <X size={20} />
+            <Icon icon={X} size="xl" />
           </button>
         </div>
 
@@ -215,14 +216,14 @@ export default function SaasItemModal({ isOpen, onClose, itemType, orgs, initial
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '16px' }}>
             {isEdit ? (
               <button type="button" onClick={handleDelete} className="btn btn-ghost" style={{ color: '#ef4444' }} disabled={loading}>
-                <Trash2 size={18} /> Eliminar
+                <Icon icon={Trash2} size="lg" /> Eliminar
               </button>
             ) : <div />}
             
             <div style={{ display: 'flex', gap: '12px' }}>
               <button type="button" onClick={onClose} className="btn btn-ghost" disabled={loading}>Cancelar</button>
               <button type="submit" className="btn btn-primary" disabled={loading}>
-                {loading ? <Loader2 className="spinning" size={18} /> : 'Guardar'}
+                {loading ? <Icon icon={Loader2} className="spinning" size="lg" /> : 'Guardar'}
               </button>
             </div>
           </div>

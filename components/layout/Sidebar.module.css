@@ -46,16 +46,8 @@
   flex-direction: column;
   overflow: hidden;
   flex: 1;
-  background: rgba(255, 255, 255, 0.04);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-top: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 12px;
-  padding: 10px 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05), inset 0 1px 0 rgba(255,255,255,0.05);
-  width: 100%;
-  box-sizing: border-box;
+  padding: 8px 2px;
+  min-width: 0;
 }
 
 .logoName {
@@ -69,9 +61,8 @@
 
 .logoSub {
   font-size: 12px;
-  color: var(--brand-600);
-  font-weight: 600;
   color: var(--sidebar-text);
+  font-weight: 600;
   letter-spacing: 0.08em;
   white-space: nowrap;
 }
@@ -95,7 +86,7 @@
 .collapseBtn:hover { background: var(--brand-400); }
 
 /* Navigation */
-.nav {
+.navContent {
   flex: 1;
   min-height: 0;
   padding: 10px 8px;
@@ -141,6 +132,33 @@
 
 .navLabel { flex: 1; }
 
+/* Tooltip cuando el sidebar está colapsado */
+.sidebar.collapsed .navItem[data-tooltip] {
+  position: relative;
+}
+.sidebar.collapsed .navItem[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  left: 52px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--sidebar-title);
+  color: var(--sidebar-bg);
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  padding: 5px 10px;
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-md);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--transition);
+  z-index: 50;
+}
+.sidebar.collapsed .navItem[data-tooltip]:hover::after {
+  opacity: 1;
+}
+
 .chevron {
   transition: transform var(--transition-md);
   opacity: 0.6;
@@ -171,8 +189,8 @@
   color: var(--sidebar-text-hover);
 }
 .subNavItem.active {
-  background: var(--brand-100);
-  color: var(--brand-800);
+  background: var(--sidebar-active);
+  color: var(--sidebar-text-active);
 }
 
 /* Bottom actions */

@@ -29,6 +29,7 @@ import {
   Bell,
   Mail,
 } from 'lucide-react'
+import Icon from '@/components/ui/Icon'
 import PalettePicker from './PalettePicker'
 import styles from './Sidebar.module.css'
 import type { UserPermissions } from '@/lib/permissions'
@@ -204,7 +205,7 @@ export default function Sidebar({ theme, onThemeToggle, palette, onPaletteChange
         onClick={() => setMobileOpen(!mobileOpen)}
         aria-label="Abrir menú"
       >
-        <Menu size={20} />
+        <Icon icon={Menu} size="xl" />
       </button>
 
       <aside className={`${styles.sidebar} ${collapsed ? styles.collapsed : ''} ${mobileOpen ? styles.mobileOpen : ''}`}>
@@ -229,7 +230,7 @@ export default function Sidebar({ theme, onThemeToggle, palette, onPaletteChange
             onClick={() => setCollapsed(!collapsed)}
             aria-label={collapsed ? 'Expandir sidebar' : 'Colapsar sidebar'}
           >
-            {collapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
+            {collapsed ? <Icon icon={ChevronRight} size="sm" /> : <Icon icon={ChevronLeft} size="sm" />}
           </button>
         </div>
 
@@ -245,14 +246,15 @@ export default function Sidebar({ theme, onThemeToggle, palette, onPaletteChange
                     <button
                       className={`${styles.navItem} ${hasActiveChild ? styles.active : ''}`}
                       onClick={() => setOpenDropdown(isOpen ? null : item.label)}
-                      title={collapsed ? item.label : undefined}
+                      data-tooltip={collapsed ? item.label : undefined}
                     >
-                      <item.icon size={18} className={styles.navIcon} />
+                      <Icon icon={item.icon} size="lg" className={styles.navIcon} />
                       {!collapsed && (
                         <>
                           <span className={styles.navLabel}>{item.label}</span>
-                          <ChevronRight
-                            size={14}
+                          <Icon
+                            icon={ChevronRight}
+                            size="sm"
                             className={`${styles.chevron} ${isOpen ? styles.chevronOpen : ''}`}
                           />
                         </>
@@ -281,10 +283,10 @@ export default function Sidebar({ theme, onThemeToggle, palette, onPaletteChange
                   key={item.href}
                   href={item.href}
                   className={`${styles.navItem} ${isActive(item.href) ? styles.active : ''}`}
-                  title={collapsed ? item.label : undefined}
+                  data-tooltip={collapsed ? item.label : undefined}
                   onClick={() => setMobileOpen(false)}
                 >
-                  <item.icon size={18} className={styles.navIcon} />
+                  <Icon icon={item.icon} size="lg" className={styles.navIcon} />
                   {!collapsed && <span className={styles.navLabel}>{item.label}</span>}
                 </Link>
               )
@@ -299,7 +301,7 @@ export default function Sidebar({ theme, onThemeToggle, palette, onPaletteChange
               href="/setup/whatsapp"
               className={styles.actionBtn}
               title={waConnected ? 'WhatsApp Conectado' : 'WhatsApp Desconectado'}
-              style={{ color: waConnected ? 'var(--brand-600)' : '#ef4444' }}
+              style={{ color: waConnected ? 'var(--success)' : 'var(--danger)' }}
             >
               <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <svg width={16} height={16} viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
@@ -312,7 +314,7 @@ export default function Sidebar({ theme, onThemeToggle, palette, onPaletteChange
                   width: 6,
                   height: 6,
                   borderRadius: '50%',
-                  backgroundColor: waConnected ? '#22c55e' : '#ef4444',
+                  backgroundColor: waConnected ? 'var(--success)' : 'var(--danger)',
                   boxShadow: waConnected ? '0 0 0 2px var(--surface-1)' : 'none',
                   animation: waConnected ? 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' : 'none'
                 }} />
@@ -335,7 +337,7 @@ export default function Sidebar({ theme, onThemeToggle, palette, onPaletteChange
             onClick={onThemeToggle}
             title={theme === 'dark' ? 'Modo claro' : 'Modo oscuro'}
           >
-            {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+            {theme === 'dark' ? <Icon icon={Sun} size="md" /> : <Icon icon={Moon} size="md" />}
             {!collapsed && <span>{theme === 'dark' ? 'Modo claro' : 'Modo oscuro'}</span>}
           </button>
           <button
@@ -343,7 +345,7 @@ export default function Sidebar({ theme, onThemeToggle, palette, onPaletteChange
             onClick={() => signOut({ callbackUrl: '/login' })}
             title="Cerrar sesión"
           >
-            <LogOut size={16} />
+            <Icon icon={LogOut} size="md" />
             {!collapsed && <span>Cerrar sesión</span>}
           </button>
         </div>

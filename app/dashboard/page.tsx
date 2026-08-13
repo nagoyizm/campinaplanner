@@ -18,6 +18,7 @@ import {
   Sparkles,
   MessageSquare
 } from 'lucide-react'
+import Icon from '@/components/ui/Icon'
 import Link from 'next/link'
 import styles from './dashboard.module.css'
 
@@ -290,175 +291,163 @@ export default async function DashboardPage() {
       {/* Page Header */}
       <div className={styles.header}>
         <div>
-          <h1 className={styles.greeting}>{greeting}, {userTitle}</h1>
+          <h1 className={styles.greeting}>
+            {greeting.replace(/¡|!/g, '').trim()} <span className={styles.greetingAccent}>{userTitle}</span>
+          </h1>
           <p className={styles.subtitle}>
-            {santiagoDateWords}
+            {santiagoDateWords} · {orgName}
           </p>
         </div>
         <div className={styles.pulseContainer}>
           <span className={styles.pulseDot}></span>
-          <span className={styles.pulseText}>Sistema Online · {orgName}</span>
+          <span className={styles.pulseText}>Sistema Online</span>
         </div>
       </div>
 
-      {/* Quick Actions (Moved to top) */}
-      <div style={{ marginBottom: '12px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-        <Link href="/calendario" className="btn btn-sm" style={{ background: 'var(--brand-500)', color: 'white', border: 'none', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
-          <Plus size={14} /> Nueva Reserva
+      {/* Quick Actions */}
+      <div className={styles.actionsBar}>
+        <Link href="/calendario" className="btn btn-sm btn-primary">
+          <Icon icon={Plus} size="sm" /> Nueva Reserva
         </Link>
-        <Link href="/reportes/financiero" className="btn btn-sm" style={{ background: 'var(--surface-1)', color: 'var(--text-primary)', border: '1px solid var(--border)', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
-          <FileText size={14} /> Reporte Financiero
+        <Link href="/reportes/financiero" className="btn btn-sm btn-secondary">
+          <Icon icon={FileText} size="sm" /> Reporte Financiero
         </Link>
-        <Link href="/huespedes" className="btn btn-sm" style={{ background: 'var(--surface-1)', color: 'var(--text-primary)', border: '1px solid var(--border)', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
-          <Users size={14} /> Base de Huéspedes
+        <Link href="/huespedes" className="btn btn-sm btn-secondary">
+          <Icon icon={Users} size="sm" /> Base de Huéspedes
         </Link>
-        <Link href="/setup/tarifas" className="btn btn-sm" style={{ background: 'var(--surface-1)', color: 'var(--text-primary)', border: '1px solid var(--border)', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
-          <Settings size={14} /> Configuración
+        <Link href="/setup/tarifas" className="btn btn-sm btn-secondary">
+          <Icon icon={Settings} size="sm" /> Configuración
         </Link>
         {role === 'superadmin' && (
-          <Link href="/simulador" className="btn btn-sm" style={{ background: 'var(--surface-1)', color: 'var(--text-primary)', border: '1px solid var(--border)', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
-            <MessageSquare size={14} /> Simulador
+          <Link href="/simulador" className="btn btn-sm btn-secondary">
+            <Icon icon={MessageSquare} size="sm" /> Simulador
           </Link>
         )}
       </div>
 
-      {/* KPI Grid */}
+      {/* KPI Grid — Bento */}
       <div className={styles.kpiGrid}>
-        {/* KPI 1: Llegadas y Salidas Hoy */}
-        <div className={`card ${styles.kpiCard}`} style={{ padding: '16px' }}>
-          <div className="card-body" style={{ padding: 0 }}>
-            <div className={styles.kpiHeader} style={{ marginBottom: '12px' }}>
-              <div className={`${styles.kpiIcon} ${styles.colorWarning}`}>
-                <LogIn size={20} />
-              </div>
-              <span className={styles.kpiLabel}>Movimientos Hoy</span>
+        {/* KPI 1: Movimientos Hoy (span 2) */}
+        <div className={`card ${styles.kpiCard} ${styles.kpiSpan2}`}>
+          <div className={styles.kpiHeader}>
+            <div className={styles.kpiIcon}>
+              <Icon icon={LogIn} size="lg" />
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div style={{ textAlign: 'center', flex: 1, borderRight: '1px solid var(--border)' }}>
-                <span style={{ display: 'block', fontSize: '1.5rem', fontWeight: 800, color: '#d97706' }}>{arrivalsCount}</span>
-                <span style={{ fontSize: '0.65rem', color: '#b45309', textTransform: 'uppercase', fontWeight: 600 }}>Llegadas</span>
-                <span style={{ display: 'block', fontSize: '0.6rem', color: 'var(--text-muted)' }}>
-                  {arrivalsToday.filter(a => a.reservation.status === 'confirmed').length} conf.
-                </span>
-              </div>
-              <div style={{ textAlign: 'center', flex: 1 }}>
-                <span style={{ display: 'block', fontSize: '1.5rem', fontWeight: 800, color: '#4b5563' }}>{departuresCount}</span>
-                <span style={{ fontSize: '0.65rem', color: '#374151', textTransform: 'uppercase', fontWeight: 600 }}>Salidas</span>
-                <span style={{ display: 'block', fontSize: '0.6rem', color: 'var(--text-muted)' }}>
-                  {departuresToday.filter(d => d.reservation.status === 'checked_in').length} pdte.
-                </span>
-              </div>
-            </div>
+            <span className={styles.kpiLabel}>Movimientos Hoy</span>
           </div>
-        </div>
-
-        {/* KPI 3: Huéspedes Activos */}
-        <div className={`card ${styles.kpiCard}`}>
-          <div className="card-body">
-            <div className={styles.kpiHeader}>
-              <div className={`${styles.kpiIcon} ${styles.colorSuccess}`}>
-                <BedDouble size={20} />
-              </div>
-              <span className={styles.kpiLabel}>Huéspedes Activos</span>
+          <div className={styles.kpiSplit}>
+            <div className={styles.kpiSplitItem}>
+              <span className={styles.kpiSplitValue}>{arrivalsCount}</span>
+              <span className={styles.kpiSplitLabel}>Llegadas</span>
+              <span className={styles.kpiSplitSub}>
+                {arrivalsToday.filter(a => a.reservation.status === 'confirmed').length} conf.
+              </span>
             </div>
-            <div className={styles.kpiContent}>
-              <span className={styles.kpiValue}>{totalGuestsCheckedIn}</span>
-              <span className={styles.kpiSubtext} style={{ lineHeight: '1.4' }}>
-                {occupiedRoomsToday} habitaciones<br />
-                {checkedInCount} reservas
+            <div className={styles.kpiSplitItem}>
+              <span className={styles.kpiSplitValue}>{departuresCount}</span>
+              <span className={styles.kpiSplitLabel}>Salidas</span>
+              <span className={styles.kpiSplitSub}>
+                {departuresToday.filter(d => d.reservation.status === 'checked_in').length} pdte.
               </span>
             </div>
           </div>
         </div>
 
-        {/* KPI 4: Estado Limpieza */}
-        <div className={`card ${styles.kpiCard}`} style={{ padding: '16px' }}>
-          <div className="card-body" style={{ padding: 0 }}>
-            <div className={styles.kpiHeader} style={{ marginBottom: '12px' }}>
-              <div className={`${styles.kpiIcon} ${styles.colorGold}`}>
-                <Activity size={20} />
-              </div>
-              <span className={styles.kpiLabel}>Estado Limpieza</span>
+        {/* KPI 2: Huéspedes Activos */}
+        <div className={`card ${styles.kpiCard}`}>
+          <div className={styles.kpiHeader}>
+            <div className={styles.kpiIcon}>
+              <Icon icon={BedDouble} size="lg" />
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div style={{ textAlign: 'center', flex: 1, borderRight: '1px solid var(--border)' }}>
-                <span style={{ display: 'block', fontSize: '1.5rem', fontWeight: 800, color: '#047857' }}>{cleanCount}</span>
-                <span style={{ fontSize: '0.65rem', color: '#065f46', textTransform: 'uppercase', fontWeight: 600 }}>Listas</span>
-              </div>
-              <div style={{ textAlign: 'center', flex: 1, borderRight: '1px solid var(--border)' }}>
-                <span style={{ display: 'block', fontSize: '1.5rem', fontWeight: 800, color: '#b91c1c' }}>{dirtyCount}</span>
-                <span style={{ fontSize: '0.65rem', color: '#991b1b', textTransform: 'uppercase', fontWeight: 600 }}>Sin limpieza</span>
-              </div>
-              <div style={{ textAlign: 'center', flex: 1 }}>
-                <span style={{ display: 'block', fontSize: '1.5rem', fontWeight: 800, color: '#4b5563' }}>{maintCount}</span>
-                <span style={{ fontSize: '0.65rem', color: '#374151', textTransform: 'uppercase', fontWeight: 600 }}>Mant.</span>
-              </div>
-            </div>
+            <span className={styles.kpiLabel}>Huéspedes Activos</span>
+          </div>
+          <div className={styles.kpiContent}>
+            <span className={styles.kpiValue}>{totalGuestsCheckedIn}</span>
+            <span className={styles.kpiSubtext}>
+              {occupiedRoomsToday} habitaciones · {checkedInCount} reservas
+            </span>
           </div>
         </div>
 
-        {/* KPI 5: Disponibilidad Hoy */}
+        {/* KPI 3: Ocupación hoy */}
         <div className={`card ${styles.kpiCard}`}>
-          <div className="card-body">
-            <div className={styles.kpiHeader}>
-              <div className={`${styles.kpiIcon} ${styles.colorInfo}`}>
-                <TrendingUp size={20} />
-              </div>
-              <span className={styles.kpiLabel}>Ocupación hoy</span>
+          <div className={styles.kpiHeader}>
+            <div className={styles.kpiIcon}>
+              <Icon icon={TrendingUp} size="lg" />
             </div>
-            <div className={styles.kpiContent}>
-              <span className={styles.kpiValue}>{occupancyPercent}%</span>
-              <div className={styles.progressBarBg}>
-                <div 
-                  className={styles.progressBarFill} 
-                  style={{ width: `${occupancyPercent}%` }}
-                ></div>
-              </div>
-              <span className={styles.kpiSubtext} style={{ lineHeight: '1.4' }}>
-                Cabañas: {occupiedCabanas} de {totalCabanas} <br/>
-                Suites: {occupiedSuites} de {totalSuites}
-              </span>
+            <span className={styles.kpiLabel}>Ocupación hoy</span>
+          </div>
+          <div className={styles.kpiContent}>
+            <span className={styles.kpiValue}>{occupancyPercent}%</span>
+            <div className={styles.progressBarBg}>
+              <div
+                className={styles.progressBarFill}
+                style={{ width: `${occupancyPercent}%` }}
+              ></div>
+            </div>
+            <span className={styles.kpiSubtext}>
+              Cabañas: {occupiedCabanas}/{totalCabanas} · Suites: {occupiedSuites}/{totalSuites}
+            </span>
+          </div>
+        </div>
+
+        {/* KPI 4: Estado Limpieza (span 2) */}
+        <div className={`card ${styles.kpiCard} ${styles.kpiSpan2}`}>
+          <div className={styles.kpiHeader}>
+            <div className={styles.kpiIcon}>
+              <Icon icon={Activity} size="lg" />
+            </div>
+            <span className={styles.kpiLabel}>Estado Limpieza</span>
+          </div>
+          <div className={styles.kpiSplit}>
+            <div className={styles.kpiSplitItem}>
+              <span className={styles.kpiSplitValue}>{cleanCount}</span>
+              <span className={styles.kpiSplitLabel}>Listas</span>
+            </div>
+            <div className={styles.kpiSplitItem}>
+              <span className={`${styles.kpiSplitValue} ${styles.kpiSplitValueDanger}`}>{dirtyCount}</span>
+              <span className={`${styles.kpiSplitLabel} ${styles.kpiSplitLabelDanger}`}>Sin limpieza</span>
+            </div>
+            <div className={styles.kpiSplitItem}>
+              <span className={styles.kpiSplitValue}>{maintCount}</span>
+              <span className={styles.kpiSplitLabel}>Mant.</span>
             </div>
           </div>
         </div>
 
         {/* KPI 5: Ingresos del Mes */}
         <div className={`card ${styles.kpiCard}`}>
-          <div className="card-body">
-            <div className={styles.kpiHeader}>
-              <div className={`${styles.kpiIcon} ${styles.colorGold}`}>
-                <DollarSign size={20} />
-              </div>
-              <span className={styles.kpiLabel}>Ingresos del Mes</span>
+          <div className={styles.kpiHeader}>
+            <div className={styles.kpiIcon}>
+              <Icon icon={DollarSign} size="lg" />
             </div>
-            <div className={styles.kpiContent}>
-              <span className={`${styles.kpiValue} ${styles.currencyText}`}>
-                {formatCLP(revenueThisMonth)}
-              </span>
-              <span className={styles.kpiSubtext}>
-                Reservas con llegada en {santiagoMonthName}
-              </span>
-            </div>
+            <span className={styles.kpiLabel}>Ingresos del Mes</span>
+          </div>
+          <div className={styles.kpiContent}>
+            <span className={`${styles.kpiValue} ${styles.currencyText}`}>
+              {formatCLP(revenueThisMonth)}
+            </span>
+            <span className={styles.kpiSubtext}>
+              Reservas con llegada en {santiagoMonthName}
+            </span>
           </div>
         </div>
 
         {/* KPI 6: Por Cobrar */}
         <div className={`card ${styles.kpiCard}`}>
-          <div className="card-body">
-            <div className={styles.kpiHeader}>
-              <div className={`${styles.kpiIcon} ${styles.colorDanger}`}>
-                <AlertCircle size={20} />
-              </div>
-              <span className={styles.kpiLabel}>Por Cobrar</span>
+          <div className={styles.kpiHeader}>
+            <div className={styles.kpiIcon}>
+              <Icon icon={AlertCircle} size="lg" />
             </div>
-            <div className={styles.kpiContent}>
-              <span className={`${styles.kpiValue} ${styles.currencyText} ${styles.dangerText}`}>
-                {formatCLP(pendingPayments)}
-              </span>
-              <span className={styles.kpiSubtext}>
-                Deuda total de reservas activas
-              </span>
-            </div>
+            <span className={styles.kpiLabel}>Por Cobrar</span>
+          </div>
+          <div className={styles.kpiContent}>
+            <span className={`${styles.kpiValue} ${styles.currencyText} ${styles.dangerText}`}>
+              {formatCLP(pendingPayments)}
+            </span>
+            <span className={styles.kpiSubtext}>
+              Deuda total de reservas activas
+            </span>
           </div>
         </div>
       </div>
@@ -473,7 +462,7 @@ export default async function DashboardPage() {
           <div className={`card ${styles.dashboardCard}`}>
             <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <h3 className={styles.cardTitle}>
-                <Clock size={18} style={{ color: 'var(--brand-500)' }} /> Operaciones de Hoy
+                <span className={styles.cardTitleIcon}><Icon icon={Clock} size="sm" /></span> Operaciones de Hoy
               </h3>
               <div className={styles.badgeGroup}>
                 <span className={`${styles.badge} ${styles.badgeWarning}`}>Llegadas: {arrivalsCount}</span>
@@ -485,7 +474,7 @@ export default async function DashboardPage() {
               {/* Arrivals list today */}
               <div className={styles.opSection}>
                 <h4 className={styles.opSectionTitle}>
-                  <LogIn size={14} /> Llegadas Hoy
+                  <Icon icon={LogIn} size="sm" /> Llegadas Hoy
                 </h4>
                 {arrivalsToday.length === 0 ? (
                   <p className={styles.noDataText}>No hay llegadas programadas para hoy.</p>
@@ -527,7 +516,7 @@ export default async function DashboardPage() {
               {/* Departures list today */}
               <div className={styles.opSection} style={{ borderTop: '1px solid var(--border-light)' }}>
                 <h4 className={styles.opSectionTitle}>
-                  <LogOut size={14} /> Salidas Hoy
+                  <Icon icon={LogOut} size="sm" /> Salidas Hoy
                 </h4>
                 {departuresToday.length === 0 ? (
                   <p className={styles.noDataText}>No hay salidas programadas para hoy.</p>
@@ -573,7 +562,7 @@ export default async function DashboardPage() {
           <div className={`card ${styles.dashboardCard}`} style={{ marginTop: 20 }}>
             <div className="card-header">
               <h3 className={styles.cardTitle}>
-                <Calendar size={18} style={{ color: 'var(--brand-500)' }} /> Próximas Llegadas (Siguientes 7 días)
+                <span className={styles.cardTitleIcon}><Icon icon={Calendar} size="sm" /></span> Próximas Llegadas
               </h3>
             </div>
             <div className="card-body" style={{ padding: 0 }}>
@@ -635,7 +624,7 @@ export default async function DashboardPage() {
           <div className={`card ${styles.dashboardCard}`}>
             <div className="card-header">
               <h3 className={styles.cardTitle}>
-                <Sparkles size={18} style={{ color: 'var(--brand-500)' }} /> Últimas Reservas Abiertas
+                <span className={styles.cardTitleIcon}><Icon icon={Sparkles} size="sm" /></span> Últimas Reservas Abiertas
               </h3>
             </div>
             <div className="card-body" style={{ padding: 0 }}>

@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createOrganization } from './actions'
 import { Building2, User, KeyRound, ArrowLeft } from 'lucide-react'
+import Icon from '@/components/ui/Icon'
 import Link from 'next/link'
 import styles from '../saas.module.css'
 
@@ -41,7 +42,7 @@ export default function NewClientPage() {
           <p className={styles.subtitle}>Crear una nueva organización y cuenta de administrador</p>
         </div>
         <Link href="/saas" className="btn btn-ghost">
-          <ArrowLeft size={18} />
+          <Icon icon={ArrowLeft} size="lg" />
           Volver
         </Link>
       </div>
@@ -57,7 +58,7 @@ export default function NewClientPage() {
           
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1.1rem', margin: 0 }}>
-              <Building2 size={18} style={{ color: 'var(--brand-500)' }} />
+              <Icon icon={Building2} size="lg" style={{ color: 'var(--brand-500)' }} />
               Datos de la Organización
             </h3>
             
@@ -77,7 +78,7 @@ export default function NewClientPage() {
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1.1rem', margin: 0 }}>
-              <User size={18} style={{ color: 'var(--brand-500)' }} />
+              <Icon icon={User} size="lg" style={{ color: 'var(--brand-500)' }} />
               Administrador Inicial
             </h3>
             

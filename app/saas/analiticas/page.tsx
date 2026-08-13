@@ -1,6 +1,7 @@
 import { requireSuperAdmin } from '@/lib/org'
 import styles from '../saas.module.css'
 import { LineChart as ChartIcon, Construction } from 'lucide-react'
+import Icon from '@/components/ui/Icon'
 
 export default async function SaasAnaliticasPage() {
   await requireSuperAdmin()
@@ -14,7 +15,7 @@ export default async function SaasAnaliticasPage() {
         </div>
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '64px', color: 'var(--text-muted)', border: '1px dashed var(--border-light)', borderRadius: '12px' }}>
-        <Construction size={48} style={{ marginBottom: '16px', opacity: 0.5 }} />
+        <Icon icon={Construction} size={48} style={{ marginBottom: '16px', opacity: 0.5 }} />
         <h2>Analíticas en Construcción</h2>
         <p>Aquí mostraremos gráficos de ingresos recurrentes, nuevos clientes y uso del sistema.</p>
       </div>

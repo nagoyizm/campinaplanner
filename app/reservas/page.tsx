@@ -19,6 +19,7 @@ import {
   X,
   Trash2
 } from 'lucide-react'
+import Icon from '@/components/ui/Icon'
 import toast from 'react-hot-toast'
 import ReservaModal from '@/components/reservas/ReservaModal'
 import { format } from 'date-fns'
@@ -201,7 +202,7 @@ export default function ReservasPage() {
           <p className="page-subtitle">Gestione y filtre todos los registros de reservas del recinto</p>
         </div>
         <button className="btn btn-primary" onClick={handleOpenNew} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <Plus size={16} /> Nueva Reserva
+          <Icon icon={Plus} size="md" /> Nueva Reserva
         </button>
       </div>
 
@@ -211,7 +212,7 @@ export default function ReservasPage() {
           
           {/* Search box */}
           <div className={styles.searchWrapper}>
-            <Search size={18} className={styles.searchIcon} />
+            <Icon icon={Search} size="lg" className={styles.searchIcon} />
             <input 
               type="text" 
               placeholder="Buscar por nombre o apellido de huésped..." 
@@ -221,14 +222,14 @@ export default function ReservasPage() {
             />
             {searchQuery && (
               <button className={styles.clearSearchBtn} onClick={() => setSearchQuery('')}>
-                <X size={16} />
+                <Icon icon={X} size="md" />
               </button>
             )}
           </div>
 
           {/* Status filter dropdown */}
           <div className={styles.filterGroup}>
-            <Filter size={16} className={styles.filterLabelIcon} />
+            <Icon icon={Filter} size="md" className={styles.filterLabelIcon} />
             <select 
               value={statusFilter}
               onChange={(e) => {
@@ -261,12 +262,12 @@ export default function ReservasPage() {
         <div className="card-body" style={{ padding: 0 }}>
           {loading ? (
             <div className={styles.loadingContainer}>
-              <Loader2 size={32} className={styles.spinner} />
+              <Icon icon={Loader2} size="3xl" className={styles.spinner} />
               <p>Cargando listado de reservas...</p>
             </div>
           ) : reservas.length === 0 ? (
             <div className={styles.emptyContainer}>
-              <Calendar size={48} className={styles.emptyIcon} />
+              <Icon icon={Calendar} size={48} className={styles.emptyIcon} />
               <h3>No se encontraron reservas</h3>
               <p>Pruebe cambiando los términos de búsqueda o filtros aplicados.</p>
               <button className="btn btn-secondary btn-sm" onClick={() => { setSearchQuery(''); setStatusFilter(''); }} style={{ marginTop: 12 }}>
@@ -315,11 +316,11 @@ export default function ReservasPage() {
                         <td>{departure}</td>
                         <td style={{ textAlign: 'center' }}>{nights}</td>
                         <td style={{ textAlign: 'right', fontWeight: 600 }}>{formatCLP(totalCost)}</td>
-                        <td style={{ textAlign: 'right', color: '#10b981', fontWeight: 500 }}>{formatCLP(rsv.totalPaid)}</td>
+                        <td style={{ textAlign: 'right', color: 'var(--success)', fontWeight: 500 }}>{formatCLP(rsv.totalPaid)}</td>
                         <td style={{ 
                           textAlign: 'right', 
                           fontWeight: 700, 
-                          color: amountDue > 0 ? '#ef4444' : '#10b981' 
+                          color: amountDue > 0 ? 'var(--danger)' : 'var(--success)' 
                         }}>
                           {amountDue > 0 ? formatCLP(amountDue) : 'Al día'}
                         </td>
@@ -342,15 +343,15 @@ export default function ReservasPage() {
                               style={{ padding: '6px', height: 'auto' }}
                               title="Editar/Ver Reserva"
                             >
-                              <Edit2 size={14} />
+                              <Icon icon={Edit2} size="sm" />
                             </button>
                             <button 
                               className="btn btn-ghost btn-sm" 
                               onClick={() => handleDelete(rsv.id)}
-                              style={{ padding: '6px', height: 'auto', color: '#ef4444' }}
+                              style={{ padding: '6px', height: 'auto', color: 'var(--danger)' }}
                               title="Eliminar Reserva"
                             >
-                              <Trash2 size={14} />
+                              <Icon icon={Trash2} size="sm" />
                             </button>
                           </div>
                         </td>
@@ -372,7 +373,7 @@ export default function ReservasPage() {
               onClick={() => setPage(p => Math.max(p - 1, 1))}
               style={{ display: 'flex', alignItems: 'center', gap: 4 }}
             >
-              <ChevronLeft size={16} /> Anterior
+              <Icon icon={ChevronLeft} size="md" /> Anterior
             </button>
             <span className={styles.pageIndicator}>
               Página {page} de {totalPages}
@@ -383,7 +384,7 @@ export default function ReservasPage() {
               onClick={() => setPage(p => Math.min(p + 1, totalPages))}
               style={{ display: 'flex', alignItems: 'center', gap: 4 }}
             >
-              Siguiente <ChevronRight size={16} />
+              Siguiente <Icon icon={ChevronRight} size="md" />
             </button>
           </div>
         )}

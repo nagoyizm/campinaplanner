@@ -1,11 +1,18 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { signIn } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
-import { Eye, EyeOff, Loader2, User } from 'lucide-react'
+import { Eye, EyeOff, Loader2, Sun, Moon, Check } from 'lucide-react'
+import Icon from '@/components/ui/Icon'
 import styles from './login.module.css'
+
+const HIGHLIGHTS = [
+  'Disponibilidad en vivo, sin dobles reservas',
+  'Pagos, garantías y datos bancarios centralizados',
+  'Página pública para que tus clientes reserven solos',
+]
 
 export default function LoginPage() {
   const router = useRouter()
@@ -14,6 +21,21 @@ export default function LoginPage() {
   const [showPass, setShowPass] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [theme, setTheme] = useState<'light' | 'dark'>('light')
+
+  // Cargar tema unificado de la app (misma clave localStorage que AppLayout)
+  useEffect(() => {
+    const saved = localStorage.getItem('theme') as 'light' | 'dark' | null
+    const preferred = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+    setTheme(saved || preferred)
+  }, [])
+
+  const toggleTheme = () => {
+    const next = theme === 'dark' ? 'light' : 'dark'
+    setTheme(next)
+    document.documentElement.setAttribute('data-theme', next)
+    localStorage.setItem('theme', next)
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -36,26 +58,62 @@ export default function LoginPage() {
   }
 
   return (
-    <div className={styles.page} style={{ fontFamily: '"Montserrat", sans-serif' }}>
-      {/* Absolute Logo */}
-      <div style={{ position: 'absolute', top: '30px', left: '40px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-        <div style={{ padding: 0, overflow: 'hidden', background: 'transparent', boxShadow: 'none' }}>
-          <Image src="/logo-habita-round.png" alt="agendio" width={40} height={40} />
+    <div className={styles.page} data-theme={theme}>
+      {/* Ambient orbs (estilo landing) */}
+      <div className={styles.bgDecor1} aria-hidden="true" />
+      <div className={styles.bgDecor2} aria-hidden="true" />
+
+      {/* Toggle de tema */}
+      <button
+        type="button"
+        className={styles.themeToggle}
+        onClick={toggleTheme}
+        aria-label={theme === 'dark' ? 'Activar modo claro' : 'Activar modo oscuro'}
+        title={theme === 'dark' ? 'Modo claro' : 'Modo oscuro'}
+      >
+        {theme === 'dark' ? <Icon icon={Sun} size="md" /> : <Icon icon={Moon} size="md" />}
+      </button>
+
+      {/* ── Panel de marca (verde bosque editorial) ─────────────────── */}
+      <aside className={styles.brandPanel}>
+        <div className={styles.brand}>
+          <Image src="/logovec.svg" alt="Agendio" width={44} height={44} className={styles.brandLogo} />
+          <span className={styles.wordmark}>agendio</span>
         </div>
-        <h1 style={{ fontFamily: '"mooxy", sans-serif', fontSize: '20px', letterSpacing: '0.15em', margin: 0, color: 'rgba(255,255,255,0.9)' }}>agendio</h1>
-      </div>
 
-      {/* Background decoration */}
-      <div className={styles.bgDecor1} />
-      <div className={styles.bgDecor2} />
+        <div className={styles.brandBody}>
+          <span className={styles.brandEyebrow}>Gestión para alojamientos</span>
+          <h2 className={styles.brandTitle}>
+            La calma de <em>operar bien.</em>
+          </h2>
+          <p className={styles.brandCopy}>
+            Reservas, huéspedes, finanzas y limpieza en un solo lugar. Sin dobles reservas, sin
+            hojas de cálculo ni clientes sin respuesta.
+          </p>
 
-      <div className={styles.card}>
-        <form onSubmit={handleSubmit} className={styles.form}>
-          <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-            <div className={styles.avatarPlaceholder}>
-              <User size={48} color="rgba(255,255,255,0.5)" strokeWidth={1.5} />
-            </div>
-          </div>
+          <span className={styles.brandDivider} aria-hidden="true" />
+
+          <ul className={styles.brandList}>
+            {HIGHLIGHTS.map(item => (
+              <li key={item} className={styles.brandItem}>
+                <span className={styles.brandCheck} aria-hidden="true">
+                  <Icon icon={Check} size="xs" strokeWidth={3} />
+                </span>
+                {item}
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <p className={styles.brandFooter}>© {new Date().getFullYear()} Agendio</p>
+      </aside>
+
+      {/* ── Panel de formulario (crema editorial) ───────────────────── */}
+      <main className={styles.formSide}>
+        <div className={styles.card}>
+          <span className={styles.cardEyebrow}>Bienvenido de nuevo</span>
+          <h1 className={styles.cardTitle}>Inicia sesión</h1>
+          <p className={styles.cardSubtitle}>Ingresa a tu panel de gestión para seguir operando.</p>
 
           {error && (
             <div className={styles.errorMsg} role="alert">
@@ -63,77 +121,81 @@ export default function LoginPage() {
             </div>
           )}
 
-          <div className="form-group">
-            <label className="form-label required" htmlFor="email">
-              Correo electrónico
-            </label>
-            <input
-              id="email"
-              type="email"
-              className="input"
-              placeholder="Email ID"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              autoComplete="email"
-              autoFocus
-            />
-          </div>
-
-          <div className="form-group">
-            <label className="form-label required" htmlFor="password">
-              Contraseña
-            </label>
-            <div className={styles.passwordWrapper}>
+          <form onSubmit={handleSubmit} className={styles.form} noValidate>
+            <div className={styles.formGroup}>
+              <label className={styles.label} htmlFor="email">
+                Correo electrónico
+              </label>
               <input
-                id="password"
-                type={showPass ? 'text' : 'password'}
-                className="input"
-                placeholder="Contraseña"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                id="email"
+                type="email"
+                className={styles.field}
+                placeholder="nombre@recinto.cl"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 required
-                autoComplete="current-password"
+                autoComplete="email"
+                autoFocus
               />
-              <button
-                type="button"
-                className={styles.eyeBtn}
-                onClick={() => setShowPass(!showPass)}
-                aria-label={showPass ? 'Ocultar contraseña' : 'Mostrar contraseña'}
-              >
-                {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
-              </button>
             </div>
-          </div>
 
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px', color: 'rgba(255,255,255,0.6)', marginTop: '4px', marginBottom: '16px' }}>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
-              <input type="checkbox" style={{ accentColor: '#339c63' }} />
-              Recuérdame
-            </label>
-            <a href="#" style={{ color: 'rgba(255,255,255,0.6)', textDecoration: 'none', fontStyle: 'italic' }}>¿Olvidaste tu contraseña?</a>
-          </div>
+            <div className={styles.formGroup}>
+              <label className={styles.label} htmlFor="password">
+                Contraseña
+              </label>
+              <div className={styles.passwordWrapper}>
+                <input
+                  id="password"
+                  type={showPass ? 'text' : 'password'}
+                  className={styles.field}
+                  placeholder="Tu contraseña"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  autoComplete="current-password"
+                />
+                <button
+                  type="button"
+                  className={styles.eyeBtn}
+                  onClick={() => setShowPass(!showPass)}
+                  aria-label={showPass ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                >
+                  {showPass ? <Icon icon={EyeOff} size="md" /> : <Icon icon={Eye} size="md" />}
+                </button>
+              </div>
+            </div>
 
-          <button
-            type="submit"
-            className={styles.loginBtn}
-            disabled={loading}
-          >
-            {loading ? (
-              <>
-                <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} />
-                Ingresando...
-              </>
-            ) : (
-              'LOGIN'
-            )}
-          </button>
-        </form>
+            <div className={styles.row}>
+              <label className={styles.remember}>
+                <input type="checkbox" className={styles.checkbox} />
+                Recuérdame
+              </label>
+              <a href="#" className={styles.forgot}>
+                ¿Olvidaste tu contraseña?
+              </a>
+            </div>
+
+            <button
+              type="submit"
+              className={styles.loginBtn}
+              disabled={loading}
+            >
+              {loading ? (
+                <>
+                  <Icon icon={Loader2} size="md" className={styles.spinner} />
+                  Ingresando...
+                </>
+              ) : (
+                'Ingresar'
+              )}
+            </button>
+          </form>
+        </div>
 
         <p className={styles.footer}>
           © {new Date().getFullYear()} Agendio. Todos los derechos reservados.
         </p>
-      </div>
+      </main>
     </div>
   )
 }

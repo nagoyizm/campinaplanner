@@ -5,6 +5,7 @@ import { useParams, useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import styles from '../../../saas.module.css'
 import { ArrowLeft, UploadCloud, CheckCircle2, AlertCircle } from 'lucide-react'
+import Icon from '@/components/ui/Icon'
 
 export default function ImportarTablaPage() {
   const params = useParams()
@@ -69,7 +70,7 @@ export default function ImportarTablaPage() {
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
             <Link href={`/saas/clientes/${orgId}`} className="btn btn-ghost" style={{ padding: '8px' }}>
-              <ArrowLeft size={18} />
+              <Icon icon={ArrowLeft} size="lg" />
             </Link>
             <h1 className={styles.title} style={{ margin: 0 }}>Importar Datos</h1>
           </div>
@@ -81,20 +82,20 @@ export default function ImportarTablaPage() {
         
         {result?.success && (
           <div style={{ padding: '16px', background: 'rgba(34, 197, 94, 0.1)', color: '#16a34a', borderRadius: '8px', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <CheckCircle2 size={24} />
+            <Icon icon={CheckCircle2} size="2xl" />
             <strong>{result.success}</strong>
           </div>
         )}
 
         {result?.error && (
           <div style={{ padding: '16px', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', borderRadius: '8px', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <AlertCircle size={24} />
+            <Icon icon={AlertCircle} size="2xl" />
             <strong>Error:</strong> {result.error}
           </div>
         )}
 
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px', border: '2px dashed var(--border)', borderRadius: '12px', background: 'var(--surface-2)', cursor: 'pointer' }} onClick={() => document.getElementById('file-upload')?.click()}>
-          <UploadCloud size={48} style={{ color: 'var(--brand-500)', marginBottom: '16px' }} />
+          <Icon icon={UploadCloud} size={48} style={{ color: 'var(--brand-500)', marginBottom: '16px' }} />
           <h3 style={{ margin: '0 0 8px 0', color: 'var(--text-base)' }}>Haz clic para seleccionar el archivo Excel</h3>
           <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.9rem' }}>{file ? file.name : 'Formato requerido: .xlsx (usar la plantilla descargada)'}</p>
           

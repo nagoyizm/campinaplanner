@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { X, Save, Trash2, XCircle, ExternalLink } from 'lucide-react'
+import Icon from '@/components/ui/Icon'
 import toast from 'react-hot-toast'
 import styles from './ReservaModal.module.css'
 
@@ -135,19 +136,19 @@ export default function QuickReservaModal({
 
           <div style={{ display: 'flex', gap: '8px' }}>
             <button className="btn btn-primary btn-sm" onClick={onOpenFull} disabled={saving || deleting}>
-              <ExternalLink size={14} /> Abrir
+              <Icon icon={ExternalLink} size="sm" /> Abrir
             </button>
             <button className="btn btn-primary btn-sm" style={{ background: '#10b981' }} onClick={handleSave} disabled={saving || deleting}>
-              {saving ? '...' : <><Save size={14} /> Guardar</>}
+              {saving ? '...' : <><Icon icon={Save} size="sm" /> Guardar</>}
             </button>
             <button className="btn btn-danger btn-sm" onClick={handleCancelReservation} disabled={saving || deleting || status === 'cancelled'}>
-              <XCircle size={14} /> Cancelar
+              <Icon icon={XCircle} size="sm" /> Cancelar
             </button>
             <button className="btn btn-danger btn-sm" onClick={handleDelete} disabled={saving || deleting}>
-              <Trash2 size={14} /> Borrar
+              <Icon icon={Trash2} size="sm" /> Borrar
             </button>
             <button className="btn btn-secondary btn-sm" onClick={onClose} disabled={saving || deleting}>
-              <X size={14} /> Cerrar
+              <Icon icon={X} size="sm" /> Cerrar
             </button>
           </div>
         </div>

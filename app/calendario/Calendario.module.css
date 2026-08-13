@@ -27,6 +27,13 @@
   gap: 6px;
 }
 
+.toolbarDivider {
+  width: 1px;
+  height: 20px;
+  background: var(--border);
+  margin: 0 8px;
+}
+
 .toolbarRight {
   display: flex;
   align-items: center;
@@ -41,6 +48,33 @@
   min-width: 140px;
   text-align: center;
   letter-spacing: -0.01em;
+}
+
+.viewToggle {
+  display: flex;
+  gap: 2px;
+  background: var(--surface-3);
+  padding: 2px;
+  border-radius: 6px;
+  margin-right: 12px;
+}
+
+.viewToggleBtn {
+  padding: 4px 12px;
+  font-size: 12px;
+  border-radius: 4px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-weight: 600;
+  font-family: inherit;
+  transition: background var(--transition), color var(--transition);
+}
+
+.viewToggleBtnActive {
+  background: var(--accent-500);
+  color: var(--on-accent, #fff);
 }
 
 .spinning {
@@ -369,10 +403,8 @@
   justify-content: center;
   gap: 16px;
   padding: 12px 16px;
-  background: color-mix(in srgb, var(--surface-1) 80%, transparent);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-top: 1px solid color-mix(in srgb, var(--border-light) 50%, transparent);
+  background: var(--surface-1);
+  border-top: 1px solid var(--border-light);
   flex-wrap: wrap;
   z-index: 50;
   box-shadow: 0 -4px 20px rgba(0,0,0,0.05);

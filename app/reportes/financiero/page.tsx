@@ -9,6 +9,7 @@ import {
   Calendar, Star, Award, TrendingDown,
   Users, Ban, Clock
 } from 'lucide-react'
+import Icon from '@/components/ui/Icon'
 import toast from 'react-hot-toast'
 import styles from './financiero.module.css'
 import FinancialCharts from '@/components/reportes/FinancialCharts'
@@ -49,13 +50,13 @@ const fmtDate = (dateStr: string) => {
 }
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
-  booked:      { label: 'Reservado',   color: '#1d4ed8', bg: '#dbeafe' },
-  confirmed:   { label: 'Confirmado',  color: '#065f46', bg: '#d1fae5' },
-  checked_in:  { label: 'Check-In',    color: '#92400e', bg: '#fef3c7' },
-  checked_out: { label: 'Check-Out',   color: '#374151', bg: '#f3f4f6' },
-  blocked:     { label: 'Bloqueado',   color: '#f9fafb', bg: '#1f2937' },
-  cancelled:   { label: 'Cancelado',   color: '#991b1b', bg: '#fee2e2' },
-  no_show:     { label: 'No Show',     color: '#5b21b6', bg: '#ede9fe' },
+  booked:      { label: 'Reservado',   color: 'var(--info)', bg: 'var(--info-bg)' },
+  confirmed:   { label: 'Confirmado',  color: 'var(--success)', bg: 'var(--success-bg)' },
+  checked_in:  { label: 'Check-In',    color: 'var(--warning)', bg: 'var(--warning-bg)' },
+  checked_out: { label: 'Check-Out',   color: 'var(--neutral)', bg: 'var(--neutral-bg)' },
+  blocked:     { label: 'Bloqueado',   color: 'var(--surface-1)', bg: 'var(--neutral)' },
+  cancelled:   { label: 'Cancelado',   color: 'var(--danger)', bg: 'var(--danger-bg)' },
+  no_show:     { label: 'No Show',     color: 'var(--violet)', bg: 'var(--violet-bg)' },
 }
 
 // ── Date presets ──────────────────────────────────────────────────
@@ -256,10 +257,10 @@ export default function ReporteFinancieroPage() {
         {searched && rows.length > 0 && (
           <div className={styles.actions}>
             <button className="btn btn-secondary btn-sm" onClick={handleExcelExport} id="export-excel">
-              <FileSpreadsheet size={15} /> Exportar Excel
+              <Icon icon={FileSpreadsheet} size="sm" /> Exportar Excel
             </button>
             <button className="btn btn-secondary btn-sm" onClick={handlePrint} id="export-print">
-              <Printer size={15} /> Imprimir
+              <Icon icon={Printer} size="sm" /> Imprimir
             </button>
           </div>
         )}
@@ -368,7 +369,7 @@ export default function ReporteFinancieroPage() {
                 style={{ minWidth: 120 }}
               >
                 {loading
-                  ? <><Loader2 size={15} style={{ animation: 'spin 1s linear infinite' }} /> Cargando...</>
+                  ? <><Icon icon={Loader2} size="sm" spin /> Cargando...</>
                   : 'Mostrar'}
               </button>
             </div>
@@ -391,7 +392,7 @@ export default function ReporteFinancieroPage() {
                 <div key={kpi.label} className={`card ${styles.kpiCard}`}>
                   <div className="card-body" style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 16 }}>
                     <div className={styles.kpiIcon} style={{ background: kpi.color + '18', color: kpi.color }}>
-                      <kpi.icon size={20} />
+                      <Icon icon={kpi.icon} size="xl" />
                     </div>
                     <div>
                       <p className={styles.kpiLabel}>{kpi.label}</p>
@@ -408,7 +409,7 @@ export default function ReporteFinancieroPage() {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '16px', marginBottom: '24px' }}>
               <div style={{ background: 'var(--surface-1)', padding: '16px', borderRadius: '12px', border: '1px solid #fde68a', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                  <Award size={16} color="#d97706" />
+                  <Icon icon={Award} size="md" color="#d97706" />
                   <p style={{ color: '#b45309', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase', margin: 0 }}>Mejor Semana</p>
                 </div>
                 <p style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-base)', margin: '0 0 4px 0' }}>{formatCLP(insights.bestWeek.amount)}</p>
@@ -417,7 +418,7 @@ export default function ReporteFinancieroPage() {
 
               <div style={{ background: 'var(--surface-1)', padding: '16px', borderRadius: '12px', border: '1px solid #a7f3d0', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                  <Star size={16} color="#059669" />
+                  <Icon icon={Star} size="md" color="#059669" />
                   <p style={{ color: '#047857', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase', margin: 0 }}>Mejor Día</p>
                 </div>
                 <p style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-base)', margin: '0 0 4px 0' }}>{formatCLP(insights.bestDay.amount)}</p>
@@ -426,7 +427,7 @@ export default function ReporteFinancieroPage() {
 
               <div style={{ background: 'var(--surface-1)', padding: '16px', borderRadius: '12px', border: '1px solid #fecaca', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                  <TrendingDown size={16} color="#dc2626" />
+                  <Icon icon={TrendingDown} size="md" color="#dc2626" />
                   <p style={{ color: '#b91c1c', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase', margin: 0 }}>Día Más Débil</p>
                 </div>
                 <p style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-base)', margin: '0 0 4px 0' }}>{formatCLP(insights.weakestDay.amount)}</p>
@@ -435,7 +436,7 @@ export default function ReporteFinancieroPage() {
 
               <div style={{ background: 'var(--surface-1)', padding: '16px', borderRadius: '12px', border: '1px solid #c7d2fe', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                  <TrendingUp size={16} color="#4f46e5" />
+                  <Icon icon={TrendingUp} size="md" color="#4f46e5" />
                   <p style={{ color: '#4338ca', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase', margin: 0 }}>Ocupación / RevPAR</p>
                 </div>
                 <p style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-base)', margin: '0 0 4px 0' }}>{insights.occupancyPercent}%</p>
@@ -444,7 +445,7 @@ export default function ReporteFinancieroPage() {
 
               <div style={{ background: 'var(--surface-1)', padding: '16px', borderRadius: '12px', border: '1px solid #fbcfe8', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                  <Clock size={16} color="#db2777" />
+                  <Icon icon={Clock} size="md" color="#db2777" />
                   <p style={{ color: '#be185d', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase', margin: 0 }}>Promedio Estancia</p>
                 </div>
                 <p style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-base)', margin: '0 0 4px 0' }}>{insights.alos} Noches</p>
@@ -453,7 +454,7 @@ export default function ReporteFinancieroPage() {
 
               <div style={{ background: 'var(--surface-1)', padding: '16px', borderRadius: '12px', border: '1px solid #e5e7eb', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                  <Users size={16} color="#4b5563" />
+                  <Icon icon={Users} size="md" color="#4b5563" />
                   <p style={{ color: '#374151', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase', margin: 0 }}>Recurrentes</p>
                 </div>
                 <p style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-base)', margin: '0 0 4px 0' }}>{insights.recurringCustomersCount}</p>
@@ -462,7 +463,7 @@ export default function ReporteFinancieroPage() {
 
               <div style={{ background: 'var(--surface-1)', padding: '16px', borderRadius: '12px', border: '1px solid #fecaca', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                  <Ban size={16} color="#dc2626" />
+                  <Icon icon={Ban} size="md" color="#dc2626" />
                   <p style={{ color: '#b91c1c', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase', margin: 0 }}>Cancelaciones</p>
                 </div>
                 <p style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-base)', margin: '0 0 4px 0' }}>{insights.cancellations}</p>
@@ -471,7 +472,7 @@ export default function ReporteFinancieroPage() {
 
               <div style={{ background: 'var(--surface-1)', padding: '16px', borderRadius: '12px', border: '1px solid #e5e7eb', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                  <Calendar size={16} color="#4b5563" />
+                  <Icon icon={Calendar} size="md" color="#4b5563" />
                   <p style={{ color: '#374151', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase', margin: 0 }}>Top Habitaciones</p>
                 </div>
                 {insights.ranking.slice(0, 2).map(([room, nights], idx) => (
@@ -497,7 +498,7 @@ export default function ReporteFinancieroPage() {
                   {filteredRows.length} de {rows.length} registros
                 </span>
                 <div style={{ position: 'relative', width: 240 }}>
-                  <Search size={14} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+                  <Icon icon={Search} size="sm" style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
                   <input
                     className="input"
                     style={{ paddingLeft: 32 }}
@@ -584,7 +585,7 @@ export default function ReporteFinancieroPage() {
             </div>
           ) : !loading && (
             <div className={styles.emptyState}>
-              <Search size={36} style={{ color: 'var(--text-muted)' }} />
+              <Icon icon={Search} size={36} style={{ color: 'var(--text-muted)' }} />
               <p>No se encontraron registros para el período seleccionado.</p>
             </div>
           )}

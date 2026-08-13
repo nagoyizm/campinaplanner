@@ -2,6 +2,7 @@
 
 import { useState, useRef } from 'react'
 import { ImageIcon, X } from 'lucide-react'
+import Icon from '@/components/ui/Icon'
 import SetupPage from '@/components/setup/SetupPage'
 
 const empty = { name: '', description: '', maxOccupancy: 2, sortOrder: 0, active: true, imageUrl: '' }
@@ -126,7 +127,7 @@ export default function UnidadesPage() {
           {/* === CAMPO DE IMAGEN === */}
           <div className="form-group" style={{ gridColumn: '1 / -1' }}>
             <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <ImageIcon size={14} /> Foto de la unidad
+              <Icon icon={ImageIcon} size="sm" /> Foto de la unidad
               <span style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 400 }}>(JPEG/PNG, máx. 300 KB comprimido)</span>
             </label>
 
@@ -156,7 +157,7 @@ export default function UnidadesPage() {
                       boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
                     }}
                   >
-                    <X size={13} />
+                    <Icon icon={X} size="xs" />
                   </button>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6, paddingTop: 4 }}>
@@ -192,7 +193,7 @@ export default function UnidadesPage() {
                 onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--brand-500)'; (e.currentTarget as HTMLElement).style.color = 'var(--brand-500)' }}
                 onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--border-color)'; (e.currentTarget as HTMLElement).style.color = 'var(--text-secondary)' }}
               >
-                <ImageIcon size={16} />
+                <Icon icon={ImageIcon} size="md" />
                 {compressing ? 'Comprimiendo...' : 'Seleccionar imagen'}
               </button>
             )}

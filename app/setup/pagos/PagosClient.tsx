@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Save, Loader2, Plus, Trash2 } from 'lucide-react'
+import Icon from '@/components/ui/Icon'
 import toast from 'react-hot-toast'
 
 const ListEditor = ({ title, description, items, setItems }: { title: string, description: string, items: string[], setItems: (items: string[]) => void }) => (
@@ -24,7 +25,7 @@ const ListEditor = ({ title, description, items, setItems }: { title: string, de
               }} 
             />
             <button className="btn btn-ghost" style={{ padding: 8, color: '#ef4444' }} onClick={() => setItems(items.filter((_, i) => i !== idx))}>
-              <Trash2 size={16} />
+              <Icon icon={Trash2} size="md" />
             </button>
           </div>
         ))}
@@ -34,7 +35,7 @@ const ListEditor = ({ title, description, items, setItems }: { title: string, de
         style={{ marginTop: 12, padding: '4px 12px' }} 
         onClick={() => setItems([...items, ''])}
       >
-        <Plus size={16} /> Añadir Opción
+        <Icon icon={Plus} size="md" /> Añadir Opción
       </button>
     </div>
   </div>
@@ -114,7 +115,7 @@ export default function PagosClient() {
           disabled={saving}
           style={{ padding: '8px 24px', display: 'flex', alignItems: 'center', gap: 8 }}
         >
-          {saving ? <Loader2 size={18} className="spin" /> : <Save size={18} />}
+          {saving ? <Icon icon={Loader2} size="lg" className="spin" /> : <Icon icon={Save} size="lg" />}
           Guardar Configuración
         </button>
       </div>

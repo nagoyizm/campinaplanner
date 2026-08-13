@@ -3,6 +3,7 @@ import { requireSuperAdmin } from '@/lib/org'
 import Link from 'next/link'
 import styles from '../saas.module.css'
 import { Building2, ChevronRight } from 'lucide-react'
+import Icon from '@/components/ui/Icon'
 import { format } from 'date-fns'
 import DeleteButton from '@/components/ui/DeleteButton'
 
@@ -43,7 +44,7 @@ export default async function ClientesPage() {
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                 <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Building2 size={24} />
+                  <Icon icon={Building2} size="2xl" />
                 </div>
                 <div>
                   <h3 style={{ margin: '0 0 4px 0', fontSize: '1.1rem', color: 'var(--text-base)' }}>
@@ -69,7 +70,7 @@ export default async function ClientesPage() {
                   />
                 )}
                 
-                <ChevronRight size={20} />
+                <Icon icon={ChevronRight} size="xl" />
               </div>
             </Link>
         ))}

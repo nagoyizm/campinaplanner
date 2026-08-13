@@ -9,9 +9,10 @@ import {
 import { es } from 'date-fns/locale'
 import {
   Users, CheckCircle2, ChevronLeft, ChevronRight,
-  CreditCard, Copy, Sparkles, Check, Calendar as CalendarIcon,
-  Sun, Moon
+  CreditCard, Copy, Check, Calendar as CalendarIcon,
+  PawPrint, Sun, Moon
 } from 'lucide-react'
+import Icon from '@/components/ui/Icon'
 import toast from 'react-hot-toast'
 import styles from './PublicBooking.module.css'
 
@@ -71,18 +72,25 @@ export default function PublicBookingClient({ initialOrg }: PublicBookingClientP
   // Initially null so calendar is hidden from start
   const [selectedUnitTypeId, setSelectedUnitTypeId] = useState<string | null>(null)
 
-  // Light / dark mode toggle — persists in localStorage
-  const [lightMode, setLightMode] = useState<boolean>(() => {
-    if (typeof window === 'undefined') return false
-    return localStorage.getItem('agendio-reservas-theme') === 'light'
-  })
-  const toggleTheme = () => {
-    setLightMode(prev => {
-      const next = !prev
-      localStorage.setItem('agendio-reservas-theme', next ? 'light' : 'dark')
-      return next
-    })
-  }
+  // Theme mode (unified, not per-client): 'light' | 'dark'
+  const [theme, setTheme] = useState<'light' | 'dark'>('light')
+
+  // Load persisted theme; fall back to system preference
+  useEffect(() => {
+    const stored = window.localStorage.getItem('agendio-booking-theme')
+    if (stored === 'light' || stored === 'dark') {
+      setTheme(stored)
+    } else {
+      setTheme(window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+    }
+  }, [])
+
+  // Persist theme on change
+  useEffect(() => {
+    window.localStorage.setItem('agendio-booking-theme', theme)
+  }, [theme])
+
+  const toggleTheme = () => setTheme(t => (t === 'dark' ? 'light' : 'dark'))
 
   // Header scroll state for smooth hide on scroll down
   const [scrolled, setScrolled] = useState(false)
@@ -131,18 +139,6 @@ export default function PublicBookingClient({ initialOrg }: PublicBookingClientP
   }, [org, selectedUnitTypeId])
 
   const hasDatesSelected = Boolean(arrivalDate && departureDate)
-
-  const paletteClass = useMemo(() => {
-    const palette = org.colorPalette?.toLowerCase() || 'verde'
-    switch (palette) {
-      case 'azul': return styles.themeAzul
-      case 'rojizo': return styles.themeRojizo
-      case 'crema': return styles.themeCrema
-      case 'morado': return styles.themeMorado
-      case 'turquesa': return styles.themeTurquesa
-      default: return styles.themeVerde
-    }
-  }, [org.colorPalette])
 
   // Scroll listener for smooth header disappearance when scrolling down
   useEffect(() => {
@@ -452,7 +448,7 @@ export default function PublicBookingClient({ initialOrg }: PublicBookingClientP
 
   if (bookingSuccess) {
     return (
-      <div className={`${styles.container} ${paletteClass} ${lightMode ? styles.lightMode : ''}`}>
+      <div className={styles.container} data-theme={theme}>
         <div className={styles.bgDecor1} />
         <div className={styles.bgDecor2} />
         <header className={`${styles.header} ${scrolled ? styles.headerScrolled : ''}`}>
@@ -465,12 +461,13 @@ export default function PublicBookingClient({ initialOrg }: PublicBookingClientP
               </div>
             </div>
             <button
+              type="button"
               className={styles.themeToggleBtn}
               onClick={toggleTheme}
-              title={lightMode ? 'Cambiar a modo oscuro' : 'Cambiar a modo claro'}
-              aria-label={lightMode ? 'Modo oscuro' : 'Modo claro'}
+              aria-label={theme === 'dark' ? 'Activar modo claro' : 'Activar modo oscuro'}
+              title={theme === 'dark' ? 'Modo claro' : 'Modo oscuro'}
             >
-              {lightMode ? <Moon size={16} /> : <Sun size={16} />}
+              {theme === 'dark' ? <Icon icon={Sun} size="md" /> : <Icon icon={Moon} size="md" />}
             </button>
           </div>
         </header>
@@ -478,7 +475,7 @@ export default function PublicBookingClient({ initialOrg }: PublicBookingClientP
         <main className={styles.main}>
           <div className={styles.confirmCard}>
             <div className={styles.iconSuccess}>
-              <CheckCircle2 size={28} />
+              <Icon icon={CheckCircle2} size="3xl" />
             </div>
             <h2 style={{ margin: '0 0 0.4rem 0', fontSize: '1.25rem' }}>¡Tu Reserva ha sido Registrada!</h2>
             <p className={styles.orgSubtitle}>
@@ -489,23 +486,23 @@ export default function PublicBookingClient({ initialOrg }: PublicBookingClientP
               Reserva N° #{bookingSuccess.reservationId}
             </div>
 
-            <div style={{ textAlign: 'left', background: 'rgba(0,0,0,0.25)', padding: '0.85rem', margin: '0.85rem 0', border: '1px solid var(--border-color)', borderRadius: '12px', fontSize: '0.8rem' }}>
+            <div style={{ textAlign: 'left', background: 'var(--subtle-bg)', padding: '0.85rem', margin: '0.85rem 0', border: '1px solid var(--border-color)', borderRadius: '2px', fontSize: '0.8rem', color: 'var(--primary-950)' }}>
               <p style={{ margin: '0 0 0.3rem 0' }}><strong>Huésped:</strong> {bookingSuccess.guest.firstName} {bookingSuccess.guest.lastName}</p>
               <p style={{ margin: '0 0 0.3rem 0' }}><strong>Check-In:</strong> {bookingSuccess.arrival}</p>
               <p style={{ margin: '0 0 0.3rem 0' }}><strong>Check-Out:</strong> {bookingSuccess.departure} ({bookingSuccess.nights} noche/s)</p>
               {bookingSuccess.pets > 0 && (
-                <p style={{ margin: '0 0 0.3rem 0' }}><strong>🐾 Mascota(s):</strong> {bookingSuccess.pets}</p>
+                <p style={{ margin: '0 0 0.3rem 0' }}><strong>Mascota(s):</strong> {bookingSuccess.pets}</p>
               )}
               <p style={{ margin: 0 }}><strong>Total Estadía:</strong> {formatCurrency(bookingSuccess.unitTotal)}</p>
             </div>
 
             {bookingSuccess.bankAccounts && (
               <div className={styles.bankBox}>
-                <div style={{ fontWeight: 700, marginBottom: '0.35rem', color: '#ffffff' }}>
-                  <CreditCard size={15} style={{ display: 'inline', marginRight: '4px' }} />
+                <div style={{ fontWeight: 700, marginBottom: '0.35rem', color: 'var(--primary-950)' }}>
+                  <Icon icon={CreditCard} size="sm" style={{ display: 'inline', marginRight: '4px' }} />
                   Datos Bancarios para Garantía / Transferencia:
                 </div>
-                <div style={{ whiteSpace: 'pre-line', lineHeight: '1.45', color: 'rgba(255,255,255,0.7)' }}>
+                <div style={{ whiteSpace: 'pre-line', lineHeight: '1.45', color: 'var(--text-sub)' }}>
                   {bookingSuccess.bankAccounts}
                 </div>
               </div>
@@ -519,7 +516,7 @@ export default function PublicBookingClient({ initialOrg }: PublicBookingClientP
                 toast.success('Resumen de reserva copiado al portapapeles')
               }}
             >
-              <Copy size={14} style={{ display: 'inline', marginRight: '4px' }} />
+              <Icon icon={Copy} size="sm" style={{ display: 'inline', marginRight: '4px' }} />
               Copiar Resumen de Reserva
             </button>
           </div>
@@ -529,8 +526,8 @@ export default function PublicBookingClient({ initialOrg }: PublicBookingClientP
   }
 
   return (
-    <div className={`${styles.container} ${paletteClass} ${lightMode ? styles.lightMode : ''}`}>
-      {/* Background Ambient Orbs (Login Aesthetic) */}
+    <div className={styles.container} data-theme={theme}>
+      {/* Background Ambient orbs (estilo editorial) */}
       <div className={styles.bgDecor1} />
       <div className={styles.bgDecor2} />
 
@@ -545,12 +542,13 @@ export default function PublicBookingClient({ initialOrg }: PublicBookingClientP
             </div>
           </div>
           <button
+            type="button"
             className={styles.themeToggleBtn}
             onClick={toggleTheme}
-            title={lightMode ? 'Cambiar a modo oscuro' : 'Cambiar a modo claro'}
-            aria-label={lightMode ? 'Modo oscuro' : 'Modo claro'}
+            aria-label={theme === 'dark' ? 'Activar modo claro' : 'Activar modo oscuro'}
+            title={theme === 'dark' ? 'Modo claro' : 'Modo oscuro'}
           >
-            {lightMode ? <Moon size={16} /> : <Sun size={16} />}
+            {theme === 'dark' ? <Icon icon={Sun} size="md" /> : <Icon icon={Moon} size="md" />}
           </button>
         </div>
       </header>
@@ -572,7 +570,7 @@ export default function PublicBookingClient({ initialOrg }: PublicBookingClientP
           {/* INITIAL PROMPT BADGE */}
           {!selectedUnitType && (
             <div className={styles.initialPromptBadge}>
-              <CalendarIcon size={15} />
+              <Icon icon={CalendarIcon} size="sm" />
               Haz clic en una opción para desplegar el calendario de disponibilidad
             </div>
           )}
@@ -625,7 +623,7 @@ export default function PublicBookingClient({ initialOrg }: PublicBookingClientP
                           </p>
                           <div className={styles.cardFooterRow}>
                             <div className={styles.metaBadge}>
-                              <Users size={11} /> Máx {unit.maxOccupancy} p.
+                              <Icon icon={Users} size="xs" /> Máx {unit.maxOccupancy} p.
                             </div>
                             <div className={styles.unitPrice}>
                               {formatCurrency(minRate)} <span className={styles.perNight}>/ noche</span>
@@ -655,7 +653,7 @@ export default function PublicBookingClient({ initialOrg }: PublicBookingClientP
                             <span>{unit.name}</span>
                           </div>
                           <span className={styles.selectedBadge}>
-                            <Check size={11} /> Elegido
+                            <Icon icon={Check} size="xs" /> Elegido
                           </span>
                         </div>
                         <div className={styles.cardBody}>
@@ -665,7 +663,7 @@ export default function PublicBookingClient({ initialOrg }: PublicBookingClientP
                           </p>
                           <div className={styles.cardFooterRow}>
                             <div className={styles.metaBadge}>
-                              <Users size={11} /> Máx {unit.maxOccupancy} p.
+                              <Icon icon={Users} size="xs" /> Máx {unit.maxOccupancy} p.
                             </div>
                             <div className={styles.unitPrice}>
                               {formatCurrency(minRate)} <span className={styles.perNight}>/ noche</span>
@@ -752,7 +750,7 @@ export default function PublicBookingClient({ initialOrg }: PublicBookingClientP
                       className={styles.navBtn}
                       onClick={() => setCurrentMonth(addMonths(currentMonth, -1))}
                     >
-                      <ChevronLeft size={13} /> Anterior
+                      <Icon icon={ChevronLeft} size="xs" /> Anterior
                     </button>
                     <span className={styles.monthTitle}>
                       {format(currentMonth, 'MMMM yyyy', { locale: es })}
@@ -762,7 +760,7 @@ export default function PublicBookingClient({ initialOrg }: PublicBookingClientP
                       className={styles.navBtn}
                       onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
                     >
-                      Siguiente <ChevronRight size={13} />
+                      Siguiente <Icon icon={ChevronRight} size="xs" />
                     </button>
                   </div>
 
@@ -899,7 +897,7 @@ export default function PublicBookingClient({ initialOrg }: PublicBookingClientP
                         </div>
                       </div>
 
-                      {/* DOCUMENT TYPE SELECTOR (ROUNDED 10PX) */}
+                      {/* DOCUMENT TYPE SELECTOR */}
                       <div className={styles.formControl}>
                         <label>Tipo de Documento</label>
                         <div style={{ display: 'flex', gap: '0.4rem', marginBottom: '0.2rem' }}>
@@ -909,10 +907,10 @@ export default function PublicBookingClient({ initialOrg }: PublicBookingClientP
                             style={{
                               flex: 1, padding: '0.45rem 0.65rem', border: '1.5px solid',
                               borderColor: docType === 'rut' ? 'var(--primary-color)' : 'var(--border-color)',
-                              background: docType === 'rut' ? 'var(--primary-color)' : 'transparent',
-                              color: docType === 'rut' ? '#09140e' : 'rgba(255,255,255,0.7)',
+                              background: docType === 'rut' ? 'var(--primary-strong)' : 'transparent',
+                              color: docType === 'rut' ? 'var(--on-primary)' : 'var(--text-sub)',
                               fontWeight: docType === 'rut' ? 800 : 500,
-                              borderRadius: '10px',
+                              borderRadius: '2px',
                               cursor: 'pointer', fontSize: '0.78rem', transition: 'all 0.15s'
                             }}
                           >
@@ -924,10 +922,10 @@ export default function PublicBookingClient({ initialOrg }: PublicBookingClientP
                             style={{
                               flex: 1, padding: '0.45rem 0.65rem', border: '1.5px solid',
                               borderColor: docType === 'passport' ? 'var(--primary-color)' : 'var(--border-color)',
-                              background: docType === 'passport' ? 'var(--primary-color)' : 'transparent',
-                              color: docType === 'passport' ? '#09140e' : 'rgba(255,255,255,0.7)',
+                              background: docType === 'passport' ? 'var(--primary-strong)' : 'transparent',
+                              color: docType === 'passport' ? 'var(--on-primary)' : 'var(--text-sub)',
                               fontWeight: docType === 'passport' ? 800 : 500,
-                              borderRadius: '10px',
+                              borderRadius: '2px',
                               cursor: 'pointer', fontSize: '0.78rem', transition: 'all 0.15s'
                             }}
                           >
@@ -950,7 +948,7 @@ export default function PublicBookingClient({ initialOrg }: PublicBookingClientP
                             style={{ letterSpacing: docType === 'rut' ? '0.05em' : 'normal', fontFamily: docType === 'rut' ? 'monospace' : 'inherit' }}
                           />
                           {docType === 'rut' && docValue && docValue.length < 8 && (
-                            <span style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.6)', marginTop: '2px', display: 'block' }}>
+                            <span style={{ fontSize: '0.68rem', color: 'var(--text-sub)', marginTop: '2px', display: 'block' }}>
                               Formato: sin puntos, con guión (ej: 12345678-9)
                             </span>
                           )}
@@ -989,9 +987,11 @@ export default function PublicBookingClient({ initialOrg }: PublicBookingClientP
                         </div>
                       </div>
 
-                      {/* PET TOGGLE (ROUNDED 10PX) */}
+                      {/* PET TOGGLE */}
                       <div className={styles.formControl}>
-                        <label>🐾 ¿Viajan con mascota?</label>
+                        <label style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                          <Icon icon={PawPrint} size="sm" style={{ display: 'inline' }} /> ¿Viajan con mascota?
+                        </label>
                         <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
                           <button
                             type="button"
@@ -999,10 +999,10 @@ export default function PublicBookingClient({ initialOrg }: PublicBookingClientP
                             style={{
                               flex: 1, padding: '0.45rem 0.65rem', border: '1.5px solid',
                               borderColor: hasPet === false ? 'var(--primary-color)' : 'var(--border-color)',
-                              background: hasPet === false ? 'var(--primary-color)' : 'transparent',
-                              color: hasPet === false ? '#09140e' : 'rgba(255,255,255,0.7)',
+                              background: hasPet === false ? 'var(--primary-strong)' : 'transparent',
+                              color: hasPet === false ? 'var(--on-primary)' : 'var(--text-sub)',
                               fontWeight: hasPet === false ? 800 : 500,
-                              borderRadius: '10px',
+                              borderRadius: '2px',
                               cursor: 'pointer', fontSize: '0.78rem', transition: 'all 0.15s'
                             }}
                           >
@@ -1014,20 +1014,20 @@ export default function PublicBookingClient({ initialOrg }: PublicBookingClientP
                             style={{
                               flex: 1, padding: '0.45rem 0.65rem', border: '1.5px solid',
                               borderColor: hasPet === true ? 'var(--primary-color)' : 'var(--border-color)',
-                              background: hasPet === true ? 'var(--primary-color)' : 'transparent',
-                              color: hasPet === true ? '#09140e' : 'rgba(255,255,255,0.7)',
+                              background: hasPet === true ? 'var(--primary-strong)' : 'transparent',
+                              color: hasPet === true ? 'var(--on-primary)' : 'var(--text-sub)',
                               fontWeight: hasPet === true ? 800 : 500,
-                              borderRadius: '10px',
+                              borderRadius: '2px',
                               cursor: 'pointer', fontSize: '0.78rem', transition: 'all 0.15s'
                             }}
                           >
-                            Sí, con mascota 🐶🐱
+                            Sí, con mascota
                           </button>
                           {hasPet === true && (
                             <select
                               value={petCount}
                               onChange={e => setPetCount(Number(e.target.value))}
-                              style={{ width: '90px', padding: '0.45rem', border: '1.5px solid var(--border-color)', borderRadius: '10px', fontSize: '0.78rem' }}
+                              style={{ width: '90px', padding: '0.45rem', border: '1.5px solid var(--border-color)', borderRadius: '2px', fontSize: '0.78rem', color: 'var(--primary-950)', background: 'var(--input-bg)' }}
                             >
                               {[1, 2, 3].map(n => (
                                 <option key={n} value={n}>{n} mascota{n > 1 ? 's' : ''}</option>
@@ -1036,7 +1036,7 @@ export default function PublicBookingClient({ initialOrg }: PublicBookingClientP
                           )}
                         </div>
                         {hasPet === null && (
-                          <span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.6)', marginTop: '3px', display: 'block' }}>
+                          <span style={{ fontSize: '0.7rem', color: 'var(--text-sub)', marginTop: '3px', display: 'block' }}>
                             Requerido — indica si llevarás mascota a la estadía
                           </span>
                         )}

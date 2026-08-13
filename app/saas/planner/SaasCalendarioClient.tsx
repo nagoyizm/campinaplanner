@@ -11,6 +11,7 @@ import {
   ChevronLeft, ChevronRight, RotateCcw,
   Bell, DollarSign, Building2, CheckCircle2, Clock
 } from 'lucide-react'
+import Icon from '@/components/ui/Icon'
 import styles from '@/app/calendario/Calendario.module.css'
 import toast from 'react-hot-toast'
 import SaasItemModal from './SaasItemModal'
@@ -263,9 +264,9 @@ export default function SaasCalendarioClient({
     <div className={styles.container}>
       <div className={styles.toolbar}>
         <div className={styles.toolbarLeft}>
-          <button className="btn btn-ghost" onClick={goToPrev}><ChevronLeft size={20} /></button>
-          <button className="btn btn-ghost" onClick={goToToday}><RotateCcw size={16} /></button>
-          <button className="btn btn-ghost" onClick={goToNext}><ChevronRight size={20} /></button>
+          <button className="btn btn-ghost" onClick={goToPrev}><Icon icon={ChevronLeft} size="xl" /></button>
+          <button className="btn btn-ghost" onClick={goToToday}><Icon icon={RotateCcw} size="md" /></button>
+          <button className="btn btn-ghost" onClick={goToNext}><Icon icon={ChevronRight} size="xl" /></button>
           <div className={styles.monthLabel}>
             {format(startDay, 'MMMM yyyy', { locale: es })}
           </div>
@@ -283,10 +284,10 @@ export default function SaasCalendarioClient({
 
           <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px' }}>
             <button className="btn btn-secondary" onClick={() => { setModalType('event'); setModalData(null); setModalOpen(true) }}>
-              <Bell size={18} /> Nuevo Evento
+              <Icon icon={Bell} size="lg" /> Nuevo Evento
             </button>
             <button className="btn btn-primary" onClick={() => { setModalType('payment'); setModalData(null); setModalOpen(true) }}>
-              <DollarSign size={18} /> Registrar Cobro
+              <Icon icon={DollarSign} size="lg" /> Registrar Cobro
             </button>
           </div>
         </div>
@@ -334,7 +335,7 @@ export default function SaasCalendarioClient({
               
               <div style={{ width: '220px', minWidth: '220px', position: 'sticky', left: 0, zIndex: 5, background: org.isGlobal ? 'color-mix(in srgb, var(--surface-2) 60%, transparent)' : 'color-mix(in srgb, var(--surface-1) 60%, transparent)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', borderRight: '1px solid color-mix(in srgb, var(--border) 50%, transparent)', padding: '0 12px', display: 'flex', alignItems: 'center', height: rowHeight }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', overflow: 'hidden' }}>
-                  {org.isGlobal ? <Bell size={16} color="var(--brand-500)"/> : <Building2 size={16} style={{ color: 'var(--text-muted)' }} />}
+                  {org.isGlobal ? <Icon icon={Bell} size="md" color="var(--brand-500)"/> : <Icon icon={Building2} size="md" style={{ color: 'var(--text-muted)' }} />}
                   <span style={{ fontSize: org.isGlobal ? '0.9rem' : '0.85rem', fontWeight: org.isGlobal ? 600 : 400, color: 'var(--text-base)' }}>
                     {org.name}
                   </span>

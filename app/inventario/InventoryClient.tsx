@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Plus, Minus, Search, PackagePlus, Trash2 } from 'lucide-react'
 import toast from 'react-hot-toast'
+import Icon from '@/components/ui/Icon'
 
 interface InventoryItem {
   id: string
@@ -156,7 +157,7 @@ export default function InventoryClient({ items: initialItems }: Readonly<Props>
       <div style={{ padding: '16px', borderBottom: '1px solid var(--border)', display: 'flex', gap: '16px', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', gap: '12px', flex: 1, minWidth: '300px' }}>
           <div style={{ position: 'relative', flex: 1 }}>
-            <Search size={16} style={{ position: 'absolute', left: 12, top: 10, color: 'var(--text-muted)' }} />
+            <Icon icon={Search} size="md" style={{ position: 'absolute', left: 12, top: 10, color: 'var(--text-muted)' }} />
             <input 
               type="text"
               placeholder="Buscar producto..."
@@ -179,7 +180,7 @@ export default function InventoryClient({ items: initialItems }: Readonly<Props>
           onClick={() => setShowNewModal(true)}
           style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', borderRadius: '8px', background: 'var(--brand-600)', color: 'white', border: 'none', fontWeight: 600, fontSize: '0.9rem', cursor: 'pointer' }}
         >
-          <PackagePlus size={18} />
+          <Icon icon={PackagePlus} size="lg" />
           Nuevo Producto
         </button>
       </div>
@@ -211,13 +212,13 @@ export default function InventoryClient({ items: initialItems }: Readonly<Props>
                   <span style={{ 
                     fontSize: '0.9rem', 
                     fontWeight: 700, 
-                    color: item.currentQuantity <= item.minQuantity ? '#ef4444' : 'var(--text-base)',
+                    color: item.currentQuantity <= item.minQuantity ? 'var(--danger)' : 'var(--text-base)',
                     display: 'inline-flex',
                     alignItems: 'center',
                     gap: '6px'
                   }}>
                     {item.currentQuantity}
-                    {item.currentQuantity <= item.minQuantity && <span style={{ fontSize: '0.7rem', color: '#ef4444', background: '#fef2f2', padding: '2px 6px', borderRadius: '4px' }}>Bajo Stock</span>}
+                    {item.currentQuantity <= item.minQuantity && <span style={{ fontSize: '0.7rem', color: 'var(--danger)', background: 'var(--danger-bg)', padding: '2px 6px', borderRadius: '4px' }}>Bajo Stock</span>}
                   </span>
                 </td>
                 <td style={{ padding: '12px 16px', fontSize: '0.95rem', fontWeight: 600, color: 'var(--text-base)' }}>
@@ -228,23 +229,23 @@ export default function InventoryClient({ items: initialItems }: Readonly<Props>
                     <button 
                       onClick={() => { setEditItem(item); setShowEditModal(true); }}
                       title="Editar Producto"
-                      style={{ padding: '6px', borderRadius: '6px', border: '1px solid #93c5fd', background: '#eff6ff', color: '#3b82f6', cursor: 'pointer' }}
+                      style={{ padding: '6px', borderRadius: '6px', border: '1px solid color-mix(in srgb, var(--info) 35%, transparent)', background: 'var(--info-bg)', color: 'var(--info)', cursor: 'pointer' }}
                     >
                       Editar
                     </button>
                     <button 
                       onClick={() => setTransactionModal({ item, type: 'usage' })}
                       title="Registrar Uso / Merma"
-                      style={{ padding: '6px', borderRadius: '6px', border: '1px solid #fca5a5', background: '#fef2f2', color: '#ef4444', cursor: 'pointer' }}
+                      style={{ padding: '6px', borderRadius: '6px', border: '1px solid color-mix(in srgb, var(--danger) 35%, transparent)', background: 'var(--danger-bg)', color: 'var(--danger)', cursor: 'pointer' }}
                     >
-                      <Minus size={16} />
+                      <Icon icon={Minus} size="md" />
                     </button>
                     <button 
                       onClick={() => setTransactionModal({ item, type: 'purchase' })}
                       title="Registrar Compra"
-                      style={{ padding: '6px', borderRadius: '6px', border: '1px solid #a7f3d0', background: '#f0fdf4', color: '#10b981', cursor: 'pointer' }}
+                      style={{ padding: '6px', borderRadius: '6px', border: '1px solid color-mix(in srgb, var(--success) 35%, transparent)', background: 'var(--success-bg)', color: 'var(--success)', cursor: 'pointer' }}
                     >
-                      <Plus size={16} />
+                      <Icon icon={Plus} size="md" />
                     </button>
                     <button 
                       onClick={() => handleDelete(item.id, item.name)}
@@ -252,7 +253,7 @@ export default function InventoryClient({ items: initialItems }: Readonly<Props>
                       title="Eliminar Producto"
                       style={{ padding: '6px', borderRadius: '6px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-muted)', cursor: 'pointer' }}
                     >
-                      <Trash2 size={16} />
+                      <Icon icon={Trash2} size="md" />
                     </button>
                   </div>
                 </td>
@@ -347,7 +348,7 @@ export default function InventoryClient({ items: initialItems }: Readonly<Props>
       {transactionModal && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
           <form onSubmit={handleTransaction} style={{ background: 'var(--surface-1)', padding: '24px', borderRadius: '12px', width: '100%', maxWidth: '400px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <h2 style={{ margin: 0, fontSize: '1.25rem', color: transactionModal.type === 'purchase' ? '#059669' : '#dc2626' }}>
+            <h2 style={{ margin: 0, fontSize: '1.25rem', color: transactionModal.type === 'purchase' ? 'var(--success)' : 'var(--danger)' }}>
               {transactionModal.type === 'purchase' ? 'Registrar Compra' : 'Registrar Consumo'}
             </h2>
             <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-muted)' }}>Producto: <strong>{transactionModal.item.name}</strong></p>
@@ -364,7 +365,7 @@ export default function InventoryClient({ items: initialItems }: Readonly<Props>
 
             <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', marginTop: '8px' }}>
               <button type="button" onClick={() => {setTransactionModal(null); setTransactionQty(1); setTransactionNotes('')}} style={{ padding: '8px 16px', borderRadius: '6px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-base)', cursor: 'pointer' }}>Cancelar</button>
-              <button type="submit" disabled={updating} style={{ padding: '8px 16px', borderRadius: '6px', border: 'none', background: transactionModal.type === 'purchase' ? '#10b981' : '#ef4444', color: 'white', cursor: 'pointer', fontWeight: 600 }}>Confirmar</button>
+              <button type="submit" disabled={updating} style={{ padding: '8px 16px', borderRadius: '6px', border: 'none', background: transactionModal.type === 'purchase' ? 'var(--success)' : 'var(--danger)', color: 'var(--surface-1)', cursor: 'pointer', fontWeight: 600 }}>Confirmar</button>
             </div>
           </form>
         </div>

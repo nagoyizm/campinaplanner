@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Bell, Mail, Smartphone, Loader2, Save, Globe, Copy, ExternalLink } from 'lucide-react'
+import Icon from '@/components/ui/Icon'
 import toast from 'react-hot-toast'
 
 export default function AdministracionPage() {
@@ -58,25 +59,25 @@ export default function AdministracionPage() {
   }
 
   if (loading) {
-    return <div className="page-container" style={{ display: 'flex', justifyContent: 'center', padding: 40 }}><Loader2 className="spin" size={32} /></div>
+    return <div className="page-container" style={{ display: 'flex', justifyContent: 'center', padding: 40 }}><Icon icon={Loader2} className="spin" size="3xl" /></div>
   }
 
   return (
     <div className="page-container">
       <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <h1 className="page-title"><Bell size={24} style={{ display: 'inline', marginRight: 8, verticalAlign: 'text-bottom' }} />Administración</h1>
+          <h1 className="page-title"><Icon icon={Bell} size="2xl" style={{ display: 'inline', marginRight: 8, verticalAlign: 'text-bottom' }} />Administración</h1>
           <p className="page-subtitle">Configura tus preferencias personales de alertas</p>
         </div>
         <button className="btn btn-primary" onClick={handleSave} disabled={saving}>
-          {saving ? <Loader2 size={16} className="spin" /> : <Save size={16} />}
+          {saving ? <Icon icon={Loader2} size="md" className="spin" /> : <Icon icon={Save} size="md" />}
           Guardar Cambios
         </button>
       </div>
 
       <div className="card" style={{ maxWidth: 800, marginTop: 24, borderLeft: '4px solid var(--brand-500)' }}>
         <div className="card-header" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <Globe size={20} color="var(--brand-500)" />
+          <Icon icon={Globe} size="xl" color="var(--brand-500)" />
           Página Pública de Reservas & Cotización de {prefs.orgName}
         </div>
         <div className="card-body" style={{ padding: '20px 24px' }}>
@@ -99,7 +100,7 @@ export default function AdministracionPage() {
                 toast.success('Enlace público copiado al portapapeles')
               }}
             >
-              <Copy size={16} /> Copiar Enlace
+              <Icon icon={Copy} size="md" /> Copiar Enlace
             </button>
             <a
               href={`/reservar/${prefs.orgSlug}`}
@@ -108,7 +109,7 @@ export default function AdministracionPage() {
               className="btn btn-primary"
               style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 6 }}
             >
-              <ExternalLink size={16} /> Ver Página Pública
+              <Icon icon={ExternalLink} size="md" /> Ver Página Pública
             </a>
           </div>
         </div>
@@ -148,8 +149,8 @@ export default function AdministracionPage() {
             <thead>
               <tr>
                 <th>Evento a notificar</th>
-                <th style={{ width: 120, textAlign: 'center' }}><Smartphone size={16} style={{ marginBottom: -3 }}/> WhatsApp</th>
-                <th style={{ width: 120, textAlign: 'center' }}><Mail size={16} style={{ marginBottom: -3 }}/> Email</th>
+                <th style={{ width: 120, textAlign: 'center' }}><Icon icon={Smartphone} size="md" style={{ marginBottom: -3 }}/> WhatsApp</th>
+                <th style={{ width: 120, textAlign: 'center' }}><Icon icon={Mail} size="md" style={{ marginBottom: -3 }}/> Email</th>
               </tr>
             </thead>
             <tbody>

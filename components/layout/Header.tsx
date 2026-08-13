@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
-import { Bell, User } from 'lucide-react'
+import { User } from 'lucide-react'
+import Icon from '@/components/ui/Icon'
 import InternalAssistant from './InternalAssistant'
 import styles from './Header.module.css'
 
@@ -31,6 +32,10 @@ export default function Header({ title }: Readonly<HeaderProps>) {
     return () => clearInterval(interval)
   }, [])
 
+  const name = session?.user?.name ?? 'Usuario'
+  const roleName = (session?.user as any)?.roleName ?? 'Staff'
+  const initials = name.trim().split(/\s+/).slice(0, 2).map(p => p[0]?.toUpperCase() ?? '').join('')
+
   return (
     <header className={styles.header}>
       <div className={styles.left}>
@@ -41,18 +46,13 @@ export default function Header({ title }: Readonly<HeaderProps>) {
         <InternalAssistant />
       </div>
       <div className={styles.right}>
-        <button className={`btn btn-ghost btn-icon ${styles.iconBtn}`} aria-label="Notificaciones">
-          <Bell size={18} />
-        </button>
-        <div className={styles.userChip}>
+        <div className={styles.userChip} title={`${name} · ${roleName}`}>
           <div className={styles.avatar}>
-            <User size={14} />
+            {initials || <Icon icon={User} size="sm" />}
           </div>
           <div className={styles.userInfo}>
-            <span className={styles.userName}>{session?.user?.name ?? 'Usuario'}</span>
-            <span className={styles.userRole}>
-              {(session?.user as any)?.roleName ?? 'Staff'}
-            </span>
+            <span className={styles.userName}>{name}</span>
+            <span className={styles.userRole}>{roleName}</span>
           </div>
         </div>
       </div>

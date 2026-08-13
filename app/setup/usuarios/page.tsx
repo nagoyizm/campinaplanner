@@ -4,6 +4,7 @@ import { useState } from 'react'
 import SetupPage from '@/components/setup/SetupPage'
 import { MODULES, getDefaultPermissionsForRole, parsePermissions, PermissionLevel, UserPermissions } from '@/lib/permissions'
 import { ShieldCheck, Lock, Eye, Edit3, ShieldAlert } from 'lucide-react'
+import Icon from '@/components/ui/Icon'
 
 const ROLES = [
   { value: 'admin', label: 'Administrador (Full)' },
@@ -133,7 +134,7 @@ export default function UsuariosPage() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
               <div>
                 <h4 style={{ margin: 0, fontSize: 15, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <ShieldCheck size={18} style={{ color: 'var(--brand-500)' }} /> Matriz de Permisos por Pestaña / Módulo
+                  <Icon icon={ShieldCheck} size="lg" style={{ color: 'var(--brand-500)' }} /> Matriz de Permisos por Pestaña / Módulo
                 </h4>
                 <p style={{ margin: '2px 0 0 0', fontSize: 12, color: 'var(--text-muted)' }}>
                   Configura exactamente a qué áreas tiene acceso este usuario y si puede escribir/modificar datos o solo verlos.

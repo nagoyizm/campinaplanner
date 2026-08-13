@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { useRouter } from 'next/navigation'
 import { Search, X, ArrowRight, Sparkles, Loader } from 'lucide-react'
+import Icon from '@/components/ui/Icon'
 import styles from './InternalAssistant.module.css'
 import DOMPurify from 'dompurify'
 
@@ -100,7 +101,7 @@ export default function InternalAssistant() {
     <div className={styles.wrapper} ref={wrapperRef}>
       {/* Inline Search Input */}
       <div className={styles.inputContainer}>
-        <Search size={14} className={styles.searchIcon} />
+        <Icon icon={Search} size="sm" className={styles.searchIcon} />
         <input
           ref={inputRef}
           id="assistant-input"
@@ -114,10 +115,10 @@ export default function InternalAssistant() {
         />
         <div className={styles.shortcuts}>
           {loading ? (
-            <Loader size={14} className={styles.spinnerIcon} />
+            <Icon icon={Loader} size="sm" className={styles.spinnerIcon} />
           ) : query && !loading ? (
             <button className={styles.clearBtn} onClick={() => { setQuery(''); setResult(null); setOpen(false); inputRef.current?.focus() }} aria-label="Limpiar">
-              <X size={12} />
+              <Icon icon={X} size="xs" />
             </button>
           ) : (
             <kbd className={styles.kbd}>Ctrl+K</kbd>
@@ -130,13 +131,13 @@ export default function InternalAssistant() {
         <div className={styles.popover}>
           {loading ? (
             <div className={styles.loadingState}>
-              <Loader size={16} className={styles.spinnerIcon} />
+              <Icon icon={Loader} size="md" className={styles.spinnerIcon} />
               <span>Buscando en la base de datos de conocimiento...</span>
             </div>
           ) : result ? (
             <div className={styles.result}>
               <div className={styles.answerHeader}>
-                <Sparkles size={13} className={styles.sparkIcon} />
+                <Icon icon={Sparkles} size="xs" className={styles.sparkIcon} />
                 <span className={styles.sourceLabel}>
                   {result.source === 'ai' ? 'Asistente IA' : 'Ayuda Rápida'}
                 </span>
@@ -154,7 +155,7 @@ export default function InternalAssistant() {
               {result.route && (
                 <button className={styles.navBtn} onClick={handleNavigate}>
                   Ir a {result.routeLabel ?? result.route}
-                  <ArrowRight size={14} />
+                  <Icon icon={ArrowRight} size="sm" />
                 </button>
               )}
             </div>

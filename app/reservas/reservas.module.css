@@ -223,18 +223,13 @@
   box-shadow: 0 1px 2px rgba(0,0,0,0.05);
 }
 
-.statusBooked { background: rgba(59, 130, 246, 0.12); color: #3b82f6; }
-.statusConfirmed { background: rgba(16, 185, 129, 0.12); color: #10b981; }
-.statusCheckedIn { background: rgba(245, 158, 11, 0.12); color: #f59e0b; }
-.statusCheckedOut { background: rgba(107, 114, 128, 0.12); color: #6b7280; }
-.statusBlocked { background: rgba(31, 41, 55, 0.12); color: #1f2937; }
-.statusCancelled { background: rgba(239, 68, 68, 0.12); color: #ef4444; }
-.statusNoShow { background: rgba(139, 92, 246, 0.12); color: #8b5cf6; }
-
-[data-theme="dark"] .statusBlocked {
-  background: rgba(243, 244, 246, 0.12);
-  color: #f3f4f6;
-}
+.statusBooked { background: var(--info-bg); color: var(--info); }
+.statusConfirmed { background: var(--success-bg); color: var(--success); }
+.statusCheckedIn { background: var(--warning-bg); color: var(--warning); }
+.statusCheckedOut { background: var(--neutral-bg); color: var(--neutral); }
+.statusBlocked { background: var(--neutral); color: var(--surface-1); }
+.statusCancelled { background: var(--danger-bg); color: var(--danger); }
+.statusNoShow { background: var(--violet-bg); color: var(--violet); }
 
 /* Pagination Row */
 .pagination {

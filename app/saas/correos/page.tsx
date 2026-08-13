@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { Send, Mail, CheckCircle, XCircle, RefreshCw, ChevronDown, ChevronUp, Edit3, Save, X, UserCheck, Search, Filter, Users, MapPin } from 'lucide-react'
+import Icon from '@/components/ui/Icon'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import styles from './correos.module.css'
@@ -309,7 +310,7 @@ export default function CorreosPage() {
           }}
           style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
         >
-          <Edit3 size={16} />
+          <Icon icon={Edit3} size="md" />
           {editingSignature ? 'Cerrar Edición de Firma' : 'Editar Firma de Correo'}
         </button>
       </div>
@@ -318,13 +319,13 @@ export default function CorreosPage() {
       {editingSignature && (
         <div className={styles.card} style={{ borderColor: 'var(--brand-500)' }}>
           <div className={styles.cardHeader} style={{ background: 'rgba(22, 163, 74, 0.08)' }}>
-            <Edit3 size={18} style={{ color: '#16a34a' }} />
+            <Icon icon={Edit3} size="lg" style={{ color: '#16a34a' }} />
             <h2 className={styles.cardTitle} style={{ color: '#16a34a' }}>Editar Firma de Correo</h2>
             <button
               className={styles.refreshBtn}
               onClick={() => setEditingSignature(false)}
             >
-              <X size={18} />
+              <Icon icon={X} size="lg" />
             </button>
           </div>
           <form onSubmit={handleSaveSignature} className={styles.form}>
@@ -420,7 +421,7 @@ export default function CorreosPage() {
                 className="btn btn-primary"
                 disabled={savingSig}
               >
-                {savingSig ? <RefreshCw size={16} className={styles.spinning} /> : <Save size={16} />}
+                {savingSig ? <Icon icon={RefreshCw} size="md" className={styles.spinning} /> : <Icon icon={Save} size="md" />}
                 Guardar Firma
               </button>
             </div>
@@ -430,7 +431,7 @@ export default function CorreosPage() {
 
       {sigFeedback && (
         <div className={styles.alertSuccess}>
-          <CheckCircle size={16} />
+          <Icon icon={CheckCircle} size="md" />
           {sigFeedback}
         </div>
       )}
@@ -445,7 +446,7 @@ export default function CorreosPage() {
           }}
           title="Ver todos los correos enviados"
         >
-          <Mail size={20} className={styles.statIcon} />
+          <Icon icon={Mail} size="xl" className={styles.statIcon} />
           <div>
             <p className={styles.statValue}>{emails.length}</p>
             <p className={styles.statLabel}>Correos enviados</p>
@@ -453,7 +454,7 @@ export default function CorreosPage() {
         </div>
 
         <div className={styles.statCard}>
-          <CheckCircle size={20} className={styles.statIconGreen} />
+          <Icon icon={CheckCircle} size="xl" className={styles.statIconGreen} />
           <div>
             <p className={styles.statValue}>{sentCount}</p>
             <p className={styles.statLabel}>Entregados</p>
@@ -461,7 +462,7 @@ export default function CorreosPage() {
         </div>
 
         <div className={styles.statCard}>
-          <XCircle size={20} className={styles.statIconRed} />
+          <Icon icon={XCircle} size="xl" className={styles.statIconRed} />
           <div>
             <p className={styles.statValue}>{failedCount}</p>
             <p className={styles.statLabel}>Fallidos</p>
@@ -473,7 +474,7 @@ export default function CorreosPage() {
           onClick={() => setActiveTab('recipients')}
           title="Ver directorio de destinatarios únicos con estado y región"
         >
-          <UserCheck size={20} className={styles.statIconBlue} />
+          <Icon icon={UserCheck} size="xl" className={styles.statIconBlue} />
           <div>
             <p className={styles.statValue}>{recipientsList.length}</p>
             <p className={styles.statLabel}>Destinatarios únicos</p>
@@ -485,7 +486,7 @@ export default function CorreosPage() {
         {/* Compose form */}
         <div className={styles.card} ref={composeCardRef}>
           <div className={styles.cardHeader}>
-            <Send size={18} />
+            <Icon icon={Send} size="lg" />
             <h2 className={styles.cardTitle}>Nuevo correo</h2>
           </div>
           <form onSubmit={handleSend} className={styles.form}>
@@ -568,7 +569,7 @@ export default function CorreosPage() {
                   onClick={() => setEditingSignature(!editingSignature)}
                   style={{ background: 'none', border: 'none', color: 'var(--brand-500)', fontSize: '0.78rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', padding: 0 }}
                 >
-                  <Edit3 size={12} /> Editar
+                  <Icon icon={Edit3} size="xs" /> Editar
                 </button>
               </div>
               <div className={styles.signature}>
@@ -592,7 +593,7 @@ export default function CorreosPage() {
                 ref={feedbackRef}
                 className={feedback.type === 'success' ? styles.alertSuccess : styles.alertError}
               >
-                {feedback.type === 'success' ? <CheckCircle size={16} /> : <XCircle size={16} />}
+                {feedback.type === 'success' ? <Icon icon={CheckCircle} size="md" /> : <Icon icon={XCircle} size="md" />}
                 {feedback.text}
               </div>
             )}
@@ -604,9 +605,9 @@ export default function CorreosPage() {
               style={{ width: '100%', justifyContent: 'center' }}
             >
               {sending ? (
-                <><RefreshCw size={16} className={styles.spinning} /> Enviando...</>
+                <><Icon icon={RefreshCw} size="md" className={styles.spinning} /> Enviando...</>
               ) : (
-                <><Send size={16} /> Enviar correo</>
+                <><Icon icon={Send} size="md" /> Enviar correo</>
               )}
             </button>
           </form>
@@ -619,14 +620,14 @@ export default function CorreosPage() {
               className={`${styles.tabBtn} ${activeTab === 'history' ? styles.tabBtnActive : ''}`}
               onClick={() => setActiveTab('history')}
             >
-              <Mail size={16} />
+              <Icon icon={Mail} size="md" />
               Historial ({emails.length})
             </button>
             <button
               className={`${styles.tabBtn} ${activeTab === 'recipients' ? styles.tabBtnActive : ''}`}
               onClick={() => setActiveTab('recipients')}
             >
-              <Users size={16} />
+              <Icon icon={Users} size="md" />
               Destinatarios ({recipientsList.length})
             </button>
 
@@ -637,14 +638,14 @@ export default function CorreosPage() {
               title="Actualizar"
               style={{ marginLeft: 'auto' }}
             >
-              <RefreshCw size={15} className={loadingEmails ? styles.spinning : ''} />
+              <Icon icon={RefreshCw} size="sm" className={loadingEmails ? styles.spinning : ''} />
             </button>
           </div>
 
           {/* Search & Status/Region Filter Controls */}
           <div className={styles.searchBox} style={{ flexDirection: 'column', alignItems: 'stretch', gap: '8px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Search size={16} className={styles.searchIcon} />
+              <Icon icon={Search} size="md" className={styles.searchIcon} />
               <input
                 type="text"
                 className={styles.searchInput}
@@ -654,7 +655,7 @@ export default function CorreosPage() {
               />
               {searchQuery && (
                 <button className={styles.clearSearchBtn} onClick={() => setSearchQuery('')} title="Limpiar búsqueda">
-                  <X size={14} />
+                  <Icon icon={X} size="sm" />
                 </button>
               )}
             </div>
@@ -662,7 +663,7 @@ export default function CorreosPage() {
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap' }}>
               {/* Region Filter Selector */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <MapPin size={14} style={{ color: 'var(--text-muted)' }} />
+                <Icon icon={MapPin} size="sm" style={{ color: 'var(--text-muted)' }} />
                 <select
                   className={styles.searchInput}
                   style={{ padding: '3px 8px', fontSize: '0.78rem', width: 'auto' }}
@@ -721,7 +722,7 @@ export default function CorreosPage() {
                 onClick={() => setFilterRecipient(null)}
                 style={{ color: 'inherit' }}
               >
-                <X size={14} /> Quitar filtro
+                <Icon icon={X} size="sm" /> Quitar filtro
               </button>
             </div>
           )}
@@ -730,12 +731,12 @@ export default function CorreosPage() {
           {activeTab === 'history' && (
             loadingEmails ? (
               <div className={styles.emptyState}>
-                <RefreshCw size={32} className={styles.spinning} style={{ opacity: 0.4 }} />
+                <Icon icon={RefreshCw} size="3xl" className={styles.spinning} style={{ opacity: 0.4 }} />
                 <p>Cargando historial...</p>
               </div>
             ) : filteredEmails.length === 0 ? (
               <div className={styles.emptyState}>
-                <Mail size={40} style={{ opacity: 0.2 }} />
+                <Icon icon={Mail} size={40} style={{ opacity: 0.2 }} />
                 <p>{searchQuery || filterRecipient || regionFilter !== 'all' ? 'No se encontraron correos con los filtros actuales' : 'Aún no se han enviado correos'}</p>
               </div>
             ) : (
@@ -753,9 +754,9 @@ export default function CorreosPage() {
                       >
                         <div className={styles.emailStatus}>
                           {email.status === 'sent' ? (
-                            <CheckCircle size={14} className={styles.iconGreen} />
+                            <Icon icon={CheckCircle} size="sm" className={styles.iconGreen} />
                           ) : (
-                            <XCircle size={14} className={styles.iconRed} />
+                            <Icon icon={XCircle} size="sm" className={styles.iconRed} />
                           )}
                         </div>
                         <div className={styles.emailInfo}>
@@ -769,7 +770,7 @@ export default function CorreosPage() {
                               <span className={styles.emailTo}>{email.to}</span>
                             )}
                             <span className={styles.badgeRegion}>
-                              <MapPin size={10} /> {emailRegion}
+                              <Icon icon={MapPin} size="xs" /> {emailRegion}
                             </span>
                             {leadStatus === 'accepted' && <span className={styles.badgeGreen} style={{ fontSize: '0.65rem' }}>Aceptado</span>}
                             {leadStatus === 'rejected' && <span className={styles.badgeRed} style={{ fontSize: '0.65rem' }}>Rechazado</span>}
@@ -781,7 +782,7 @@ export default function CorreosPage() {
                           <span className={styles.emailDate}>
                             {format(new Date(email.sentAt), "d MMM yyyy, HH:mm", { locale: es })}
                           </span>
-                          {expandedId === email.id ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                          {expandedId === email.id ? <Icon icon={ChevronUp} size="sm" /> : <Icon icon={ChevronDown} size="sm" />}
                         </div>
                       </div>
                       {expandedId === email.id && (
@@ -824,7 +825,7 @@ export default function CorreosPage() {
                                 handleComposeTo(email.to, email.recipientAlias, emailRegion)
                               }}
                             >
-                              <Send size={12} /> Volver a enviar correo a este destinatario
+                              <Icon icon={Send} size="xs" /> Volver a enviar correo a este destinatario
                             </button>
                           </div>
                         </div>
@@ -840,12 +841,12 @@ export default function CorreosPage() {
           {activeTab === 'recipients' && (
             loadingEmails ? (
               <div className={styles.emptyState}>
-                <RefreshCw size={32} className={styles.spinning} style={{ opacity: 0.4 }} />
+                <Icon icon={RefreshCw} size="3xl" className={styles.spinning} style={{ opacity: 0.4 }} />
                 <p>Cargando destinatarios...</p>
               </div>
             ) : filteredRecipients.length === 0 ? (
               <div className={styles.emptyState}>
-                <Users size={40} style={{ opacity: 0.2 }} />
+                <Icon icon={Users} size={40} style={{ opacity: 0.2 }} />
                 <p>{searchQuery || statusFilter !== 'all' || regionFilter !== 'all' ? 'No se encontraron destinatarios con los filtros actuales' : 'Aún no hay destinatarios guardados'}</p>
               </div>
             ) : (
@@ -871,7 +872,7 @@ export default function CorreosPage() {
                               {r.alias || 'Sin Alias asignado'}
                             </span>
                             <span className={styles.badgeRegion}>
-                              <MapPin size={10} /> {currentRegion}
+                              <Icon icon={MapPin} size="xs" /> {currentRegion}
                             </span>
                           </div>
                           <span className={styles.recipientEmailAddr}>{r.email}</span>
@@ -902,7 +903,7 @@ export default function CorreosPage() {
                         </select>
 
                         <span className={styles.badgeCount} title="Total de correos enviados a esta dirección">
-                          <Mail size={12} /> {r.count}
+                          <Icon icon={Mail} size="xs" /> {r.count}
                         </span>
 
                         <button
@@ -913,7 +914,7 @@ export default function CorreosPage() {
                           }}
                           title="Ver correos enviados a esta dirección"
                         >
-                          <Filter size={12} /> Historial
+                          <Icon icon={Filter} size="xs" /> Historial
                         </button>
 
                         <button
@@ -922,7 +923,7 @@ export default function CorreosPage() {
                           onClick={() => handleComposeTo(r.email, r.alias, currentRegion)}
                           title="Escribir un correo nuevo a esta dirección"
                         >
-                          <Send size={12} /> Redactar
+                          <Icon icon={Send} size="xs" /> Redactar
                         </button>
                       </div>
                     </div>

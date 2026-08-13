@@ -2,6 +2,7 @@ import { prisma } from '@/lib/prisma'
 import { requireSuperAdmin } from '@/lib/org'
 import styles from '../saas.module.css'
 import { UsersRound } from 'lucide-react'
+import Icon from '@/components/ui/Icon'
 import { format } from 'date-fns'
 import DeleteButton from '@/components/ui/DeleteButton'
 import EditUserButton from './EditUserButton'
@@ -48,7 +49,7 @@ export default async function GlobalUsersPage() {
               <tr key={user.id}>
                 <td style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                   <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'var(--surface-2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <UsersRound size={16} style={{ color: 'var(--text-muted)' }} />
+                    <Icon icon={UsersRound} size="md" style={{ color: 'var(--text-muted)' }} />
                   </div>
                   <strong>{user.name}</strong>
                 </td>

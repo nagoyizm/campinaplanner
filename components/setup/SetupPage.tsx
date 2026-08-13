@@ -2,6 +2,7 @@
 
 import { useState, useEffect, ReactNode, useRef } from 'react'
 import { Plus, Edit2, Trash2, Save, X, Loader2 } from 'lucide-react'
+import Icon from '@/components/ui/Icon'
 import toast from 'react-hot-toast'
 import styles from './SetupPage.module.css'
 
@@ -158,7 +159,7 @@ export default function SetupPage<T extends { id: string | number; active?: bool
             </label>
           )}
           <button className="btn btn-primary btn-sm" onClick={handleNew} id={`setup-new-${apiPath}`}>
-            <Plus size={14} /> {newButtonLabel}
+            <Icon icon={Plus} size="sm" /> {newButtonLabel}
           </button>
         </div>
       </div>
@@ -168,7 +169,7 @@ export default function SetupPage<T extends { id: string | number; active?: bool
         <div className={`card ${styles.formPanel}`}>
           <div className="card-header">
             <span className={styles.formTitle}>{editingId ? 'Editar' : 'Nuevo'} {title.replace('Setup — ', '').replace(/s$/, '')}</span>
-            <button className="btn btn-ghost btn-icon btn-sm" onClick={handleCancel}><X size={16} /></button>
+            <button className="btn btn-ghost btn-icon btn-sm" onClick={handleCancel}><Icon icon={X} size="md" /></button>
           </div>
           <div className="card-body">
             <div className={styles.formGrid}>
@@ -178,7 +179,7 @@ export default function SetupPage<T extends { id: string | number; active?: bool
           <div className="card-footer" style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
             <button className="btn btn-secondary btn-sm" onClick={handleCancel}>Cancelar</button>
             <button className="btn btn-primary btn-sm" onClick={handleSave} disabled={saving} id="setup-save">
-              {saving ? <><Loader2 size={13} style={{ animation: 'spin 1s linear infinite' }} /> Guardando...</> : <><Save size={13} /> Guardar</>}
+              {saving ? <><Icon icon={Loader2} size="xs" spin /> Guardando...</> : <><Icon icon={Save} size="xs" /> Guardar</>}
             </button>
           </div>
         </div>
@@ -188,7 +189,7 @@ export default function SetupPage<T extends { id: string | number; active?: bool
       <div className="card">
         {loading ? (
           <div className={styles.loadingState}>
-            <Loader2 size={24} style={{ animation: 'spin 1s linear infinite', color: 'var(--brand-500)' }} />
+            <Icon icon={Loader2} size="2xl" spin color="var(--brand-500)" />
             <span>Cargando...</span>
           </div>
         ) : displayed.length === 0 ? (
@@ -224,7 +225,7 @@ export default function SetupPage<T extends { id: string | number; active?: bool
                           onClick={() => handleEdit(row)}
                           title="Editar"
                         >
-                          <Edit2 size={14} />
+                          <Icon icon={Edit2} size="sm" />
                         </button>
                         <button
                           className="btn btn-ghost btn-icon btn-sm"
@@ -234,8 +235,8 @@ export default function SetupPage<T extends { id: string | number; active?: bool
                           style={{ color: '#ef4444' }}
                         >
                           {deleting === row.id
-                            ? <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} />
-                            : <Trash2 size={14} />
+                            ? <Icon icon={Loader2} size="sm" spin />
+                            : <Icon icon={Trash2} size="sm" />
                           }
                         </button>
                       </div>

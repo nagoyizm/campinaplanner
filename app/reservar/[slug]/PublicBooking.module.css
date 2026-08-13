@@ -1,277 +1,161 @@
 /* ═══════════════════════════════════════════════════════════════
    PÁGINA PÚBLICA DE RESERVAS Y COTIZACIÓN — AGENDIO
-   Estética Verde Elegante, Animaciones Suaves y Header Desvanecible
+   Estilo editorial (landing): crema, verde bosque + ámbar,
+   tipografía Outfit/Spectral, radios sutiles 2px.
+   Modo claro + oscuro UNIFICADOS vía tokens semánticos
+   (alterna con [data-theme="dark"] en .container).
    ═══════════════════════════════════════════════════════════════ */
 
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Montserrat:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Spectral:wght@400;500;600;700;800&display=swap');
+
+/* ── Tokens: MODO CLARO (por defecto) ─────────────────────────── */
+.container {
+  --background: #FBF7F0;
+  --foreground: #1C2B22;
+  --primary-color: #33603F;
+  --primary-hover: #264A31;
+  --primary-950: #0B1B12;
+  --primary-100: #E4EDE4;
+  --primary-light: rgba(51, 96, 63, 0.10);
+  --primary-strong: #33603F;
+  --btn-gradient: linear-gradient(135deg, #264A31 0%, #33603F 100%);
+  --accent-400: #E5A63F;
+  --accent-300: #EEBE6C;
+  --accent-glow: rgba(217, 154, 43, 0.25);
+  --on-primary: #ffffff;
+  --on-accent: #0B1B12;
+  --border-color: #E7E5E4;
+  --card-bg: #FFFFFF;
+  --surface-muted: rgba(255, 255, 255, 0.8);
+  --surface-glass: rgba(255, 255, 255, 0.7);
+  --input-bg: #ffffff;
+  --subtle-bg: rgba(28, 43, 34, 0.04);
+  --subtle-2: rgba(28, 43, 34, 0.03);
+  --subtle-3: rgba(28, 43, 34, 0.02);
+  --card-image-bg: rgba(28, 43, 34, 0.06);
+  --text-main: #1C2B22;
+  --text-sub: #57534E;
+  --text-disabled: rgba(28, 43, 34, 0.3);
+  --header-bg: rgba(251, 247, 240, 0.9);
+  --header-border: rgba(28, 43, 34, 0.08);
+  --shadow-sm: 0 1px 3px rgba(28, 43, 34, 0.04);
+  --shadow-md: 0 4px 16px rgba(28, 43, 34, 0.05);
+  --shadow-lg: 0 8px 30px rgba(28, 43, 34, 0.06);
+  --shadow-xl: 0 12px 36px rgba(28, 43, 34, 0.1);
+  --shadow-focus: 0 0 0 2px rgba(51, 96, 63, 0.35);
+  --day-available-bg: rgba(51, 96, 63, 0.10);
+  --day-available-border: rgba(51, 96, 63, 0.25);
+  --day-available-hover-bg: rgba(51, 96, 63, 0.18);
+  --day-soldout-bg: rgba(194, 65, 12, 0.08);
+  --day-soldout-border: rgba(194, 65, 12, 0.2);
+  --day-soldout-color: #C2410C;
+  --dot-green: #33603F;
+  --dot-red: #C2410C;
+  --dot-brand: #D99A2B;
+  --dot-past: #D6D3D1;
+  --drag-handle: rgba(255, 255, 255, 0.9);
+}
+
+/* ── Tokens: MODO OSCURO (unificado, WCAG AA) ─────────────────── */
+.container[data-theme='dark'] {
+  --background: #0B1B12;
+  --foreground: #F5EFE4;
+  --primary-color: #7FA98A;
+  --primary-hover: #8FB79B;
+  --primary-950: #F5EFE4;
+  --primary-100: #24372A;
+  --primary-light: rgba(127, 169, 138, 0.14);
+  --primary-strong: #3D6B4A;
+  --btn-gradient: linear-gradient(135deg, #2E5A3C 0%, #3D6B4A 100%);
+  --accent-400: #E5A63F;
+  --accent-300: #F0B95C;
+  --accent-glow: rgba(229, 166, 63, 0.22);
+  --on-primary: #ffffff;
+  --on-accent: #0B1B12;
+  --border-color: rgba(245, 239, 228, 0.14);
+  --card-bg: #14231A;
+  --surface-muted: rgba(255, 255, 255, 0.06);
+  --surface-glass: rgba(255, 255, 255, 0.05);
+  --input-bg: #0F1E15;
+  --subtle-bg: rgba(255, 255, 255, 0.05);
+  --subtle-2: rgba(255, 255, 255, 0.04);
+  --subtle-3: rgba(255, 255, 255, 0.02);
+  --card-image-bg: rgba(255, 255, 255, 0.05);
+  --text-main: #F5EFE4;
+  --text-sub: #A8B5A9;
+  --text-disabled: rgba(245, 239, 228, 0.32);
+  --header-bg: rgba(11, 27, 18, 0.85);
+  --header-border: rgba(245, 239, 228, 0.1);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.45);
+  --shadow-xl: 0 12px 36px rgba(0, 0, 0, 0.5);
+  --shadow-focus: 0 0 0 2px rgba(229, 166, 63, 0.45);
+  --day-available-bg: rgba(127, 169, 138, 0.16);
+  --day-available-border: rgba(127, 169, 138, 0.4);
+  --day-available-hover-bg: rgba(127, 169, 138, 0.26);
+  --day-soldout-bg: rgba(194, 65, 12, 0.16);
+  --day-soldout-border: rgba(194, 65, 12, 0.35);
+  --day-soldout-color: #E07A4C;
+  --dot-green: #7FA98A;
+  --dot-red: #E07A4C;
+  --dot-brand: #E5A63F;
+  --dot-past: #3A4A3F;
+  --drag-handle: rgba(255, 255, 255, 0.85);
+}
 
 .container {
   min-height: 100vh;
-  background: var(--bg-gradient, linear-gradient(135deg, #05140b 0%, #0c2618 50%, #081910 100%));
-  color: var(--text-main, #ffffff);
-  font-family: 'Plus Jakarta Sans', 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: 'Outfit', var(--font-outfit), system-ui, sans-serif;
   padding-bottom: 4rem;
   font-size: 0.85rem;
   position: relative;
   overflow: clip;
-  transition: background 0.35s ease, color 0.35s ease;
+  transition: background 0.3s ease, color 0.3s ease;
 }
 
-/* ── Ambient Background Blur Orbs (Verdosos y Atmosféricos) ── */
+/* ── Fondos decorativos ambientales (muy sutiles, estilo editorial) ── */
 .bgDecor1 {
   position: absolute;
-  width: 750px;
-  height: 750px;
+  width: 640px;
+  height: 640px;
   border-radius: 50%;
-  background: var(--decor1, radial-gradient(circle, rgba(46, 190, 100, 0.35) 0%, transparent 60%));
-  top: -220px;
-  right: -120px;
-  filter: blur(110px);
+  background: radial-gradient(circle, var(--accent-glow) 0%, transparent 60%);
+  top: -240px;
+  right: -160px;
+  filter: blur(100px);
   pointer-events: none;
   z-index: 1;
 }
 
 .bgDecor2 {
   position: absolute;
-  width: 650px;
-  height: 650px;
+  width: 560px;
+  height: 560px;
   border-radius: 50%;
-  background: var(--decor2, radial-gradient(circle, rgba(80, 200, 140, 0.25) 0%, transparent 60%));
-  bottom: -220px;
-  left: -150px;
-  filter: blur(110px);
+  background: radial-gradient(circle, var(--primary-light) 0%, transparent 60%);
+  bottom: -200px;
+  left: -180px;
+  filter: blur(100px);
   pointer-events: none;
   z-index: 1;
 }
 
-/* ── Palette Themes (Verdosos & Branding Tenant) ───────────── */
-.themeVerde {
-  --bg-gradient: linear-gradient(135deg, #05140b 0%, #0c2618 50%, #081910 100%);
-  --decor1: radial-gradient(circle, rgba(46, 190, 100, 0.35) 0%, transparent 60%);
-  --decor2: radial-gradient(circle, rgba(80, 200, 140, 0.25) 0%, transparent 60%);
-  --primary-color: #34d399;
-  --primary-hover: #10b981;
-  --btn-gradient: linear-gradient(90deg, #1b4d32, #339c63);
-  --primary-light: rgba(52, 211, 153, 0.15);
-  --border-color: rgba(255, 255, 255, 0.14);
-  --card-bg: rgba(16, 36, 24, 0.6);
-  --text-main: #ffffff;
-  --text-sub: rgba(255,255,255,0.65);
-  --header-bg: rgba(6, 20, 12, 0.75);
-  --header-border: rgba(255,255,255,0.08);
-}
-.themeVerde.lightMode {
-  --bg-gradient: linear-gradient(135deg, #e8f5ee 0%, #d1eedd 50%, #e2f2e8 100%);
-  --decor1: radial-gradient(circle, rgba(46,190,100,0.18) 0%, transparent 60%);
-  --decor2: radial-gradient(circle, rgba(16,185,129,0.12) 0%, transparent 60%);
-  --primary-color: #059669;
-  --primary-hover: #047857;
-  --btn-gradient: linear-gradient(90deg, #047857, #10b981);
-  --primary-light: rgba(5,150,105,0.12);
-  --border-color: rgba(0,0,0,0.1);
-  --card-bg: rgba(255,255,255,0.75);
-  --text-main: #0f2d1c;
-  --text-sub: rgba(15,45,28,0.65);
-  --header-bg: rgba(255,255,255,0.82);
-  --header-border: rgba(0,0,0,0.08);
-}
-
-.themeAzul {
-  --bg-gradient: linear-gradient(135deg, #051410 0%, #0a241b 50%, #081a14 100%);
-  --decor1: radial-gradient(circle, rgba(56, 189, 248, 0.3) 0%, transparent 60%);
-  --decor2: radial-gradient(circle, rgba(46, 190, 100, 0.25) 0%, transparent 60%);
-  --primary-color: #38bdf8;
-  --primary-hover: #0284c7;
-  --btn-gradient: linear-gradient(90deg, #164e63, #0284c7);
-  --primary-light: rgba(56, 189, 248, 0.15);
-  --border-color: rgba(255, 255, 255, 0.14);
-  --card-bg: rgba(14, 34, 28, 0.6);
-  --text-main: #ffffff;
-  --text-sub: rgba(255,255,255,0.65);
-  --header-bg: rgba(5, 20, 16, 0.75);
-  --header-border: rgba(255,255,255,0.08);
-}
-.themeAzul.lightMode {
-  --bg-gradient: linear-gradient(135deg, #e8f4fd 0%, #d0eaf9 50%, #e2f1fb 100%);
-  --decor1: radial-gradient(circle, rgba(56,189,248,0.18) 0%, transparent 60%);
-  --decor2: radial-gradient(circle, rgba(2,132,199,0.12) 0%, transparent 60%);
-  --primary-color: #0284c7;
-  --primary-hover: #0369a1;
-  --btn-gradient: linear-gradient(90deg, #0369a1, #0284c7);
-  --primary-light: rgba(2,132,199,0.12);
-  --border-color: rgba(0,0,0,0.1);
-  --card-bg: rgba(255,255,255,0.75);
-  --text-main: #0c2a3e;
-  --text-sub: rgba(12,42,62,0.65);
-  --header-bg: rgba(255,255,255,0.82);
-  --header-border: rgba(0,0,0,0.08);
-}
-
-.themeRojizo {
-  --bg-gradient: linear-gradient(135deg, #16080d 0%, #260c16 50%, #170911 100%);
-  --decor1: radial-gradient(circle, rgba(244, 63, 94, 0.3) 0%, transparent 60%);
-  --decor2: radial-gradient(circle, rgba(46, 190, 100, 0.2) 0%, transparent 60%);
-  --primary-color: #fb7185;
-  --primary-hover: #f43f5e;
-  --btn-gradient: linear-gradient(90deg, #881337, #f43f5e);
-  --primary-light: rgba(251, 113, 133, 0.15);
-  --border-color: rgba(255, 255, 255, 0.14);
-  --card-bg: rgba(35, 16, 22, 0.6);
-  --text-main: #ffffff;
-  --text-sub: rgba(255,255,255,0.65);
-  --header-bg: rgba(22, 8, 13, 0.75);
-  --header-border: rgba(255,255,255,0.08);
-}
-.themeRojizo.lightMode {
-  --bg-gradient: linear-gradient(135deg, #fdf0f2 0%, #fddde2 50%, #fce8eb 100%);
-  --decor1: radial-gradient(circle, rgba(244,63,94,0.18) 0%, transparent 60%);
-  --decor2: radial-gradient(circle, rgba(244,63,94,0.1) 0%, transparent 60%);
-  --primary-color: #e11d48;
-  --primary-hover: #be123c;
-  --btn-gradient: linear-gradient(90deg, #be123c, #e11d48);
-  --primary-light: rgba(225,29,72,0.12);
-  --border-color: rgba(0,0,0,0.1);
-  --card-bg: rgba(255,255,255,0.75);
-  --text-main: #3b0a15;
-  --text-sub: rgba(59,10,21,0.65);
-  --header-bg: rgba(255,255,255,0.82);
-  --header-border: rgba(0,0,0,0.08);
-}
-
-.themeCrema {
-  --bg-gradient: linear-gradient(135deg, #141006 0%, #241a0b 50%, #161208 100%);
-  --decor1: radial-gradient(circle, rgba(245, 158, 11, 0.3) 0%, transparent 60%);
-  --decor2: radial-gradient(circle, rgba(46, 190, 100, 0.2) 0%, transparent 60%);
-  --primary-color: #fbbf24;
-  --primary-hover: #f59e0b;
-  --btn-gradient: linear-gradient(90deg, #78350f, #f59e0b);
-  --primary-light: rgba(251, 191, 36, 0.15);
-  --border-color: rgba(255, 255, 255, 0.14);
-  --card-bg: rgba(32, 24, 14, 0.6);
-  --text-main: #ffffff;
-  --text-sub: rgba(255,255,255,0.65);
-  --header-bg: rgba(20, 16, 6, 0.75);
-  --header-border: rgba(255,255,255,0.08);
-}
-.themeCrema.lightMode {
-  --bg-gradient: linear-gradient(135deg, #fdf9ee 0%, #fef3d0 50%, #fef8e6 100%);
-  --decor1: radial-gradient(circle, rgba(245,158,11,0.2) 0%, transparent 60%);
-  --decor2: radial-gradient(circle, rgba(245,158,11,0.12) 0%, transparent 60%);
-  --primary-color: #d97706;
-  --primary-hover: #b45309;
-  --btn-gradient: linear-gradient(90deg, #92400e, #d97706);
-  --primary-light: rgba(217,119,6,0.12);
-  --border-color: rgba(0,0,0,0.1);
-  --card-bg: rgba(255,255,255,0.75);
-  --text-main: #3d2000;
-  --text-sub: rgba(61,32,0,0.65);
-  --header-bg: rgba(255,255,255,0.82);
-  --header-border: rgba(0,0,0,0.08);
-}
-
-.themeMorado {
-  --bg-gradient: linear-gradient(135deg, #10071c 0%, #1f0b33 50%, #120820 100%);
-  --decor1: radial-gradient(circle, rgba(168, 85, 247, 0.3) 0%, transparent 60%);
-  --decor2: radial-gradient(circle, rgba(46, 190, 100, 0.2) 0%, transparent 60%);
-  --primary-color: #c084fc;
-  --primary-hover: #a855f7;
-  --btn-gradient: linear-gradient(90deg, #581c87, #a855f7);
-  --primary-light: rgba(192, 132, 252, 0.15);
-  --border-color: rgba(255, 255, 255, 0.14);
-  --card-bg: rgba(24, 14, 38, 0.6);
-  --text-main: #ffffff;
-  --text-sub: rgba(255,255,255,0.65);
-  --header-bg: rgba(16, 7, 28, 0.75);
-  --header-border: rgba(255,255,255,0.08);
-}
-.themeMorado.lightMode {
-  --bg-gradient: linear-gradient(135deg, #f5effe 0%, #ede0fc 50%, #f2ebfd 100%);
-  --decor1: radial-gradient(circle, rgba(168,85,247,0.18) 0%, transparent 60%);
-  --decor2: radial-gradient(circle, rgba(168,85,247,0.1) 0%, transparent 60%);
-  --primary-color: #9333ea;
-  --primary-hover: #7e22ce;
-  --btn-gradient: linear-gradient(90deg, #6b21a8, #9333ea);
-  --primary-light: rgba(147,51,234,0.12);
-  --border-color: rgba(0,0,0,0.1);
-  --card-bg: rgba(255,255,255,0.75);
-  --text-main: #2d0a4e;
-  --text-sub: rgba(45,10,78,0.65);
-  --header-bg: rgba(255,255,255,0.82);
-  --header-border: rgba(0,0,0,0.08);
-}
-
-.themeTurquesa {
-  --bg-gradient: linear-gradient(135deg, #051616 0%, #0a2827 50%, #071817 100%);
-  --decor1: radial-gradient(circle, rgba(45, 212, 191, 0.3) 0%, transparent 60%);
-  --decor2: radial-gradient(circle, rgba(46, 190, 100, 0.25) 0%, transparent 60%);
-  --primary-color: #2dd4bf;
-  --primary-hover: #14b8a6;
-  --btn-gradient: linear-gradient(90deg, #115e59, #14b8a6);
-  --primary-light: rgba(45, 212, 191, 0.15);
-  --border-color: rgba(255, 255, 255, 0.14);
-  --card-bg: rgba(12, 34, 32, 0.6);
-  --text-main: #ffffff;
-  --text-sub: rgba(255,255,255,0.65);
-  --header-bg: rgba(5, 22, 22, 0.75);
-  --header-border: rgba(255,255,255,0.08);
-}
-.themeTurquesa.lightMode {
-  --bg-gradient: linear-gradient(135deg, #e6faf8 0%, #ccf5f0 50%, #d8f8f4 100%);
-  --decor1: radial-gradient(circle, rgba(45,212,191,0.18) 0%, transparent 60%);
-  --decor2: radial-gradient(circle, rgba(20,184,166,0.12) 0%, transparent 60%);
-  --primary-color: #0d9488;
-  --primary-hover: #0f766e;
-  --btn-gradient: linear-gradient(90deg, #0f766e, #0d9488);
-  --primary-light: rgba(13,148,136,0.12);
-  --border-color: rgba(0,0,0,0.1);
-  --card-bg: rgba(255,255,255,0.75);
-  --text-main: #0a2926;
-  --text-sub: rgba(10,41,38,0.65);
-  --header-bg: rgba(255,255,255,0.82);
-  --header-border: rgba(0,0,0,0.08);
-}
-
-/* ── Glassmorphic Header (Fixed - Desaparece suavemente al hacer scroll) ── */
+/* ── Header fijo (desaparece suavemente al hacer scroll) ─────────── */
 .header {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   z-index: 100;
-  background: var(--header-bg, rgba(6, 20, 12, 0.75));
-  backdrop-filter: blur(25px) saturate(120%);
-  -webkit-backdrop-filter: blur(25px) saturate(120%);
-  border-bottom: 1px solid var(--header-border, rgba(255,255,255,0.08));
+  background: var(--header-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--header-border);
   padding: 0.45rem 1.25rem;
   transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s ease, background 0.3s ease;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-}
-
-/* ── Theme Toggle Button ──────────────────────────────────────── */
-.themeToggleBtn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  border: 1px solid var(--border-color);
-  background: rgba(255,255,255,0.08);
-  color: var(--text-main, #fff);
-  cursor: pointer;
-  transition: background 0.2s, transform 0.2s, border-color 0.2s;
-  flex-shrink: 0;
-}
-.themeToggleBtn:hover {
-  background: rgba(255,255,255,0.16);
-  transform: scale(1.08);
-}
-.lightMode .themeToggleBtn {
-  background: rgba(0,0,0,0.06);
-  color: var(--text-main, #1a1a1a);
-}
-.lightMode .themeToggleBtn:hover {
-  background: rgba(0,0,0,0.12);
 }
 
 .headerScrolled {
@@ -281,7 +165,7 @@
 }
 
 .headerContent {
-  max-width: 1280px;
+  max-width: 1200px;
   margin: 0 auto;
   display: flex;
   align-items: center;
@@ -299,8 +183,7 @@
   height: 26px;
   width: auto;
   object-fit: contain;
-  border-radius: 6px;
-  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.5));
+  border-radius: 2px;
 }
 
 .titleContainerInline {
@@ -311,53 +194,83 @@
 }
 
 .orgTitle {
-  font-family: "mooxy", "Noyh", "Montserrat", sans-serif;
-  font-size: 0.98rem;
-  font-weight: 800;
-  color: var(--text-main, #ffffff);
+  font-family: 'Spectral', var(--font-outfit), serif;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--primary-950);
   margin: 0;
-  line-height: 1;
-  letter-spacing: 0.12em;
-  text-transform: lowercase;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
 }
 
 .orgSubtitleInline {
   font-size: 0.72rem;
-  color: var(--text-sub, rgba(255,255,255,0.6));
+  color: var(--text-sub);
   font-weight: 500;
 }
 
-/* ── Main Container ────────────────────────────────────────── */
+/* ── Toggle de tema (modo claro/oscuro unificado) ─────────────────── */
+.themeToggleBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 2px;
+  border: 1px solid var(--border-color);
+  background: var(--surface-muted);
+  color: var(--primary-950);
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, color 0.2s, transform 0.2s, box-shadow 0.2s;
+  flex-shrink: 0;
+}
+.themeToggleBtn:hover {
+  background: var(--primary-light);
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+  transform: scale(1.05);
+}
+.themeToggleBtn:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+  border-color: var(--primary-color);
+}
+.themeToggleBtn:active {
+  transform: scale(0.95);
+}
+
+/* ── Contenedor principal ─────────────────────────────────────── */
 .main {
-  max-width: 1280px;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 4rem 1rem 0 1rem;
+  padding: 4.5rem 1rem 0 1rem;
   position: relative;
   z-index: 10;
 }
 
 .hero {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.75rem;
   text-align: center;
 }
 
 .title {
-  font-size: 1.65rem;
-  font-weight: 800;
+  font-family: 'Spectral', var(--font-outfit), serif;
+  font-size: clamp(1.6rem, 4vw, 2.4rem);
+  font-weight: 700;
   letter-spacing: -0.02em;
-  margin: 0 0 0.35rem 0;
-  color: var(--text-main, #ffffff);
-  text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+  margin: 0 0 0.5rem 0;
+  color: var(--primary-950);
+  line-height: 1.1;
 }
 
 .subtitle {
-  font-size: 0.85rem;
-  color: var(--text-sub, rgba(255,255,255,0.7));
-  max-width: 620px;
+  font-size: 0.9rem;
+  color: var(--text-sub);
+  max-width: 600px;
   margin: 0 auto;
 }
 
-/* ── UNIFIED FLOW WRAPPER & DYNAMIC LAYOUT ──────────────────── */
+/* ── Wrapper de flujo unificado ────────────────────────────────── */
 .flowWrapper {
   width: 100%;
   transition: all 0.5s cubic-bezier(0.22, 1, 0.36, 1);
@@ -368,17 +281,17 @@
   align-items: center;
   justify-content: center;
   gap: 0.45rem;
-  background: rgba(255, 255, 255, 0.07);
-  backdrop-filter: blur(20px);
+  background: var(--surface-glass);
+  backdrop-filter: blur(12px);
   border: 1px solid var(--border-color);
-  padding: 0.45rem 1rem;
-  border-radius: 12px;
+  padding: 0.5rem 1rem;
+  border-radius: 2px;
   font-size: 0.8rem;
   font-weight: 700;
-  color: var(--primary-color);
+  color: var(--primary-950);
   margin: 0 auto 1.5rem auto;
   width: fit-content;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  box-shadow: var(--shadow-sm);
   animation: fadeInSlideDown 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
@@ -399,11 +312,7 @@
   }
 }
 
-/* ── CARDS CONTAINER STATES (TRANSICIÓN SUAVE 60FPS) ────────── */
-.cardsContainer {
-  transition: all 0.5s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
+/* ── Estados del contenedor de tarjetas ─────────────────────────── */
 .cardsContainerCentered {
   width: 100%;
   max-width: 900px;
@@ -411,19 +320,16 @@
 }
 
 .cardsContainerSidebar {
-  width: 250px;
+  width: 260px;
   flex-shrink: 0;
-  background: var(--card-bg, rgba(16, 36, 24, 0.6));
-  backdrop-filter: blur(35px) saturate(120%);
-  -webkit-backdrop-filter: blur(35px) saturate(120%);
+  background: var(--card-bg);
   border: 1px solid var(--border-color);
-  border-top: 1px solid rgba(255, 255, 255, 0.22);
-  padding: 0.75rem;
-  border-radius: 16px;
+  padding: 0.85rem;
+  border-radius: 2px;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  box-shadow: var(--shadow-lg);
   transition: all 0.5s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -431,21 +337,18 @@
   display: flex;
   justify-content: center;
   align-items: stretch;
-  gap: 1.25rem;
+  gap: 1rem;
   flex-wrap: wrap;
   padding: 0.5rem 0;
   transition: all 0.5s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-/* ── COMPACT UNIT CARD (DARK GLASS) ─────────────────────────── */
+/* ── Tarjeta compacta de unidad (editorial) ─────────────────────── */
 .unitCardCompact {
-  width: 220px;
-  background: var(--card-bg, rgba(16, 36, 24, 0.6));
-  backdrop-filter: blur(30px) saturate(120%);
-  -webkit-backdrop-filter: blur(30px) saturate(120%);
+  width: 230px;
+  background: var(--card-bg);
   border: 1px solid var(--border-color);
-  border-top: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 16px;
+  border-radius: 2px;
   display: flex;
   flex-direction: column;
   cursor: pointer;
@@ -453,21 +356,21 @@
   overflow: hidden;
   position: relative;
   text-align: left;
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+  box-shadow: var(--shadow-md);
 }
 
 .unitCardCompact:hover {
-  transform: translateY(-2px);
+  transform: translateY(-3px);
   border-color: var(--primary-color);
-  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.45);
+  box-shadow: var(--shadow-xl);
 }
 
 .cardImageWrapper {
   height: 130px;
   width: 100%;
   position: relative;
-  background: rgba(0, 0, 0, 0.3);
-  border-radius: 16px 16px 0 0;
+  background: var(--card-image-bg);
+  border-radius: 2px 2px 0 0;
   overflow: hidden;
 }
 
@@ -490,8 +393,8 @@
   align-items: center;
   justify-content: center;
   gap: 0.35rem;
-  background: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%);
-  color: rgba(255, 255, 255, 0.6);
+  background: var(--primary-100);
+  color: var(--primary-950);
   font-weight: 700;
   font-size: 0.75rem;
 }
@@ -500,18 +403,18 @@
   position: absolute;
   top: 8px;
   right: 8px;
-  background: var(--primary-color);
-  color: #09140e;
-  font-size: 0.65rem;
-  font-weight: 800;
+  background: var(--primary-strong);
+  color: var(--on-primary);
+  font-size: 0.62rem;
+  font-weight: 700;
   padding: 0.2rem 0.5rem;
-  border-radius: 10px;
+  border-radius: 2px;
   display: inline-flex;
   align-items: center;
   gap: 0.2rem;
   text-transform: uppercase;
-  letter-spacing: 0.03em;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  letter-spacing: 0.04em;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .cardBody {
@@ -523,18 +426,19 @@
 }
 
 .unitName {
-  font-size: 0.92rem;
-  font-weight: 800;
-  color: #ffffff;
+  font-family: 'Spectral', var(--font-outfit), serif;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--primary-950);
   margin: 0 0 0.25rem 0;
   line-height: 1.2;
 }
 
 .unitDesc {
   font-size: 0.72rem;
-  color: rgba(255, 255, 255, 0.65);
+  color: var(--text-sub);
   margin: 0 0 0.65rem 0;
-  line-height: 1.35;
+  line-height: 1.4;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -546,7 +450,7 @@
   align-items: center;
   justify-content: space-between;
   padding-top: 0.55rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid var(--border-color);
 }
 
 .unitPrice {
@@ -558,31 +462,31 @@
 .perNight {
   font-size: 0.65rem;
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--text-sub);
 }
 
 .metaBadge {
   background: var(--primary-light);
   color: var(--primary-color);
   padding: 0.15rem 0.45rem;
-  border-radius: 8px;
+  border-radius: 2px;
   font-size: 0.68rem;
   font-weight: 700;
   display: inline-flex;
   align-items: center;
   gap: 0.2rem;
-  border: 1px solid var(--border-color);
+  border: 1px solid transparent;
 }
 
-/* ── SIDEBAR ACCORDION LIST ────────────────────────────────── */
+/* ── Lista acordeón del sidebar ─────────────────────────────────── */
 .cardsSidebarHeader {
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   font-weight: 800;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--text-sub);
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.06em;
   padding-bottom: 0.4rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid var(--border-color);
   margin-bottom: 0.2rem;
   display: flex;
   align-items: center;
@@ -596,15 +500,14 @@
   transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-/* ── EXPANDED SIDEBAR CARD ─────────────────────────────────── */
+/* ── Tarjeta expandida del sidebar ──────────────────────────────── */
 .sidebarCardExpanded {
   background: var(--primary-light);
   border: 1px solid var(--primary-color);
-  border-top: 1.5px solid var(--primary-color);
-  border-radius: 16px;
+  border-radius: 2px;
   overflow: hidden;
   transition: all 0.35s cubic-bezier(0.22, 1, 0.36, 1);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  box-shadow: var(--shadow-lg);
   display: flex;
   flex-direction: column;
 }
@@ -614,12 +517,11 @@
   width: 100%;
 }
 
-/* ── COLLAPSED SIDEBAR CARD (ACHATADA) ─────────────────────── */
+/* ── Tarjeta colapsada del sidebar ──────────────────────────────── */
 .sidebarCardCollapsed {
-  background: rgba(255, 255, 255, 0.04);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
+  background: var(--surface-muted);
+  border: 1px solid var(--border-color);
+  border-radius: 2px;
   padding: 0.55rem 0.7rem;
   cursor: pointer;
   display: flex;
@@ -633,13 +535,13 @@
 
 .sidebarCardCollapsed:hover {
   border-color: var(--primary-color);
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--primary-light);
 }
 
 .collapsedTitle {
   font-size: 0.78rem;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--primary-950);
   margin: 0;
   white-space: nowrap;
   overflow: hidden;
@@ -653,7 +555,7 @@
   white-space: nowrap;
 }
 
-/* ── CALENDAR & FORM AREA (ACOPLAMIENTO SUAVE) ──────────────── */
+/* ── Área de calendario y formulario ────────────────────────────── */
 .calendarAndFormArea {
   display: flex;
   gap: 1.25rem;
@@ -672,47 +574,45 @@
   animation: gentleCoupleIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
-/* ── CALENDAR CARD (GLASS CARD) ────────────────────────────── */
+/* ── Tarjeta de calendario (blanca editorial) ───────────────────── */
 .calendarCard {
   width: 480px;
   max-width: 100%;
   flex-shrink: 0;
-  background: var(--card-bg, rgba(16, 36, 24, 0.6));
-  backdrop-filter: blur(35px) saturate(120%);
-  -webkit-backdrop-filter: blur(35px) saturate(120%);
+  background: var(--card-bg);
   border: 1px solid var(--border-color);
-  border-top: 1px solid rgba(255, 255, 255, 0.22);
-  border-radius: 16px;
+  border-radius: 2px;
   padding: 1.25rem;
-  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: var(--shadow-lg);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
 }
 
 .calendarCardShrunk {
   border-color: var(--primary-color);
-  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6);
+  box-shadow: var(--shadow-xl);
 }
 
 .cardHeaderTitle {
-  font-size: 0.95rem;
-  font-weight: 800;
+  font-family: 'Spectral', var(--font-outfit), serif;
+  font-size: 1rem;
+  font-weight: 700;
   display: flex;
   align-items: center;
   gap: 0.5rem;
   margin: 0 0 0.95rem 0;
-  color: #ffffff;
+  color: var(--primary-950);
 }
 
-/* ── DATE INPUTS & OCCUPANTS ROW ───────────────────────────── */
+/* ── Fila de inputs de fechas y ocupantes ───────────────────────── */
 .dateInputsRow {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr 1fr;
   gap: 0.45rem;
   margin-bottom: 0.95rem;
-  background: rgba(0, 0, 0, 0.25);
+  background: var(--subtle-2);
   padding: 0.6rem;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 2px;
+  border: 1px solid var(--border-color);
 }
 
 @media (max-width: 520px) {
@@ -729,31 +629,32 @@
 
 .inputControl label {
   font-size: 0.65rem;
-  font-weight: 800;
-  color: rgba(255, 255, 255, 0.6);
+  font-weight: 700;
+  color: var(--text-sub);
   text-transform: uppercase;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.05em;
 }
 
 .inputControl input, .inputControl select {
   width: 100%;
   padding: 0.4rem 0.5rem;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  border-radius: 2px;
   font-size: 0.75rem;
   font-family: inherit;
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--input-bg);
   outline: none;
-  color: #ffffff;
-  transition: border-color 0.2s ease, background 0.2s ease;
+  color: var(--primary-950);
+  transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
 }
 
 .inputControl input:focus, .inputControl select:focus {
   border-color: var(--primary-color);
-  background: rgba(255, 255, 255, 0.12);
+  background: var(--input-bg);
+  box-shadow: var(--shadow-focus);
 }
 
-/* ── CALENDAR NAV & GRID ───────────────────────────────────── */
+/* ── Navegación del calendario y rejilla ────────────────────────── */
 .calendarNav {
   display: flex;
   align-items: center;
@@ -762,9 +663,9 @@
 }
 
 .navBtn {
-  background: rgba(255, 255, 255, 0.07);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 8px;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 2px;
   padding: 0.35rem 0.65rem;
   font-size: 0.72rem;
   font-weight: 700;
@@ -772,20 +673,21 @@
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
-  color: #ffffff;
+  color: var(--primary-950);
   transition: background 0.2s ease, border-color 0.2s ease;
 }
 
 .navBtn:hover {
-  background: rgba(255, 255, 255, 0.14);
+  background: var(--primary-light);
   border-color: var(--primary-color);
 }
 
 .monthTitle {
-  font-weight: 800;
-  font-size: 0.88rem;
+  font-family: 'Spectral', var(--font-outfit), serif;
+  font-weight: 700;
+  font-size: 0.9rem;
   text-transform: capitalize;
-  color: #ffffff;
+  color: var(--primary-950);
 }
 
 .legendBar {
@@ -793,7 +695,7 @@
   gap: 0.85rem;
   margin-bottom: 0.75rem;
   font-size: 0.68rem;
-  color: rgba(255, 255, 255, 0.65);
+  color: var(--text-sub);
 }
 
 .legendDot {
@@ -802,12 +704,11 @@
   border-radius: 50%;
 }
 
-.dotGreen { background: #34d399; }
-.dotRed { background: #f87171; }
-.dotBrand { background: var(--primary-color); }
-.dotPast { background: rgba(255, 255, 255, 0.2); }
+.dotGreen { background: var(--dot-green); }
+.dotRed { background: var(--dot-red); }
+.dotBrand { background: var(--dot-brand); }
+.dotPast { background: var(--dot-past); }
 
-/* Calendar Grid */
 .monthGrid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
@@ -820,7 +721,7 @@
 .dayHeader {
   font-size: 0.65rem;
   font-weight: 800;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--text-sub);
   text-transform: uppercase;
   text-align: center;
   padding: 0.25rem 0;
@@ -828,8 +729,8 @@
 
 .dayCell {
   height: 40px;
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 2px;
+  border: 1px solid transparent;
   padding: 0.1rem;
   display: flex;
   flex-direction: column;
@@ -840,70 +741,54 @@
   cursor: pointer;
   transition: all 0.15s ease;
   position: relative;
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--subtle-2);
+  color: var(--primary-950);
 }
 
 .dayPast {
-  background: rgba(255, 255, 255, 0.02) !important;
+  background: var(--subtle-3) !important;
   border-color: transparent !important;
-  color: rgba(255, 255, 255, 0.25) !important;
+  color: var(--text-disabled) !important;
   cursor: not-allowed !important;
-  opacity: 0.4;
+  opacity: 0.5;
 }
 
 .dayAvailable {
-  background: rgba(52, 211, 153, 0.08);
-  border-color: rgba(52, 211, 153, 0.22);
-  color: #34d399;
+  background: var(--day-available-bg);
+  border-color: var(--day-available-border);
+  color: var(--primary-color);
 }
 
 .dayAvailable:hover {
-  background: rgba(52, 211, 153, 0.25);
-  border-color: #34d399;
+  background: var(--day-available-hover-bg);
+  border-color: var(--primary-color);
   transform: scale(1.05);
   z-index: 5;
 }
 
 .daySoldOut {
-  background: rgba(239, 68, 68, 0.08);
-  border-color: rgba(239, 68, 68, 0.2);
-  color: #f87171;
+  background: var(--day-soldout-bg);
+  border-color: var(--day-soldout-border);
+  color: var(--day-soldout-color);
   cursor: not-allowed;
-  opacity: 0.5;
+  opacity: 0.55;
 }
 
-.daySelectedStart {
-  background: var(--btn-gradient, linear-gradient(90deg, #1b4d32, #339c63)) !important;
-  color: #ffffff !important;
-  border-radius: 8px !important;
-  border-color: var(--primary-color) !important;
-  z-index: 2;
-}
-
-.daySelectedEnd {
-  background: var(--btn-gradient, linear-gradient(90deg, #1b4d32, #339c63)) !important;
-  color: #ffffff !important;
-  border-radius: 8px !important;
-  border-color: var(--primary-color) !important;
-  z-index: 2;
-}
-
-.daySingleSelected {
-  background: var(--btn-gradient, linear-gradient(90deg, #1b4d32, #339c63)) !important;
-  color: #ffffff !important;
-  border-radius: 8px !important;
-  border-color: var(--primary-color) !important;
+.daySelectedStart,
+.daySelectedEnd,
+.daySingleSelected,
+.dayInRange {
+  background: var(--btn-gradient) !important;
+  color: var(--on-primary) !important;
+  border-radius: 2px !important;
+  border-color: var(--primary-strong) !important;
+  font-weight: 700 !important;
   z-index: 2;
 }
 
 .dayInRange {
-  background: var(--btn-gradient, linear-gradient(90deg, #1b4d32, #339c63)) !important;
-  color: #ffffff !important;
-  border-radius: 8px !important;
-  border-color: var(--primary-color) !important;
-  font-weight: 700 !important;
-  z-index: 1;
   opacity: 0.95;
+  z-index: 1;
 }
 
 .dragHandleLeft, .dragHandleRight {
@@ -911,7 +796,7 @@
   top: 15%;
   bottom: 15%;
   width: 4px;
-  background: rgba(255, 255, 255, 0.9);
+  background: var(--drag-handle);
   border-radius: 2px;
   cursor: ew-resize;
 }
@@ -926,27 +811,25 @@
   opacity: 0.85;
 }
 
-/* ── STEP 3: ANIMATED GUEST FORM CARD (ELEGANT GLASS) ───────── */
+/* ── Formulario del huésped (tarjeta editorial) ─────────────────── */
 .guestFormCardAnimated {
   width: 460px;
   max-width: 100%;
   flex-shrink: 0;
-  background: var(--card-bg, rgba(16, 36, 24, 0.6));
-  backdrop-filter: blur(35px) saturate(120%);
-  -webkit-backdrop-filter: blur(35px) saturate(120%);
+  background: var(--card-bg);
   border: 1px solid var(--border-color);
-  border-top: 1px solid rgba(255, 255, 255, 0.22);
-  border-radius: 16px;
+  border-radius: 2px;
   padding: 1.25rem;
-  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
+  box-shadow: var(--shadow-lg);
   animation: smoothFormEntrance 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  transition: background 0.3s ease;
 }
 
 .quotationHeaderBox {
   background: var(--primary-light);
   border: 1px solid var(--border-color);
-  border-left: 4px solid var(--primary-color);
-  border-radius: 10px;
+  border-left: 3px solid var(--accent-400);
+  border-radius: 2px;
   padding: 0.75rem 0.95rem;
   margin-bottom: 1.1rem;
   display: flex;
@@ -963,7 +846,7 @@
 
 .quoteDetailsText {
   font-size: 0.75rem;
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--text-sub);
 }
 
 .formGrid {
@@ -989,42 +872,44 @@
 .formControl label {
   font-size: 0.72rem;
   font-weight: 700;
-  color: rgba(255, 255, 255, 0.75);
+  color: var(--text-sub);
 }
 
 .formControl input, .formControl textarea, .formControl select {
   width: 100%;
   padding: 0.5rem 0.7rem;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 2px;
   font-size: 0.8rem;
   font-family: inherit;
   outline: none;
-  background: rgba(255, 255, 255, 0.06);
-  color: #ffffff;
-  transition: border-color 0.2s ease, background 0.2s ease;
+  background: var(--input-bg);
+  color: var(--primary-950);
+  transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
 }
 
 .formControl input:focus, .formControl textarea:focus, .formControl select:focus {
   border-color: var(--primary-color);
-  background: rgba(255, 255, 255, 0.12);
+  background: var(--input-bg);
+  box-shadow: var(--shadow-focus);
 }
 
 .summaryBox {
-  background: rgba(0, 0, 0, 0.25);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
+  background: var(--subtle-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 2px;
   padding: 0.85rem;
   margin: 1rem 0;
   font-size: 0.8rem;
+  color: var(--primary-950);
 }
 
-/* Primary Button (Sin brillo excesivo) */
+/* Botón principal (acento ámbar, texto verde oscuro — estilo landing) */
 .btnPrimary {
-  background: var(--btn-gradient, linear-gradient(90deg, #1b4d32, #339c63));
-  color: #ffffff;
+  background: var(--accent-400);
+  color: var(--on-accent);
   border: none;
-  border-radius: 12px;
+  border-radius: 2px;
   padding: 0.75rem 1.25rem;
   font-size: 0.85rem;
   font-weight: 800;
@@ -1035,47 +920,50 @@
   gap: 0.4rem;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
-  transition: opacity 0.2s ease, transform 0.2s ease, background 0.2s ease;
+  box-shadow: 0 4px 14px var(--accent-glow);
+  transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .btnPrimary:hover:not(:disabled) {
-  opacity: 0.95;
+  background: var(--accent-300);
   transform: translateY(-2px);
 }
 
+.btnPrimary:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+}
+
 .btnPrimary:disabled {
-  opacity: 0.4;
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
-/* ── CONFIRMATION CARD ─────────────────────────────────────── */
+/* ── Tarjeta de confirmación ────────────────────────────────────── */
 .confirmCard {
-  background: var(--card-bg, rgba(16, 36, 24, 0.6));
-  backdrop-filter: blur(35px) saturate(120%);
-  -webkit-backdrop-filter: blur(35px) saturate(120%);
-  border-radius: 20px;
+  background: var(--card-bg);
   border: 1px solid var(--border-color);
-  border-top: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 2px;
   padding: 2.5rem 1.75rem;
   max-width: 580px;
   margin: 2rem auto;
   text-align: center;
-  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
+  color: var(--primary-950);
+  box-shadow: var(--shadow-xl);
   animation: fadeInSlideDown 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 .iconSuccess {
   width: 52px;
   height: 52px;
-  background: rgba(52, 211, 153, 0.15);
-  color: #34d399;
-  border-radius: 14px;
+  background: var(--primary-light);
+  color: var(--primary-color);
+  border-radius: 2px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   margin-bottom: 1rem;
-  border: 1px solid rgba(52, 211, 153, 0.3);
+  border: 1px solid var(--day-available-border);
 }
 
 .refBadge {
@@ -1083,42 +971,48 @@
   background: var(--primary-light);
   color: var(--primary-color);
   padding: 0.45rem 1.1rem;
-  border-radius: 12px;
+  border-radius: 2px;
   font-size: 0.95rem;
   font-weight: 800;
   margin: 0.85rem 0 1.25rem 0;
-  border: 1px solid var(--border-color);
+  border: 1px solid transparent;
 }
 
 .bankBox {
-  background: rgba(0, 0, 0, 0.25);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 12px;
+  background: var(--subtle-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 2px;
   padding: 1rem;
   text-align: left;
   margin-top: 1.25rem;
   font-size: 0.78rem;
+  color: var(--primary-950);
 }
 
 .secondaryBtn {
-  background: rgba(255, 255, 255, 0.08);
-  color: #ffffff;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: var(--card-bg);
+  color: var(--primary-950);
+  border: 1px solid var(--border-color);
   padding: 0.55rem 1.25rem;
-  border-radius: 10px;
+  border-radius: 2px;
   font-size: 0.8rem;
   font-weight: 700;
   cursor: pointer;
   margin-top: 1.25rem;
-  transition: background 0.2s ease, border-color 0.2s ease;
+  transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .secondaryBtn:hover {
-  background: rgba(255, 255, 255, 0.16);
+  background: var(--primary-light);
   border-color: var(--primary-color);
 }
 
-/* ── KEYFRAME ANIMATIONS (SUAVES Y TERCIOPELADAS) ───────────── */
+.secondaryBtn:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+}
+
+/* ── Keyframes ──────────────────────────────────────────────────── */
 @keyframes fadeInSlideDown {
   0% {
     opacity: 0;
@@ -1151,137 +1045,3 @@
     transform: translateX(0);
   }
 }
-
-/* ═══════════════════════════════════════════════════════════════
-   MODO CLARO — overrides globales sobre todos los temas
-   ═══════════════════════════════════════════════════════════════ */
-.lightMode {
-  color: var(--text-main);
-  transition: background 0.35s ease, color 0.35s ease;
-}
-
-/* Títulos y subtítulos */
-.lightMode .orgTitle      { color: var(--text-main); }
-.lightMode .orgSubtitle   { color: var(--text-sub); }
-.lightMode .orgSubtitleInline { color: var(--text-sub); }
-.lightMode .title         { color: var(--text-main); text-shadow: none; }
-.lightMode .subtitle      { color: var(--text-sub); }
-
-/* Cards de unidades */
-.lightMode .unitCardCompact,
-.lightMode .sidebarCardExpanded,
-.lightMode .sidebarCardCollapsed {
-  background: var(--card-bg);
-  border-color: var(--border-color);
-  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-}
-.lightMode .unitName      { color: var(--text-main); }
-.lightMode .unitDesc      { color: var(--text-sub); }
-.lightMode .unitPrice     { color: var(--primary-color); }
-.lightMode .perNight      { color: var(--text-sub); }
-.lightMode .collapsedTitle { color: var(--text-main); }
-.lightMode .collapsedPrice { color: var(--primary-color); }
-.lightMode .metaBadge     { color: var(--text-sub); border-color: var(--border-color); }
-
-/* Sidebar header */
-.lightMode .cardsSidebarHeader { color: var(--text-sub); border-color: var(--border-color); }
-.lightMode .cardsContainerSidebar {
-  background: var(--card-bg);
-  border-color: var(--border-color);
-  box-shadow: 0 8px 30px rgba(0,0,0,0.1);
-}
-
-/* Badge inicial */
-.lightMode .initialPromptBadge {
-  background: rgba(0,0,0,0.04);
-  box-shadow: 0 4px 15px rgba(0,0,0,0.06);
-}
-
-/* Calendario */
-.lightMode .calendarCard {
-  background: var(--card-bg);
-  border-color: var(--border-color);
-  box-shadow: 0 8px 30px rgba(0,0,0,0.1);
-}
-.lightMode .cardHeaderTitle { color: var(--text-main); }
-.lightMode .calendarGrid    { border-color: var(--border-color); }
-.lightMode .dayLabel        { color: var(--text-sub); }
-.lightMode .dayCell         { color: var(--text-main); border-color: var(--border-color); }
-.lightMode .dayCell:hover   { background: var(--primary-light); }
-.lightMode .dayPast         { color: rgba(0,0,0,0.25); }
-.lightMode .calMonthLabel   { color: var(--text-main); }
-
-/* Input controles */
-.lightMode .inputControl label { color: var(--text-sub); }
-.lightMode .inputControl input,
-.lightMode .inputControl select {
-  background: rgba(255,255,255,0.9);
-  border-color: var(--border-color);
-  color: var(--text-main);
-}
-.lightMode .dateInputsRow     { border-color: var(--border-color); }
-
-/* Formulario de huésped */
-.lightMode .guestFormCard {
-  background: var(--card-bg);
-  border-color: var(--border-color);
-  box-shadow: 0 8px 30px rgba(0,0,0,0.1);
-}
-.lightMode .sectionTitle      { color: var(--text-main); }
-.lightMode .fieldLabel        { color: var(--text-sub); }
-.lightMode .fieldInput,
-.lightMode .fieldTextarea,
-.lightMode .fieldSelect {
-  background: rgba(255,255,255,0.9);
-  border-color: var(--border-color);
-  color: var(--text-main);
-}
-.lightMode .fieldInput::placeholder,
-.lightMode .fieldTextarea::placeholder { color: rgba(0,0,0,0.3); }
-.lightMode .docTypeGroup      { border-color: var(--border-color); }
-.lightMode .docTypeBtn        { color: var(--text-sub); border-color: var(--border-color); }
-.lightMode .docTypeBtn.active { color: var(--primary-color); background: var(--primary-light); }
-
-/* Cotización / resumen */
-.lightMode .quoteCard {
-  background: var(--card-bg);
-  border-color: var(--border-color);
-  box-shadow: 0 8px 30px rgba(0,0,0,0.1);
-}
-.lightMode .quoteRow          { color: var(--text-main); border-color: var(--border-color); }
-.lightMode .quoteTotal        { color: var(--text-main); }
-.lightMode .quoteTotalAmount  { color: var(--primary-color); }
-
-/* Botón de envío */
-.lightMode .submitBtn {
-  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
-}
-
-/* Confirm card */
-.lightMode .confirmCard {
-  background: var(--card-bg);
-  border-color: var(--border-color);
-  color: var(--text-main);
-  box-shadow: 0 8px 30px rgba(0,0,0,0.1);
-}
-.lightMode .refBadge {
-  background: var(--primary-light);
-  color: var(--primary-color);
-  border-color: var(--border-color);
-}
-.lightMode .bankBox {
-  background: rgba(0,0,0,0.04);
-  border-color: var(--border-color);
-}
-
-/* Navigation chevrons */
-.lightMode .navBtn {
-  background: rgba(0,0,0,0.06);
-  color: var(--text-main);
-  border-color: var(--border-color);
-}
-.lightMode .navBtn:hover { background: rgba(0,0,0,0.12); }
-
-/* Availability badge */
-.lightMode .availBadge { background: var(--primary-light); color: var(--primary-color); }
-

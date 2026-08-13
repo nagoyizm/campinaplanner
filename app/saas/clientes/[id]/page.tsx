@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import styles from '../../saas.module.css'
 import { ArrowLeft, Building2, Users, BookOpen, Download, Upload } from 'lucide-react'
+import Icon from '@/components/ui/Icon'
 import { format } from 'date-fns'
 import PlanSelector from './PlanSelector'
 
@@ -40,7 +41,7 @@ export default async function ClienteDetailPage({ params }: { params: Promise<{ 
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
             <Link href="/saas/clientes" className="btn btn-ghost" style={{ padding: '8px' }}>
-              <ArrowLeft size={18} />
+              <Icon icon={ArrowLeft} size="lg" />
             </Link>
             <h1 className={styles.title} style={{ margin: 0 }}>{org.name}</h1>
             <span className={styles.badge} style={{ opacity: org.active ? 1 : 0.5 }}>
@@ -60,7 +61,7 @@ export default async function ClienteDetailPage({ params }: { params: Promise<{ 
       <div className={styles.statsGrid}>
         <div className={styles.statCard}>
           <div className={styles.statIcon} style={{ color: '#3b82f6', background: 'rgba(59, 130, 246, 0.1)' }}>
-            <Users size={24} />
+            <Icon icon={Users} size="2xl" />
           </div>
           <div className={styles.statInfo}>
             <h3>Usuarios Activos</h3>
@@ -69,7 +70,7 @@ export default async function ClienteDetailPage({ params }: { params: Promise<{ 
         </div>
         <div className={styles.statCard}>
           <div className={styles.statIcon} style={{ color: '#eab308', background: 'rgba(234, 179, 8, 0.1)' }}>
-            <BookOpen size={24} />
+            <Icon icon={BookOpen} size="2xl" />
           </div>
           <div className={styles.statInfo}>
             <h3>Reservas Históricas</h3>
@@ -78,7 +79,7 @@ export default async function ClienteDetailPage({ params }: { params: Promise<{ 
         </div>
         <div className={styles.statCard}>
           <div className={styles.statIcon} style={{ color: '#22c55e', background: 'rgba(34, 197, 94, 0.1)' }}>
-            <Building2 size={24} />
+            <Icon icon={Building2} size="2xl" />
           </div>
           <div className={styles.statInfo}>
             <h3>Habitaciones</h3>
@@ -108,20 +109,20 @@ export default async function ClienteDetailPage({ params }: { params: Promise<{ 
               
               <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
                 <a href={`/api/saas/export-data?orgId=${org.id}&table=${step.id}&format=csv`} className="btn btn-ghost" style={{ fontSize: '0.85rem', padding: '8px 12px' }} title="Exportar datos actuales en CSV">
-                  <Download size={16} />
+                  <Icon icon={Download} size="md" />
                   Datos CSV
                 </a>
                 <a href={`/api/saas/export-data?orgId=${org.id}&table=${step.id}&format=json`} className="btn btn-ghost" style={{ fontSize: '0.85rem', padding: '8px 12px' }} title="Exportar datos actuales en JSON">
-                  <Download size={16} />
+                  <Icon icon={Download} size="md" />
                   Datos JSON
                 </a>
                 <div style={{ width: '1px', height: '24px', background: 'var(--border-light)', margin: '0 4px' }} />
                 <a href={`/api/saas/export-template?table=${step.id}`} className="btn btn-ghost" style={{ fontSize: '0.85rem', padding: '8px 12px' }} title="Descargar plantilla Excel en blanco">
-                  <Download size={16} />
+                  <Icon icon={Download} size="md" />
                   Plantilla Vacía
                 </a>
                 <Link href={`/saas/clientes/${org.id}/importar?table=${step.id}`} className="btn btn-secondary" style={{ fontSize: '0.85rem', padding: '8px 12px' }}>
-                  <Upload size={16} />
+                  <Icon icon={Upload} size="md" />
                   Importar
                 </Link>
               </div>

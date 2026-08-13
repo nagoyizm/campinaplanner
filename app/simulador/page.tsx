@@ -11,6 +11,7 @@ import {
   ArrowRight,
   Database,
 } from 'lucide-react'
+import Icon from '@/components/ui/Icon'
 import toast from 'react-hot-toast'
 import styles from './simulador.module.css'
 import Link from 'next/link'
@@ -254,12 +255,12 @@ export default function SimuladorPage() {
       {celebrate && createdRsvId && (
         <div className={styles.celebrateOverlay}>
           <div className={styles.celebrateCard}>
-            <Sparkles className={styles.celebrateIcon} size={48} />
+            <Icon icon={Sparkles} className={styles.celebrateIcon} size={48} />
             <h2>¡Reserva Registrada Exitosamente!</h2>
             <p>El chatbot simulado ha creado exitosamente la reserva **Rsv #{createdRsvId}** en la base de datos.</p>
             <div className={styles.celebrateActions}>
               <Link href="/calendario" className="btn btn-primary btn-sm" onClick={() => setCelebrate(false)}>
-                Ver en Calendario <ArrowRight size={14} style={{ marginLeft: 4 }} />
+                Ver en Calendario <Icon icon={ArrowRight} size="sm" style={{ marginLeft: 4 }} />
               </Link>
               <button className="btn btn-secondary btn-sm" onClick={() => setCelebrate(false)}>
                 Seguir Chateando
@@ -279,7 +280,7 @@ export default function SimuladorPage() {
           <div className={styles.chatHeader}>
             <div className={styles.headerInfo}>
               <div className={styles.botAvatar}>
-                <Bot size={20} />
+                <Icon icon={Bot} size="xl" />
               </div>
               <div>
                 <h3 className={styles.botName}>
@@ -296,7 +297,7 @@ export default function SimuladorPage() {
               </div>
             </div>
             <button className="btn btn-ghost btn-sm" onClick={handleReset} title="Reiniciar chat">
-              <RotateCcw size={16} style={{ marginRight: 6 }} /> Reiniciar
+              <Icon icon={RotateCcw} size="md" style={{ marginRight: 6 }} /> Reiniciar
             </button>
           </div>
 
@@ -305,7 +306,7 @@ export default function SimuladorPage() {
             
             {/* Informational Message */}
             <div className={styles.systemBanner}>
-              <MessageSquare size={14} />
+              <Icon icon={MessageSquare} size="sm" />
               <span>
                 {chatState.isAiMode ? (
                   <strong>🧠 Conectado a Google Gemini 1.5 Flash. Chatea orgánicamente y reserva en tiempo real.</strong>
@@ -386,7 +387,7 @@ export default function SimuladorPage() {
               onClick={() => handleSend(inputValue)}
               disabled={!inputValue.trim() || botTyping}
             >
-              <Send size={18} />
+              <Icon icon={Send} size="lg" />
             </button>
           </div>
 
@@ -397,7 +398,7 @@ export default function SimuladorPage() {
           
           <div className={`card ${styles.monitorCard}`}>
             <div className="card-header" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <Database size={18} style={{ color: 'var(--brand-500)' }} />
+              <Icon icon={Database} size="lg" style={{ color: 'var(--brand-500)' }} />
               <h3 className={styles.cardTitle}>Consola del Desarrollador</h3>
             </div>
             

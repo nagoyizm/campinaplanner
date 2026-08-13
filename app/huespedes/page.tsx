@@ -8,6 +8,7 @@ import {
   ChevronLeft, ChevronRight,
   Phone, Mail, Globe, Download
 } from 'lucide-react'
+import Icon from '@/components/ui/Icon'
 import toast from 'react-hot-toast'
 import { useSession } from 'next-auth/react'
 import styles from './huespedes.module.css'
@@ -144,7 +145,7 @@ export default function HuespedesPage() {
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
           <button className="btn btn-primary btn-sm" onClick={handleNew} id="guest-new">
-            <Plus size={14} /> Nuevo Huésped
+            <Icon icon={Plus} size="sm" /> Nuevo Huésped
           </button>
         </div>
       </div>
@@ -157,7 +158,7 @@ export default function HuespedesPage() {
               {editingId ? 'Editar Huésped' : 'Nuevo Huésped'}
             </span>
             <button className="btn btn-ghost btn-icon btn-sm" onClick={() => setShowForm(false)}>
-              <X size={16} />
+              <Icon icon={X} size="md" />
             </button>
           </div>
           <div className="card-body">
@@ -201,7 +202,7 @@ export default function HuespedesPage() {
           <div className="card-footer" style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
             <button className="btn btn-secondary btn-sm" onClick={() => setShowForm(false)}>Cancelar</button>
             <button className="btn btn-primary btn-sm" onClick={handleSave} disabled={saving} id="guest-save">
-              {saving ? <><Loader2 size={13} style={{ animation: 'spin 1s linear infinite' }} /> Guardando...</> : <><Save size={13} /> Guardar</>}
+              {saving ? <><Icon icon={Loader2} size="xs" spin /> Guardando...</> : <><Icon icon={Save} size="xs" /> Guardar</>}
             </button>
           </div>
         </div>
@@ -210,7 +211,7 @@ export default function HuespedesPage() {
       {/* Search */}
       <div className={styles.searchBar}>
         <div style={{ position: 'relative', flex: 1 }}>
-          <Search size={15} style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+          <Icon icon={Search} size="sm" style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
           <input
             className="input"
             style={{ paddingLeft: 36 }}
@@ -220,7 +221,7 @@ export default function HuespedesPage() {
           />
         </div>
         <button className="btn btn-secondary" onClick={handleExport} title="Descargar Base de Datos">
-          <Download size={15} /> Descargar
+          <Icon icon={Download} size="sm" /> Descargar
         </button>
       </div>
 
@@ -228,7 +229,7 @@ export default function HuespedesPage() {
       <div className="card">
         {loading ? (
           <div style={{ display: 'flex', justifyContent: 'center', padding: 48, gap: 10, color: 'var(--text-muted)' }}>
-            <Loader2 size={22} style={{ animation: 'spin 1s linear infinite', color: 'var(--brand-500)' }} />
+            <Icon icon={Loader2} size="xl" spin color="var(--brand-500)" />
             Cargando...
           </div>
         ) : guests.length === 0 ? (
@@ -268,16 +269,16 @@ export default function HuespedesPage() {
                       <td>
                         <div className={styles.contactCell}>
                           {g.phone && (
-                            <span className={styles.contactItem}><Phone size={11} />{g.phone}</span>
+                            <span className={styles.contactItem}><Icon icon={Phone} size="xs" />{g.phone}</span>
                           )}
                           {g.email && (
-                            <span className={styles.contactItem}><Mail size={11} />{g.email}</span>
+                            <span className={styles.contactItem}><Icon icon={Mail} size="xs" />{g.email}</span>
                           )}
                         </div>
                       </td>
                       <td>
                         {g.nationality && (
-                          <span className={styles.natBadge}><Globe size={10} />{g.nationality}</span>
+                          <span className={styles.natBadge}><Icon icon={Globe} size="xs" />{g.nationality}</span>
                         )}
                       </td>
                       <td className={styles.staysCell}>
@@ -293,10 +294,10 @@ export default function HuespedesPage() {
                       </td>
                       <td>
                         <div style={{ display: 'flex', gap: 4, justifyContent: 'center' }}>
-                          <button className="btn btn-ghost btn-icon btn-sm" onClick={() => handleEdit(g)} title="Editar"><Edit2 size={14} /></button>
+                          <button className="btn btn-ghost btn-icon btn-sm" onClick={() => handleEdit(g)} title="Editar"><Icon icon={Edit2} size="sm" /></button>
                           {isAdmin && (
-                            <button className="btn btn-ghost btn-icon btn-sm" onClick={() => handleDelete(g.id)} disabled={deleting === g.id} title="Eliminar" style={{ color: '#ef4444' }}>
-                              {deleting === g.id ? <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} /> : <Trash2 size={14} />}
+                            <button className="btn btn-ghost btn-icon btn-sm" onClick={() => handleDelete(g.id)} disabled={deleting === g.id} title="Eliminar" style={{ color: 'var(--danger)' }}>
+                              {deleting === g.id ? <Icon icon={Loader2} size="sm" spin /> : <Icon icon={Trash2} size="sm" />}
                             </button>
                           )}
                         </div>
@@ -313,10 +314,10 @@ export default function HuespedesPage() {
                 <span className={styles.pageInfo}>{total} resultados · Página {page} de {totalPages}</span>
                 <div style={{ display: 'flex', gap: 4 }}>
                   <button className="btn btn-secondary btn-sm btn-icon" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}>
-                    <ChevronLeft size={14} />
+                    <Icon icon={ChevronLeft} size="sm" />
                   </button>
                   <button className="btn btn-secondary btn-sm btn-icon" onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}>
-                    <ChevronRight size={14} />
+                    <Icon icon={ChevronRight} size="sm" />
                   </button>
                 </div>
               </div>

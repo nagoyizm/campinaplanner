@@ -3,6 +3,7 @@ import { requireSuperAdmin } from '@/lib/org'
 import Link from 'next/link'
 import styles from './saas.module.css'
 import { Building2, Users, FileText, Plus } from 'lucide-react'
+import Icon from '@/components/ui/Icon'
 import { format } from 'date-fns'
 
 export const dynamic = 'force-dynamic'
@@ -32,11 +33,11 @@ export default async function SaasDashboard() {
         </div>
         <div style={{ display: 'flex', gap: '12px' }}>
           <Link href="/saas/importar" className="btn btn-secondary">
-            <FileText size={18} />
+            <Icon icon={FileText} size="lg" />
             Importar Datos
           </Link>
           <Link href="/saas/nuevo" className="btn btn-primary">
-            <Plus size={18} />
+            <Icon icon={Plus} size="lg" />
             Nuevo Cliente
           </Link>
         </div>
@@ -45,7 +46,7 @@ export default async function SaasDashboard() {
       <div className={styles.statsGrid}>
         <div className={styles.statCard}>
           <div className={styles.statIcon}>
-            <Building2 size={24} />
+            <Icon icon={Building2} size="2xl" />
           </div>
           <div className={styles.statInfo}>
             <h3>Clientes Activos</h3>
@@ -54,7 +55,7 @@ export default async function SaasDashboard() {
         </div>
         <div className={styles.statCard}>
           <div className={styles.statIcon} style={{ color: '#3b82f6', background: 'rgba(59, 130, 246, 0.1)' }}>
-            <Users size={24} />
+            <Icon icon={Users} size="2xl" />
           </div>
           <div className={styles.statInfo}>
             <h3>Usuarios Totales</h3>
@@ -63,7 +64,7 @@ export default async function SaasDashboard() {
         </div>
         <div className={styles.statCard}>
           <div className={styles.statIcon} style={{ color: '#eab308', background: 'rgba(234, 179, 8, 0.1)' }}>
-            <FileText size={24} />
+            <Icon icon={FileText} size="2xl" />
           </div>
           <div className={styles.statInfo}>
             <h3>Reservas en Sistema</h3>

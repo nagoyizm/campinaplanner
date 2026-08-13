@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { Edit2, Save, X, Loader2 } from 'lucide-react'
+import Icon from '@/components/ui/Icon'
 import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
 
@@ -72,7 +73,7 @@ export default function EditUserButton({ user }: { user: User }) {
         onMouseEnter={e => e.currentTarget.style.background = 'rgba(59, 130, 246, 0.2)'}
         onMouseLeave={e => e.currentTarget.style.background = 'rgba(59, 130, 246, 0.1)'}
       >
-        <Edit2 size={16} />
+        <Icon icon={Edit2} size="md" />
       </button>
 
       {open && (
@@ -97,7 +98,7 @@ export default function EditUserButton({ user }: { user: User }) {
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
               <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 600 }}>Editar Usuario</h3>
               <button onClick={() => setOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}>
-                <X size={20} />
+                <Icon icon={X} size="xl" />
               </button>
             </div>
 
@@ -187,7 +188,7 @@ export default function EditUserButton({ user }: { user: User }) {
                 className="btn btn-primary"
                 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
               >
-                {loading ? <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} /> : <Save size={16} />}
+                {loading ? <Icon icon={Loader2} size="md" spin /> : <Icon icon={Save} size="md" />}
                 Guardar
               </button>
             </div>

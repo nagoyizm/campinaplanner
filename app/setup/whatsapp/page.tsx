@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { Smartphone, AlertCircle, CheckCircle2, RefreshCw } from 'lucide-react'
+import Icon from '@/components/ui/Icon'
 
 export default function WhatsAppSetupPage() {
   const [status, setStatus] = useState<string>('loading')
@@ -72,7 +73,7 @@ export default function WhatsAppSetupPage() {
       <div className="card max-w-2xl">
         <div className="card-header">
           <h3 className="font-semibold flex items-center gap-2">
-            <Smartphone size={18} />
+            <Icon icon={Smartphone} size="lg" />
             Estado de Conexión
           </h3>
           <button 
@@ -80,7 +81,7 @@ export default function WhatsAppSetupPage() {
             onClick={fetchStatus}
             disabled={status === 'loading'}
           >
-            <RefreshCw size={14} style={{ animation: status === 'loading' ? 'spin 1s linear infinite' : 'none' }} />
+            <Icon icon={RefreshCw} size="sm" style={{ animation: status === 'loading' ? 'spin 1s linear infinite' : 'none' }} />
             Actualizar
           </button>
         </div>
@@ -88,14 +89,14 @@ export default function WhatsAppSetupPage() {
           
           {status === 'loading' && (
             <div className="flex flex-col items-center gap-4 text-muted">
-              <RefreshCw size={32} style={{ animation: 'spin 1s linear infinite' }} />
+              <Icon icon={RefreshCw} size="3xl" spin />
               <p>{message || 'Conectando con el microservicio...'}</p>
             </div>
           )}
 
           {status === 'offline' && (
             <div className="flex flex-col items-center gap-4 text-red-500">
-              <AlertCircle size={48} />
+              <Icon icon={AlertCircle} size={48} />
               <h4 className="font-medium text-primary">Microservicio Desconectado</h4>
               <p className="text-sm text-muted">{message}</p>
             </div>
@@ -103,7 +104,7 @@ export default function WhatsAppSetupPage() {
 
           {status === 'error' && (
             <div className="flex flex-col items-center gap-4 text-red-500">
-              <AlertCircle size={48} />
+              <Icon icon={AlertCircle} size={48} />
               <h4 className="font-medium text-primary">Error de Conexión</h4>
               <p className="text-sm text-muted">{message}</p>
               <p className="text-xs text-muted max-w-sm mt-2">
@@ -114,7 +115,7 @@ export default function WhatsAppSetupPage() {
 
           {status === 'starting' && (
             <div className="flex flex-col items-center gap-4 text-amber-500">
-              <RefreshCw size={48} style={{ animation: 'spin 1s linear infinite', color: '#f59e0b' }} />
+              <Icon icon={RefreshCw} size={48} spin color="#f59e0b" />
               <h4 className="font-medium text-primary">Iniciando Cliente WhatsApp...</h4>
               <p className="text-sm text-muted">{message}</p>
             </div>
@@ -137,7 +138,7 @@ export default function WhatsAppSetupPage() {
 
           {status === 'connected' && (
             <div className="flex flex-col items-center gap-4 text-brand-500 w-full">
-              <CheckCircle2 size={64} />
+              <Icon icon={CheckCircle2} size={64} />
               <h4 className="font-medium text-primary">¡Conectado Exitosamente!</h4>
               <p className="text-sm text-muted">El sistema está listo para enviar notificaciones automáticas.</p>
               <button 

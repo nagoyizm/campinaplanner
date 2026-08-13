@@ -14,6 +14,7 @@ import {
   ShieldCheck, ShieldAlert, Filter
 } from 'lucide-react'
 import toast from 'react-hot-toast'
+import Icon from '@/components/ui/Icon'
 import styles from './Calendario.module.css'
 import ReservaModal from '@/components/reservas/ReservaModal'
 import QuickReservaModal from '@/components/reservas/QuickReservaModal'
@@ -86,13 +87,13 @@ function formatCLP(n: number) {
 
 // ── Status config ─────────────────────────────────────────────────
 const STATUS_CONFIG: Record<string, { label: string; color: string; textColor: string }> = {
-  booked:      { label: 'Reservado',   color: 'rgba(59, 130, 246, 0.70)', textColor: 'var(--text-primary)' },
-  confirmed:   { label: 'Confirmado',  color: 'rgba(16, 185, 129, 0.70)', textColor: 'var(--text-primary)' },
-  checked_in:  { label: 'Check-In',    color: 'rgba(245, 158, 11, 0.70)', textColor: 'var(--text-primary)' },
-  checked_out: { label: 'Check-Out',   color: 'rgba(107, 114, 128, 0.70)', textColor: 'var(--text-primary)' },
-  blocked:     { label: 'Bloqueado',   color: 'rgba(31, 41, 55, 0.70)', textColor: 'var(--text-primary)' },
-  cancelled:   { label: 'Cancelado',   color: 'rgba(239, 68, 68, 0.70)', textColor: 'var(--text-primary)' },
-  no_show:     { label: 'No Show',     color: 'rgba(139, 92, 246, 0.70)', textColor: 'var(--text-primary)' },
+  booked:      { label: 'Reservado',   color: 'color-mix(in srgb, var(--info) 42%, var(--surface-1))', textColor: 'var(--text-primary)' },
+  confirmed:   { label: 'Confirmado',  color: 'color-mix(in srgb, var(--success) 42%, var(--surface-1))', textColor: 'var(--text-primary)' },
+  checked_in:  { label: 'Check-In',    color: 'color-mix(in srgb, var(--warning) 42%, var(--surface-1))', textColor: 'var(--text-primary)' },
+  checked_out: { label: 'Check-Out',   color: 'color-mix(in srgb, var(--neutral) 42%, var(--surface-1))', textColor: 'var(--text-primary)' },
+  blocked:     { label: 'Bloqueado',   color: 'var(--neutral)', textColor: 'var(--surface-1)' },
+  cancelled:   { label: 'Cancelado',   color: 'color-mix(in srgb, var(--danger) 42%, var(--surface-1))', textColor: 'var(--text-primary)' },
+  no_show:     { label: 'No Show',     color: 'color-mix(in srgb, var(--violet) 42%, var(--surface-1))', textColor: 'var(--text-primary)' },
 }
 
 // ── Main Component ────────────────────────────────────────────────
@@ -241,11 +242,6 @@ export default function CalendarioClient({ rooms, reservas, fechaBase, todayStr 
     setCurrentDate(newDate)
     router.push(`/calendario?fecha=${format(newDate, 'yyyy-MM-dd')}`)
   }
-  const goToPrev14 = () => setCurrentDate(prev => addDays(prev, -14))
-  const goToPrev7 = () => setCurrentDate(prev => addDays(prev, -7))
-  const goToNext7 = () => setCurrentDate(prev => addDays(prev, 7))
-  const goToNext14 = () => setCurrentDate(prev => addDays(prev, 14))
-
   const goToToday = () => {
     const today = new Date()
     setCurrentDate(today)
@@ -577,7 +573,7 @@ export default function CalendarioClient({ rooms, reservas, fechaBase, todayStr 
     const blockWidth = rsv && isFirst ? getBlockWidth(rsv, day, days) : 1
     const status = rsv ? (STATUS_CONFIG[rsv.reservation.status] || {
       label: rsv.reservation.status || 'Reserva',
-      color: 'rgba(107, 114, 128, 0.70)',
+      color: 'var(--neutral-bg)',
       textColor: 'var(--text-primary)'
     }) : null
     const isDragSel = isDragSelected(room.id, day)
@@ -692,13 +688,13 @@ export default function CalendarioClient({ rooms, reservas, fechaBase, todayStr 
             
             <span className={styles.rsvGuest} style={{ display: 'flex', alignItems: 'center', gap: '4px', overflow: 'hidden', zIndex: 2 }}>
               {(rsv as any)._isSaving ? (
-                <RefreshCw size={12} className={styles.spinning} style={{ flexShrink: 0 }} />
+                <Icon icon={RefreshCw} size="xs" className={styles.spinning} />
               ) : (rsv as any)._isSaved ? (
-                <ShieldCheck size={12} style={{ color: '#fff', flexShrink: 0 }} />
+                <Icon icon={ShieldCheck} size="xs" color="var(--success)" />
               ) : rsv.reservation.guaranteeRsv === 'true' ? (
-                <ShieldCheck size={12} style={{ color: '#10b981', flexShrink: 0 }} data-tooltip="Garantía Pagada" />
+                <Icon icon={ShieldCheck} size="xs" color="var(--success)" data-tooltip="Garantía Pagada" />
               ) : (
-                <ShieldAlert size={12} style={{ color: '#ef4444', flexShrink: 0 }} data-tooltip="Sin Garantía" />
+                <Icon icon={ShieldAlert} size="xs" color="var(--danger)" data-tooltip="Sin Garantía" />
               )}
               <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {(rsv as any)._isSaving ? 'Guardando...' : (rsv as any)._isSaved ? '¡Actualizada!' : `${rsv.reservation.guest.firstName} ${rsv.reservation.guest.lastName}`}
@@ -726,9 +722,9 @@ export default function CalendarioClient({ rooms, reservas, fechaBase, todayStr 
           <div
             className={`${styles.reservationBlock} ${styles.dragPreviewBlock}`}
             style={{
-              backgroundColor: isPreviewValid ? 'var(--brand-500)' : '#dc2626',
-              color: '#ffffff',
-              border: '2px dashed #ffffff',
+              backgroundColor: isPreviewValid ? 'var(--brand-500)' : 'var(--danger)',
+              color: 'var(--surface-1)',
+              border: '2px dashed var(--surface-1)',
               width: `calc(${previewWidth * 100}% + ${previewWidth - 1}px)`,
               pointerEvents: 'none',
             }}
@@ -751,54 +747,44 @@ export default function CalendarioClient({ rooms, reservas, fechaBase, todayStr 
       {/* ── Toolbar ── */}
       <div className={styles.toolbar}>
         <div className={styles.toolbarLeft}>
-          <div style={{ display: 'flex', gap: '2px', background: 'var(--surface-3)', padding: '2px', borderRadius: '6px', marginRight: '12px' }}>
+          <div className={styles.viewToggle}>
             <button
-              style={{ padding: '4px 12px', fontSize: '12px', borderRadius: '4px', border: 'none', background: viewMode === 'month' ? 'var(--brand-500)' : 'transparent', color: viewMode === 'month' ? '#fff' : 'var(--text-secondary)', cursor: 'pointer', fontWeight: 600 }}
+              className={`${styles.viewToggleBtn} ${viewMode === 'month' ? styles.viewToggleBtnActive : ''}`}
               onClick={() => setViewMode('month')}
             >Mes</button>
             <button
-              style={{ padding: '4px 12px', fontSize: '12px', borderRadius: '4px', border: 'none', background: viewMode === 'week' ? 'var(--brand-500)' : 'transparent', color: viewMode === 'week' ? '#fff' : 'var(--text-secondary)', cursor: 'pointer', fontWeight: 600 }}
+              className={`${styles.viewToggleBtn} ${viewMode === 'week' ? styles.viewToggleBtnActive : ''}`}
               onClick={() => setViewMode('week')}
             >Semana</button>
           </div>
 
-          <button className="btn btn-secondary btn-sm" onClick={goToPrev} id="cal-prev" title="- 1 Mes">
-            <ChevronsLeft size={16} />
-          </button>
-          <button className="btn btn-secondary btn-sm" onClick={goToPrev14} title="- 14 Días" style={{ fontSize: '11px', padding: '0 6px' }}>
-            -14d
-          </button>
-          <button className="btn btn-secondary btn-sm" onClick={goToPrev7} title="- 7 Días" style={{ fontSize: '11px', padding: '0 6px' }}>
-            -7d
+          <div className={styles.toolbarDivider} />
+
+          <button className="btn btn-secondary btn-sm" onClick={goToPrev} id="cal-prev" title="Mes anterior" aria-label="Mes anterior">
+            <Icon icon={ChevronsLeft} size="md" />
           </button>
           <span className={styles.monthLabel}>
             {viewMode === 'month' 
               ? format(currentDate, 'MMMM yyyy', { locale: es })
               : `${format(startDay, 'd MMM', { locale: es })} - ${format(addDays(startDay, 6), 'd MMM yyyy', { locale: es })}`}
           </span>
-          <button className="btn btn-secondary btn-sm" onClick={goToNext7} title="+ 7 Días" style={{ fontSize: '11px', padding: '0 6px' }}>
-            +7d
-          </button>
-          <button className="btn btn-secondary btn-sm" onClick={goToNext14} title="+ 14 Días" style={{ fontSize: '11px', padding: '0 6px' }}>
-            +14d
-          </button>
-          <button className="btn btn-secondary btn-sm" onClick={goToNext} id="cal-next" title="+ 1 Mes">
-            <ChevronsRight size={16} />
+          <button className="btn btn-secondary btn-sm" onClick={goToNext} id="cal-next" title="Mes siguiente" aria-label="Mes siguiente">
+            <Icon icon={ChevronsRight} size="md" />
           </button>
           <button className="btn btn-secondary btn-sm" onClick={goToToday} id="cal-today">
             Hoy
           </button>
-          <button className="btn btn-ghost btn-sm btn-icon" onClick={handleRefresh} id="cal-refresh">
-            <RefreshCw size={15} className={refreshing ? styles.spinning : ''} />
-          </button>
         </div>
         <div className={styles.toolbarRight}>
+          <button className="btn btn-ghost btn-sm btn-icon" onClick={handleRefresh} id="cal-refresh" aria-label="Actualizar" title="Actualizar">
+            <Icon icon={RefreshCw} size="sm" className={refreshing ? styles.spinning : ''} />
+          </button>
           <button
             className="btn btn-primary btn-sm"
             onClick={() => { setSelectedCell(null); setSelectedReservaId(null); setModalOpen(true) }}
             id="cal-new-reservation"
           >
-            <Plus size={15} />
+            <Icon icon={Plus} size="sm" />
             Nueva Reserva
           </button>
         </div>
@@ -834,7 +820,7 @@ export default function CalendarioClient({ rooms, reservas, fechaBase, todayStr 
               }}
             >
               <span>Habitación</span>
-              <Filter size={14} style={{ opacity: unitTypeFilter.length === unitTypes.length ? 0.5 : 1 }} />
+              <Icon icon={Filter} size="sm" style={{ opacity: unitTypeFilter.length === unitTypes.length ? 0.5 : 1 }} />
             </button>
             {isRoomFilterOpen && (
               <>
@@ -944,8 +930,8 @@ export default function CalendarioClient({ rooms, reservas, fechaBase, todayStr 
             )
           })}
           <div className={styles.legendSeparator} />
-          <div className={styles.legendItem}><ShieldCheck size={12} style={{color:'#10b981'}} /><span>Garantía Pagada</span></div>
-          <div className={styles.legendItem}><ShieldAlert size={12} style={{color:'#ef4444'}} /><span>Sin Garantía</span></div>
+          <div className={styles.legendItem}><Icon icon={ShieldCheck} size="xs" color="var(--success)" /><span>Garantía Pagada</span></div>
+          <div className={styles.legendItem}><Icon icon={ShieldAlert} size="xs" color="var(--danger)" /><span>Sin Garantía</span></div>
         </div>
 
       {/* ── Modals ── */}
@@ -1035,7 +1021,7 @@ export default function CalendarioClient({ rooms, reservas, fechaBase, todayStr 
                   <hr style={{ margin: '4px 0', borderColor: 'var(--border)' }} />
                   <div><strong>Total:</strong> {formatCLP(total)}</div>
                   <div><strong>Total Pagado:</strong> {formatCLP(hrsv.totalPaid)}</div>
-                  <div><strong style={{ color: amountDue > 0 ? '#ef4444' : 'inherit' }}>Monto Adeudado:</strong> {formatCLP(amountDue)}</div>
+                  <div><strong style={{ color: amountDue > 0 ? 'var(--danger)' : 'inherit' }}>Monto Adeudado:</strong> {formatCLP(amountDue)}</div>
                   {(hrsv.lostItems || hrsv.notes) && <hr style={{ margin: '4px 0', borderColor: 'var(--border)' }} />}
                   {hrsv.lostItems && <div><strong>Objeto perdido:</strong> {hrsv.lostItems}</div>}
                   {hrsv.notes && <div><strong>Notas:</strong> {hrsv.notes}</div>}

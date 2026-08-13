@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Trash2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
+import Icon from './Icon'
 
 interface DeleteButtonProps {
   endpoint: string
@@ -62,7 +63,7 @@ export default function DeleteButton({ endpoint, confirmMessage, title = 'Elimin
       onMouseEnter={e => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.2)'}
       onMouseLeave={e => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'}
     >
-      <Trash2 size={16} />
+      <Icon icon={Trash2} size="md" />
     </button>
   )
 }

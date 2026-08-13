@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { MessageSquare, Send, Pin, User, Clock } from 'lucide-react'
+import Icon from '@/components/ui/Icon'
 import toast from 'react-hot-toast'
 
 interface Memo {
@@ -83,8 +84,8 @@ export default function PizarraClient({ initialMemos, userRole, orgUsers = [] }:
   return (
     <div className="page-container" style={{ maxWidth: '800px', margin: '0 auto', paddingTop: '32px' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '32px', borderBottom: '2px solid var(--border)', paddingBottom: '16px' }}>
-        <div style={{ background: '#e0e7ff', color: '#4338ca', padding: '12px', borderRadius: '12px' }}>
-          <MessageSquare size={28} />
+        <div style={{ background: 'var(--violet-bg)', color: 'var(--violet)', padding: '12px', borderRadius: '12px' }}>
+          <Icon icon={MessageSquare} size="3xl" />
         </div>
         <div>
           <h1 style={{ fontSize: '1.75rem', fontWeight: 800, margin: 0 }}>Pizarra / Memo</h1>
@@ -135,7 +136,7 @@ export default function PizarraClient({ initialMemos, userRole, orgUsers = [] }:
           </div>
           <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '12px' }}>
             <button type="submit" className="btn btn-primary" disabled={loading || !newMemo.trim()}>
-              {loading ? 'Publicando...' : <><Send size={16} /> Publicar</>}
+              {loading ? 'Publicando...' : <><Icon icon={Send} size="md" /> Publicar</>}
             </button>
           </div>
         </form>
@@ -187,7 +188,7 @@ export default function PizarraClient({ initialMemos, userRole, orgUsers = [] }:
             />
             <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
               <button type="submit" className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Send size={16} /> Enviar a Todos
+                <Icon icon={Send} size="md" /> Enviar a Todos
               </button>
             </div>
           </form>
@@ -213,16 +214,16 @@ export default function PizarraClient({ initialMemos, userRole, orgUsers = [] }:
       <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
         {filteredMemos.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '40px', background: 'var(--surface-1)', borderRadius: '16px', color: 'var(--text-muted)' }}>
-            <Pin size={48} style={{ opacity: 0.2, marginBottom: '16px', display: 'inline-block' }} />
+            <Icon icon={Pin} size={48} style={{ opacity: 0.2, marginBottom: '16px', display: 'inline-block' }} />
             <p>No hay mensajes en la pizarra para este periodo.</p>
           </div>
         ) : (
           filteredMemos.map(memo => (
-            <div key={memo.id} style={{ background: 'var(--surface-1)', padding: '20px', borderRadius: '12px', borderLeft: memo.targetUserId ? '4px solid #ef4444' : '4px solid #fde68a', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+            <div key={memo.id} style={{ background: 'var(--surface-1)', padding: '20px', borderRadius: '12px', borderLeft: memo.targetUserId ? '4px solid var(--danger)' : '4px solid var(--warning)', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
               
               {memo.targetUser && (
-                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: '#fee2e2', color: '#b91c1c', padding: '4px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600, marginBottom: '12px', textTransform: 'uppercase' }}>
-                  <Pin size={12} />
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: 'var(--danger-bg)', color: 'var(--danger)', padding: '4px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600, marginBottom: '12px', textTransform: 'uppercase' }}>
+                  <Icon icon={Pin} size="xs" />
                   Privado para: {memo.targetUser.name}
                 </div>
               )}
@@ -232,11 +233,11 @@ export default function PizarraClient({ initialMemos, userRole, orgUsers = [] }:
               </p>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <User size={14} />
+                  <Icon icon={User} size="sm" />
                   <span>{memo.author}</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <Clock size={14} />
+                  <Icon icon={Clock} size="sm" />
                   <span>{format(new Date(memo.createdAt), "d 'de' MMMM, HH:mm", { locale: es })}</span>
                 </div>
               </div>

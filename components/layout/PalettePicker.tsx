@@ -4,15 +4,16 @@ import { useState, useRef, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { useSession } from 'next-auth/react'
 import { Palette, Check } from 'lucide-react'
+import Icon from '@/components/ui/Icon'
 import styles from './PalettePicker.module.css'
 
 const PALETTES = [
   { id: 'verde',    label: 'Verde',    color: '#4b6f50' },
-  { id: 'azul',     label: 'Azul',     color: '#2563eb' },
-  { id: 'rojizo',   label: 'Rojizo',   color: '#be123c' },
-  { id: 'crema',    label: 'Crema',    color: '#b45309' },
-  { id: 'morado',   label: 'Morado',   color: '#7c3aed' },
-  { id: 'turquesa', label: 'Turquesa', color: '#0d9488' },
+  { id: 'azul',     label: 'Azul',     color: '#4f7683' },
+  { id: 'rojizo',   label: 'Rojizo',   color: '#9c5f67' },
+  { id: 'crema',    label: 'Crema',    color: '#b0813f' },
+  { id: 'morado',   label: 'Morado',   color: '#796799' },
+  { id: 'turquesa', label: 'Turquesa', color: '#3f8280' },
 ]
 
 interface PalettePickerProps {
@@ -73,7 +74,7 @@ export default function PalettePicker({ currentPalette, collapsed, onPaletteChan
         onClick={() => setOpen(!open)}
         title="Paleta de colores"
       >
-        <Palette size={16} />
+        <Icon icon={Palette} size="md" />
         {!collapsed && <span>{current.label}</span>}
         {!collapsed && (
           <span className={styles.dot} style={{ background: current.color }} />
@@ -95,7 +96,7 @@ export default function PalettePicker({ currentPalette, collapsed, onPaletteChan
                 >
                   <span className={styles.swatch} style={{ background: p.color }} />
                   <span className={styles.paletteName}>{p.label}</span>
-                  {p.id === currentPalette && <Check size={12} className={styles.checkIcon} />}
+                  {p.id === currentPalette && <Icon icon={Check} size="xs" className={styles.checkIcon} />}
                 </button>
               ))}
             </div>

@@ -7,6 +7,7 @@ import {
   X, Plus, Trash2, Loader2, Save,
   LogIn, LogOut
 } from 'lucide-react'
+import Icon from '@/components/ui/Icon'
 import toast from 'react-hot-toast'
 import styles from './ReservaModal.module.css'
 
@@ -535,7 +536,7 @@ export default function ReservaModal({
       <div className="modal-overlay">
         <div className="modal modal-lg" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 300 }}>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
-            <Loader2 size={32} style={{ animation: 'spin 1s linear infinite', color: 'var(--brand-500)' }} />
+            <Icon icon={Loader2} size="3xl" spin color="var(--brand-500)" />
             <p className="text-muted">Cargando reserva...</p>
           </div>
         </div>
@@ -580,12 +581,12 @@ export default function ReservaModal({
             {/* Quick actions */}
             {currentResId && status !== 'checked_in' && (
               <button className="btn btn-sm" style={{background:'#f59e0b',color:'#fff'}} onClick={() => quickStatus('checked_in')}>
-                <LogIn size={13} /> Check-In
+                <Icon icon={LogIn} size="xs" /> Check-In
               </button>
             )}
             {currentResId && status === 'checked_in' && (
               <button className="btn btn-sm" style={{background:'#6b7280',color:'#fff'}} onClick={() => quickStatus('checked_out')}>
-                <LogOut size={13} /> Check-Out
+                <Icon icon={LogOut} size="xs" /> Check-Out
               </button>
             )}
             {/* Status selector */}
@@ -600,7 +601,7 @@ export default function ReservaModal({
               ))}
             </select>
             <button className="btn btn-ghost btn-icon" onClick={onClose} aria-label="Cerrar">
-              <X size={18} />
+              <Icon icon={X} size="lg" />
             </button>
           </div>
         </div>
@@ -713,7 +714,7 @@ export default function ReservaModal({
                         <td>
                           {roomLines.length > 1 && (
                             <button className="btn btn-ghost btn-icon btn-sm" onClick={() => removeRoomLine(idx)}>
-                              <Trash2 size={14} style={{ color: '#ef4444' }} />
+                              <Icon icon={Trash2} size="sm" style={{ color: '#ef4444' }} />
                             </button>
                           )}
                         </td>
@@ -723,7 +724,7 @@ export default function ReservaModal({
                 </table>
               </div>
               <button className="btn btn-secondary btn-sm" onClick={addRoomLine} id="modal-add-room">
-                <Plus size={14} /> Agregar Habitación
+                <Icon icon={Plus} size="sm" /> Agregar Habitación
               </button>
 
               <div className={styles.divider} />
@@ -970,7 +971,7 @@ export default function ReservaModal({
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
                   <h4 style={{ margin: 0, fontWeight: 600 }}>Cargos Adicionales</h4>
                   <button className="btn btn-secondary" style={{ padding: '4px 12px', fontSize: 13 }} onClick={addExtraLine}>
-                    <Plus size={14} /> Agregar Cargo
+                    <Icon icon={Plus} size="sm" /> Agregar Cargo
                   </button>
                 </div>
                 {extras.length === 0 ? (
@@ -991,7 +992,7 @@ export default function ReservaModal({
                           {paymentOptions.methods.map(m => <option key={m} value={m}>{m}</option>)}
                         </select>
                         <span style={{ width: 80, textAlign: 'right', fontSize: 13, fontWeight: 600 }}>{formatCLP(ext.total)}</span>
-                        <button className="btn btn-ghost" style={{ padding: 4, color: '#ef4444', height: 32 }} onClick={() => removeExtraLine(idx)}><Trash2 size={16} /></button>
+                        <button className="btn btn-ghost" style={{ padding: 4, color: '#ef4444', height: 32 }} onClick={() => removeExtraLine(idx)}><Icon icon={Trash2} size="md" /></button>
                       </div>
                     ))}
                   </div>
@@ -1199,9 +1200,9 @@ export default function ReservaModal({
                 disabled={deleting}
               >
                 {deleting ? (
-                  <><Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} /> Eliminando...</>
+                  <><Icon icon={Loader2} size="sm" spin /> Eliminando...</>
                 ) : (
-                  <><Trash2 size={14} /> Eliminar Reserva</>
+                  <><Icon icon={Trash2} size="sm" /> Eliminar Reserva</>
                 )}
               </button>
             )}
@@ -1214,7 +1215,7 @@ export default function ReservaModal({
               disabled={saving}
               style={{ backgroundColor: 'var(--surface-2)' }}
             >
-              <Save size={14} /> Guardar
+              <Icon icon={Save} size="sm" /> Guardar
             </button>
             <button
               className="btn btn-primary"
@@ -1223,9 +1224,9 @@ export default function ReservaModal({
               id="modal-save-reservation"
             >
               {saving ? (
-                <><Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} /> Guardando...</>
+                <><Icon icon={Loader2} size="sm" spin /> Guardando...</>
               ) : (
-                <><Save size={14} /> {currentResId ? 'Actualizar y Cerrar' : 'Crear y Cerrar'}</>
+                <><Icon icon={Save} size="sm" /> {currentResId ? 'Actualizar y Cerrar' : 'Crear y Cerrar'}</>
               )}
             </button>
           </div>

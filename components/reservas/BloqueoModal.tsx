@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { format, addDays, differenceInDays } from 'date-fns'
 import toast from 'react-hot-toast'
 import { X, ShieldAlert } from 'lucide-react'
+import Icon from '@/components/ui/Icon'
 
 export default function BloqueoModal({
   defaultRoomId,
@@ -102,11 +103,11 @@ export default function BloqueoModal({
       <div style={{ background: 'var(--surface-1)', padding: 24, borderRadius: 12, width: '100%', maxWidth: 400, boxShadow: '0 10px 25px rgba(0,0,0,0.2)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
           <h2 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: 8, fontSize: 18 }}>
-            <ShieldAlert size={20} color="#ef4444" />
+            <Icon icon={ShieldAlert} size="xl" color="#ef4444" />
             Bloquear Fechas
           </h2>
           <button onClick={onClose} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)' }}>
-            <X size={20} />
+            <Icon icon={X} size="xl" />
           </button>
         </div>
 

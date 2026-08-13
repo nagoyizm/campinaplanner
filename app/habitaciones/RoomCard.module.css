@@ -1,0 +1,201 @@
+.card {
+  border: 1px solid var(--border-light);
+  background: var(--surface-1);
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.card[data-state='clean'] {
+  border-color: color-mix(in srgb, var(--success) 35%, transparent);
+  background: var(--success-bg);
+}
+
+.card[data-state='dirty'] {
+  border-color: color-mix(in srgb, var(--warning) 35%, transparent);
+  background: var(--warning-bg);
+}
+
+.card[data-state='maintenance'] {
+  border-color: color-mix(in srgb, var(--neutral) 35%, transparent);
+  background: var(--neutral-bg);
+}
+
+.card[data-state='occupied'] {
+  border-color: color-mix(in srgb, var(--info) 35%, transparent);
+  background: var(--info-bg);
+}
+
+.card[data-state='priority'] {
+  border-color: color-mix(in srgb, var(--danger) 40%, transparent);
+  background: var(--danger-bg);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.nameRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.name {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.card[data-state='clean'] .name { color: var(--success); }
+.card[data-state='dirty'] .name { color: var(--warning); }
+.card[data-state='maintenance'] .name { color: var(--neutral); }
+.card[data-state='occupied'] .name { color: var(--info); }
+.card[data-state='priority'] .name { color: var(--danger); }
+
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.statusBadge[data-tone='success'] { background: var(--success-bg); color: var(--success); }
+.statusBadge[data-tone='warning'] { background: var(--warning-bg); color: var(--warning); }
+.statusBadge[data-tone='neutral'] { background: var(--neutral-bg); color: var(--neutral); }
+.statusBadge[data-tone='danger'] { background: var(--danger-bg); color: var(--danger); }
+
+.occupancy {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.card[data-state='clean'] .occupancy { color: var(--success); }
+.card[data-state='dirty'] .occupancy { color: var(--warning); }
+.card[data-state='maintenance'] .occupancy { color: var(--neutral); }
+.card[data-state='occupied'] .occupancy { color: var(--info); }
+.card[data-state='priority'] .occupancy { color: var(--danger); }
+
+.note {
+  font-size: 0.75rem;
+  background: rgba(0, 0, 0, 0.05);
+  padding: 6px;
+  border-radius: 4px;
+  font-style: italic;
+}
+
+.noteForm {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.noteInput {
+  font-size: 0.75rem;
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  width: 100%;
+  background: var(--surface-1);
+  color: var(--text-primary);
+}
+
+.noteActions {
+  display: flex;
+  gap: 4px;
+}
+
+.noteSave {
+  flex: 1;
+  background: var(--danger);
+  color: var(--surface-1);
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.noteSave:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.noteCancel {
+  flex: 1;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+}
+
+.noteCancel:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.footer {
+  margin-top: auto;
+  padding-top: 8px;
+  border-top: 1px solid var(--border-light);
+  display: flex;
+  gap: 8px;
+}
+
+.select {
+  width: 100%;
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--surface-1);
+  color: var(--text-primary);
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.select:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.priorityBtn {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--surface-1);
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.priorityBtn[data-active='true'] {
+  border-color: color-mix(in srgb, var(--danger) 40%, transparent);
+  background: var(--danger);
+  color: var(--surface-1);
+}
+
+.priorityBtn:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
