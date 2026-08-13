@@ -29,18 +29,37 @@ export default function PalettePicker({ currentPalette, collapsed, onPaletteChan
   const [saving, setSaving] = useState(false)
   const [mounted, setMounted] = useState(false)
   const triggerRef = useRef<HTMLButtonElement>(null)
-  const [coords, setCoords] = useState({ top: 0, left: 0 })
+  const dropdownRef = useRef<HTMLDivElement>(null)
+  const [coords, setCoords] = useState<{ top?: number; bottom?: number; left: number }>({ left: 0 })
 
   useEffect(() => {
     setMounted(true)
   }, [])
 
   useEffect(() => {
-    if (open && triggerRef.current) {
+    if (open && mounted && triggerRef.current && dropdownRef.current) {
       const rect = triggerRef.current.getBoundingClientRect()
-      setCoords({ top: rect.bottom + 8, left: rect.left })
+      const dropdownHeight = dropdownRef.current.offsetHeight
+      const dropdownWidth = dropdownRef.current.offsetWidth
+      const gap = 8
+      const viewportH = window.innerHeight
+      const viewportW = window.innerWidth
+
+      const spaceBelow = viewportH - rect.bottom
+      const spaceAbove = rect.top
+
+      if (spaceBelow >= dropdownHeight + gap) {
+        // Cabe hacia abajo
+        setCoords({ top: rect.bottom + gap, left: Math.max(8, Math.min(rect.left, viewportW - dropdownWidth - 8)) })
+      } else if (spaceAbove >= dropdownHeight + gap) {
+        // Abre hacia arriba
+        setCoords({ bottom: viewportH - rect.top + gap, left: Math.max(8, Math.min(rect.left, viewportW - dropdownWidth - 8)) })
+      } else {
+        // No cabe ni arriba ni abajo: centra verticalmente en el viewport
+        setCoords({ top: Math.max(8, (viewportH - dropdownHeight) / 2), left: Math.max(8, Math.min(rect.left, viewportW - dropdownWidth - 8)) })
+      }
     }
-  }, [open])
+  }, [open, mounted])
 
   if (role !== 'admin' && role !== 'superadmin') return null
 
@@ -84,7 +103,7 @@ export default function PalettePicker({ currentPalette, collapsed, onPaletteChan
       {open && mounted && createPortal(
         <>
           <div className={styles.backdrop} onClick={() => setOpen(false)} role="presentation" />
-          <div className={styles.dropdown} style={{ top: coords.top, left: coords.left }}>
+          <div ref={dropdownRef} className={styles.dropdown} style={coords.top !== undefined ? { top: coords.top, left: coords.left } : { bottom: coords.bottom, left: coords.left }}>
             <p className={styles.dropdownTitle}>Paleta de colores</p>
             <div className={styles.grid}>
               {PALETTES.map(p => (
