@@ -420,6 +420,79 @@
 .statusBlocked { background: var(--neutral); color: var(--surface-1); }
 .statusCancelled { background: var(--danger-bg); color: var(--danger); }
 .statusNoShow { background: var(--violet-bg); color: var(--violet); }
+.statusOnHold { background: var(--warning-bg); color: var(--warning); }
+
+/* ── Banner de reservas web pendientes de confirmación ───────────── */
+.pendingBanner {
+  margin-top: 20px;
+  padding: 16px 18px;
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--warning) 10%, var(--surface-1));
+  border: 1px solid color-mix(in srgb, var(--warning) 45%, var(--border));
+}
+
+.pendingBannerHeader {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  color: var(--warning);
+}
+
+.pendingBannerTitle {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.pendingBannerSubtitle {
+  margin: 2px 0 0 0;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.pendingList {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pendingItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  background: var(--surface-1);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+}
+
+.pendingItemInfo {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.pendingGuest {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.pendingDetails {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.pendingActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
 
 /* Table */
 .tableContainer {

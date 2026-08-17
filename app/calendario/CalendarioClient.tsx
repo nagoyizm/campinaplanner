@@ -94,6 +94,7 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; textColor: s
   blocked:     { label: 'Bloqueado',   color: 'var(--neutral)', textColor: 'var(--surface-1)' },
   cancelled:   { label: 'Cancelado',   color: 'color-mix(in srgb, var(--danger) 42%, var(--surface-1))', textColor: 'var(--text-primary)' },
   no_show:     { label: 'No Show',     color: 'color-mix(in srgb, var(--violet) 42%, var(--surface-1))', textColor: 'var(--text-primary)' },
+  on_hold:     { label: 'Por Confirmar', color: 'color-mix(in srgb, var(--warning) 42%, var(--surface-1))', textColor: 'var(--text-primary)' },
 }
 
 // ── Main Component ────────────────────────────────────────────────

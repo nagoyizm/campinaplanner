@@ -919,6 +919,9 @@ tbody td { padding: 10px 14px; color: var(--text-primary); }
   from { transform: rotate(0deg); }
   to   { transform: rotate(360deg); }
 }
+.spin {
+  animation: spin 0.8s linear infinite;
+}
 @keyframes pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.5; }

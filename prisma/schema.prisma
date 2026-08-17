@@ -27,6 +27,13 @@ model Organization {
   dteOptions     String @default("Boleta Electrónica,Factura Electrónica")
   bankAccounts   String @default("Santander,Scotiabank,Banco de Chile,BE Chequera,BE Rut,BE Turismo,BE Turismo (POS/LP),BCI/MACH,Caja")
 
+  // Cómo se confirman las reservas que llegan desde reservas.agendio.cl:
+  //   direct   → quedan 'booked' (Reservada) en el calendario, pendientes de que el admin
+  //              contacte a la persona y cierre la reserva o confirme el pago en el lugar
+  //   transfer → quedan en estado 'on_hold' hasta que el admin confirma la transferencia
+  //   gateway  → quedan en estado 'on_hold' hasta que se confirma el pago por pasarela
+  autoBookingMode String @default("direct")
+
   users        User[]
   unitTypes    UnitType[]
   rooms        Room[]

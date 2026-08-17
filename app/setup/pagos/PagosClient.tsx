@@ -1,9 +1,15 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Save, Loader2, Plus, Trash2 } from 'lucide-react'
+import { Save, Loader2, Plus, Trash2, Globe } from 'lucide-react'
 import Icon from '@/components/ui/Icon'
 import toast from 'react-hot-toast'
+
+const AUTO_MODES = [
+  { value: 'direct', title: 'Confirmación pendiente (pago en el lugar)', description: 'La reserva queda "Reservada" en el calendario, no confirmada. El administrador contacta a la persona para cerrar la reserva o la confirma cuando el pago se hace en el lugar. Aparece en el inicio como alerta para revisarla.' },
+  { value: 'transfer', title: 'Transferencia bancaria', description: 'La reserva queda "por confirmar" hasta que ustedes verifiquen el abono y la confirmen manualmente. Se muestran las cuentas destino en la web.' },
+  { value: 'gateway', title: 'Pasarela de pago', description: 'La reserva queda "por confirmar" hasta que el pago se confirme por la pasarela (Flow, Mercado Pago, etc.).' },
+] as const
 
 const ListEditor = ({ title, description, items, setItems }: { title: string, description: string, items: string[], setItems: (items: string[]) => void }) => (
   <div className="card" style={{ marginBottom: 24 }}>
@@ -47,6 +53,7 @@ export default function PagosClient() {
   const [paymentMethods, setPaymentMethods] = useState<string[]>([])
   const [dteOptions, setDteOptions] = useState<string[]>([])
   const [bankAccounts, setBankAccounts] = useState<string[]>([])
+  const [autoBookingMode, setAutoBookingMode] = useState<string>('direct')
 
   useEffect(() => {
     fetch('/api/setup/pagos')
@@ -56,6 +63,7 @@ export default function PagosClient() {
           setPaymentMethods(data.paymentMethods ? data.paymentMethods.split(',') : [])
           setDteOptions(data.dteOptions ? data.dteOptions.split(',') : [])
           setBankAccounts(data.bankAccounts ? data.bankAccounts.split(',') : [])
+          setAutoBookingMode(data.autoBookingMode || 'direct')
         }
         setLoading(false)
       })
@@ -75,6 +83,7 @@ export default function PagosClient() {
           paymentMethods: paymentMethods.filter(Boolean).join(','),
           dteOptions: dteOptions.filter(Boolean).join(','),
           bankAccounts: bankAccounts.filter(Boolean).join(','),
+          autoBookingMode,
         })
       })
       if (!res.ok) throw new Error('Error al guardar configuración')
@@ -90,6 +99,45 @@ export default function PagosClient() {
 
   return (
     <div>
+      <div className="card" style={{ marginBottom: 24 }}>
+        <div className="card-header">
+          <Icon icon={Globe} size="lg" /> Reservas desde la Web
+        </div>
+        <div className="card-body">
+          <p style={{ color: 'var(--text-secondary)', fontSize: 14, marginBottom: 16 }}>
+            Cómo se confirma una reserva creada en <strong>reservas.agendio.cl</strong>.
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {AUTO_MODES.map((m) => (
+              <label
+                key={m.value}
+                style={{
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: 12,
+                  padding: 12,
+                  borderRadius: 10,
+                  border: `1.5px solid ${autoBookingMode === m.value ? 'var(--primary)' : 'var(--border)'}`,
+                  background: autoBookingMode === m.value ? 'color-mix(in srgb, var(--primary) 8%, transparent)' : 'transparent',
+                  cursor: 'pointer',
+                }}
+              >
+                <input
+                  type="radio"
+                  name="autoBookingMode"
+                  style={{ marginTop: 2 }}
+                  checked={autoBookingMode === m.value}
+                  onChange={() => setAutoBookingMode(m.value)}
+                />
+                <div>
+                  <div style={{ fontWeight: 600 }}>{m.title}</div>
+                  <div style={{ color: 'var(--text-secondary)', fontSize: 13 }}>{m.description}</div>
+                </div>
+              </label>
+            ))}
+          </div>
+        </div>
+      </div>
       <ListEditor 
         title="Formas de Pago" 
         description="Opciones disponibles al registrar un pago en una reserva."

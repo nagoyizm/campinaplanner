@@ -989,6 +989,19 @@
   color: var(--primary-950);
 }
 
+.confirmNote {
+  background: var(--main-bg);
+  border: 1px solid var(--border-color);
+  border-left: 3px solid var(--primary-color);
+  border-radius: 2px;
+  padding: 0.7rem 0.85rem;
+  margin-top: 1rem;
+  text-align: left;
+  font-size: 0.8rem;
+  color: var(--primary-950);
+  line-height: 1.45;
+}
+
 .secondaryBtn {
   background: var(--card-bg);
   color: var(--primary-950);

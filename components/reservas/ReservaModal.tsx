@@ -64,6 +64,7 @@ const STATUS_OPTIONS = [
   { value: 'blocked',     label: 'Bloqueado',    color: '#1f2937' },
   { value: 'cancelled',   label: 'Cancelado',    color: '#ef4444' },
   { value: 'no_show',     label: 'No Show',      color: '#8b5cf6' },
+  { value: 'on_hold',     label: 'Por Confirmar', color: '#f59e0b' },
 ]
 
 // ── Format CLP ───────────────────────────────────────────────────

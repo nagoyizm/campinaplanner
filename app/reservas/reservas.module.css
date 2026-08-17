@@ -230,6 +230,7 @@
 .statusBlocked { background: var(--neutral); color: var(--surface-1); }
 .statusCancelled { background: var(--danger-bg); color: var(--danger); }
 .statusNoShow { background: var(--violet-bg); color: var(--violet); }
+.statusOnHold { background: var(--warning-bg); color: var(--warning); }
 
 /* Pagination Row */
 .pagination {

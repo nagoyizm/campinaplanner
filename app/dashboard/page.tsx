@@ -20,6 +20,7 @@ import {
 } from 'lucide-react'
 import Icon from '@/components/ui/Icon'
 import Link from 'next/link'
+import PendingReservasBanner from '@/components/dashboard/PendingReservasBanner'
 import styles from './dashboard.module.css'
 
 export const dynamic = 'force-dynamic'
@@ -115,7 +116,7 @@ export default async function DashboardPage() {
       where: {
         room: { organizationId },
         arrival: { gte: todayStart, lte: todayEnd },
-        reservation: { status: { notIn: ['cancelled', 'blocked'] } }
+        reservation: { status: { notIn: ['cancelled', 'blocked', 'on_hold'] } }
       },
       include: {
         reservation: { include: { guest: true } },
@@ -129,7 +130,7 @@ export default async function DashboardPage() {
       where: {
         room: { organizationId },
         departure: { gte: todayStart, lte: todayEnd },
-        reservation: { status: { notIn: ['cancelled', 'blocked'] } }
+        reservation: { status: { notIn: ['cancelled', 'blocked', 'on_hold'] } }
       },
       include: {
         reservation: { include: { guest: true } },
@@ -157,7 +158,7 @@ export default async function DashboardPage() {
     prisma.reservation.findMany({
       where: {
         organizationId,
-        status: { notIn: ['cancelled', 'blocked'] },
+        status: { notIn: ['cancelled', 'blocked', 'on_hold'] },
         rooms: {
           some: {
             arrival: { gte: startMonth, lte: endMonth }
@@ -170,7 +171,7 @@ export default async function DashboardPage() {
     prisma.reservation.findMany({
       where: {
         organizationId,
-        status: { notIn: ['cancelled', 'blocked'] }
+        status: { notIn: ['cancelled', 'blocked', 'on_hold'] }
       }
     }),
 
@@ -179,7 +180,7 @@ export default async function DashboardPage() {
       where: {
         room: { organizationId },
         arrival: { gte: todayStart, lte: next7DaysEnd },
-        reservation: { status: { notIn: ['cancelled', 'blocked'] } }
+        reservation: { status: { notIn: ['cancelled', 'blocked', 'on_hold'] } }
       },
       include: {
         reservation: { include: { guest: true } },
@@ -268,7 +269,8 @@ export default async function DashboardPage() {
     checked_out: 'Finalizado',
     blocked: 'Bloqueado',
     cancelled: 'Cancelado',
-    no_show: 'No Show'
+    no_show: 'No Show',
+    on_hold: 'Por Confirmar'
   }
 
   const statusColors: Record<string, string> = {
@@ -278,7 +280,8 @@ export default async function DashboardPage() {
     checked_out: styles.statusCheckedOut,
     blocked: styles.statusBlocked,
     cancelled: styles.statusCancelled,
-    no_show: styles.statusNoShow
+    no_show: styles.statusNoShow,
+    on_hold: styles.statusOnHold
   }
 
   // Limpieza
@@ -324,6 +327,9 @@ export default async function DashboardPage() {
           </Link>
         )}
       </div>
+
+      {/* Reservas web pendientes de confirmación */}
+      <PendingReservasBanner />
 
       {/* KPI Grid — Bento */}
       <div className={styles.kpiGrid}>

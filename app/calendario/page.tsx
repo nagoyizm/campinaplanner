@@ -44,6 +44,7 @@ export default async function CalendarioPage({
       room: { organizationId },
       arrival: { lte: addDays(fin, 14) },
       departure: { gte: addDays(inicio, -14) },
+      reservation: { status: { notIn: ['cancelled', 'on_hold'] } },
     },
     include: {
       reservation: {

@@ -7,7 +7,7 @@ export async function GET() {
   
   const org = await prisma.organization.findUnique({
     where: { id: organizationId },
-    select: { paymentMethods: true, dteOptions: true, bankAccounts: true }
+    select: { paymentMethods: true, dteOptions: true, bankAccounts: true, autoBookingMode: true }
   })
 
   return NextResponse.json(org)
@@ -28,8 +28,9 @@ export async function PUT(req: Request) {
       paymentMethods: body.paymentMethods,
       dteOptions: body.dteOptions,
       bankAccounts: body.bankAccounts,
+      autoBookingMode: body.autoBookingMode,
     },
-    select: { paymentMethods: true, dteOptions: true, bankAccounts: true }
+    select: { paymentMethods: true, dteOptions: true, bankAccounts: true, autoBookingMode: true }
   })
 
   return NextResponse.json(org)

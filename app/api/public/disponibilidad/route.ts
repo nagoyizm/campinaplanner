@@ -66,7 +66,7 @@ export async function GET(req: NextRequest) {
         departure: { gt: start },
         reservation: {
           organizationId: org.id,
-          status: { notIn: ['cancelled'] }
+          status: { notIn: ['cancelled', 'on_hold'] }
         }
       },
       select: {

@@ -417,11 +417,18 @@ export default function PublicBookingClient({ initialOrg }: PublicBookingClientP
         })
       })
 
-      const data = await res.json()
-
       if (!res.ok) {
-        throw new Error(data.error || 'No se pudo completar la reserva')
+        let message = 'No se pudo completar la reserva'
+        try {
+          const errData = await res.json()
+          message = errData.error || message
+        } catch {
+          // Respuesta no JSON (ej: redirección o HTML): mantener mensaje genérico
+        }
+        throw new Error(message)
       }
+
+      const data = await res.json()
 
       setBookingSuccess(data)
       toast.success('¡Reserva registrada exitosamente!')
@@ -457,7 +464,7 @@ export default function PublicBookingClient({ initialOrg }: PublicBookingClientP
               {org.logoUrl && <img src={org.logoUrl} alt={org.name} className={styles.logo} />}
               <div className={styles.titleContainerInline}>
                 <h1 className={styles.orgTitle}>{org.name}</h1>
-                <span className={styles.orgSubtitleInline}>• Reserva Confirmada</span>
+                <span className={styles.orgSubtitleInline}>{bookingSuccess.status === 'on_hold' ? '• Reserva Por Confirmar' : '• Reserva Pendiente de Confirmación'}</span>
               </div>
             </div>
             <button
@@ -477,10 +484,25 @@ export default function PublicBookingClient({ initialOrg }: PublicBookingClientP
             <div className={styles.iconSuccess}>
               <Icon icon={CheckCircle2} size="3xl" />
             </div>
-            <h2 style={{ margin: '0 0 0.4rem 0', fontSize: '1.25rem' }}>¡Tu Reserva ha sido Registrada!</h2>
+            <h2 style={{ margin: '0 0 0.4rem 0', fontSize: '1.25rem' }}>
+              ¡Tu Reserva quedó Registrada!
+            </h2>
             <p className={styles.orgSubtitle}>
-              Hemos reservado tu estancia en <strong>{bookingSuccess.unitType}</strong> ({bookingSuccess.assignedRoom}).
+              {bookingSuccess.status === 'on_hold' ? (
+                <>
+                  Tu estancia en <strong>{bookingSuccess.unitType}</strong> ({bookingSuccess.assignedRoom}) fue registrada y queda <strong>por confirmar</strong>. Te avisaremos cuando esté confirmada.
+                </>
+              ) : (
+                <>
+                  Tu estancia en <strong>{bookingSuccess.unitType}</strong> ({bookingSuccess.assignedRoom}) quedó registrada como <strong>Reservada</strong>. Aún no está confirmada; nos pondremos en contacto contigo para cerrar la reserva.
+                </>
+              )}
             </p>
+            {bookingSuccess.confirmationMessage && (
+              <div className={styles.confirmNote}>
+                {bookingSuccess.confirmationMessage}
+              </div>
+            )}
 
             <div className={styles.refBadge}>
               Reserva N° #{bookingSuccess.reservationId}

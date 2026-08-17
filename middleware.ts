@@ -62,10 +62,18 @@ export default auth((req) => {
   const isReservasSubdomain = hostname === 'reservas.agendio.cl' || hostname.startsWith('reservas.')
 
   if (isReservasSubdomain) {
-    const url = req.nextUrl.clone()
-    const slug = url.pathname.replace(/^\//, '')
-    url.pathname = slug ? `/reservar/${slug}` : '/reservar'
-    return NextResponse.rewrite(url)
+    const pathname = req.nextUrl.pathname
+    const isApi = pathname.startsWith('/api/') || pathname.startsWith('/_next/')
+    const alreadyReservar = pathname.startsWith('/reservar/')
+    // Solo reescribir rutas de páginas públicas del recinto; las llamadas a
+    // /api/... y las propias /reservar deben pasar tal cual, o el browser
+    // recibe HTML donde espera JSON (error "failed JSON '<'").
+    if (!isApi && !alreadyReservar) {
+      const url = req.nextUrl.clone()
+      const slug = pathname.replace(/^\//, '')
+      url.pathname = slug ? `/reservar/${slug}` : '/reservar'
+      return NextResponse.rewrite(url)
+    }
   }
   // ───────────────────────────────────────────────────────────────────────────
   // ponytail: nonce-based CSP breaks cached pages on Vercel CDN (script nonce mismatch → JS blocked → login broken)

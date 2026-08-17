@@ -178,7 +178,8 @@ export default function ReservasPage() {
     checked_out: 'Finalizado',
     blocked: 'Bloqueado',
     cancelled: 'Cancelado',
-    no_show: 'No Show'
+    no_show: 'No Show',
+    on_hold: 'Por Confirmar'
   }
 
   const statusColors: Record<string, string> = {
@@ -188,7 +189,8 @@ export default function ReservasPage() {
     checked_out: styles.statusCheckedOut,
     blocked: styles.statusBlocked,
     cancelled: styles.statusCancelled,
-    no_show: styles.statusNoShow
+    no_show: styles.statusNoShow,
+    on_hold: styles.statusOnHold
   }
 
   const totalPages = Math.ceil(total / limit)
@@ -246,6 +248,7 @@ export default function ReservasPage() {
               <option value="checked_out">Finalizado (Check-Out)</option>
               <option value="cancelled">Cancelado</option>
               <option value="no_show">No Show</option>
+              <option value="on_hold">Por Confirmar</option>
               <option value="blocked">Bloqueado</option>
             </select>
           </div>
