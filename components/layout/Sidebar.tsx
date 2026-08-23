@@ -130,6 +130,7 @@ const saasNavItems = [
   { href: '/saas/planner',       label: 'SaaS Planner',   icon: Calendar },
   { href: '/saas/analiticas',    label: 'Analíticas',     icon: LineChart },
   { href: '/saas/monitorizacion',label: 'Monitorización', icon: ShieldAlert },
+  { href: '/saas/demo',          label: 'Textos Demo',    icon: MessageSquare },
 ]
 
 interface SidebarProps {

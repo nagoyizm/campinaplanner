@@ -1,0 +1,78 @@
+/* Narrador del demo — estilo editorial del sitio público (verde bosque / crema) */
+.bar {
+  position: fixed;
+  left: 50%;
+  bottom: 16px;
+  transform: translateX(-50%);
+  width: min(1020px, calc(100% - 32px));
+  background: #0b1b12;
+  color: #f5efe4;
+  border-radius: 14px;
+  padding: 18px 24px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  box-shadow: 0 12px 32px rgba(11, 27, 18, 0.35);
+  z-index: 300;
+}
+.dots { display: flex; flex-direction: column; gap: 5px; }
+.dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: rgba(245, 239, 228, 0.2);
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+.dotOn { background: #e5a63f; transform: scale(1.15); }
+.textCol { flex: 1; min-width: 0; }
+.title {
+  margin: 0 0 5px;
+  font-size: 25px;
+  font-weight: 800;
+  line-height: 1.25;
+  color: #f5efe4;
+}
+.title strong { color: #e5a63f; }
+.text { flex: 1; font-size: 15px; line-height: 1.55; color: rgba(245, 239, 228, 0.85); }
+.text strong { color: #e5a63f; }
+.actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.reset {
+  background: transparent;
+  border: 1px solid rgba(245, 239, 228, 0.25);
+  color: rgba(245, 239, 228, 0.75);
+  font-family: inherit; font-size: 13px; font-weight: 600;
+  border-radius: 7px; padding: 12px 14px;
+  cursor: pointer;
+}
+.reset:hover { background: rgba(255, 255, 255, 0.08); }
+.prev {
+  display: inline-flex; align-items: center; justify-content: center;
+  background: transparent;
+  border: 1px solid rgba(245, 239, 228, 0.25);
+  color: rgba(245, 239, 228, 0.75);
+  border-radius: 8px;
+  padding: 12px;
+  cursor: pointer;
+}
+.prev:hover:not(:disabled) { background: rgba(255, 255, 255, 0.08); }
+.prev:disabled { opacity: 0.35; cursor: not-allowed; }
+.next, .nextFinal {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: #33603f; color: #fff;
+  border: none; border-radius: 8px;
+  font-family: inherit; font-size: 14px; font-weight: 700;
+  padding: 12px 17px;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+.nextFinal { background: #e5a63f; color: #0b1b12; }
+.next:hover { background: #3d6b4a; }
+.nextFinal:hover { filter: brightness(1.05); }
+.next:active, .nextFinal:active { transform: scale(0.97); }
+.next kbd {
+  font-family: inherit; font-size: 11.5px; font-weight: 700;
+  background: rgba(255, 255, 255, 0.16);
+  border-radius: 4px; padding: 2px 6px;
+}
+@media (max-width: 640px) {
+  .bar { flex-direction: column; align-items: stretch; }
+  .dots { flex-direction: row; }
+}
