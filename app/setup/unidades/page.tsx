@@ -111,9 +111,15 @@ export default function UnidadesPage() {
             <label className="form-label required">Nombre</label>
             <input className="input" value={form.name} onChange={e => onFormChange('name', e.target.value)} placeholder="Ej: Cabaña 5 Personas" />
           </div>
-          <div className="form-group">
+          <div className="form-group" style={{ gridColumn: '1 / -1' }}>
             <label className="form-label">Descripción</label>
-            <input className="input" value={form.description} onChange={e => onFormChange('description', e.target.value)} placeholder="Descripción breve..." />
+            <textarea
+              className="textarea"
+              rows={4}
+              value={form.description}
+              onChange={e => onFormChange('description', e.target.value)}
+              placeholder="Detalla el tipo de unidad: capacidad, equipamiento, comodidades..."
+            />
           </div>
           <div className="form-group">
             <label className="form-label">Ocupación Máxima</label>
