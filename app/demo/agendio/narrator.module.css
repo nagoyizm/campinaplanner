@@ -1,10 +1,9 @@
 /* Narrador del demo — estilo editorial del sitio público (verde bosque / crema) */
 .bar {
-  position: fixed;
-  left: 50%;
+  position: sticky;
   bottom: 16px;
-  transform: translateX(-50%);
   width: min(1020px, calc(100% - 32px));
+  margin: 28px auto 24px;
   background: #0b1b12;
   color: #f5efe4;
   border-radius: 14px;

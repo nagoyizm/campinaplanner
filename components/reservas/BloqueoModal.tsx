@@ -9,16 +9,18 @@ import Icon from '@/components/ui/Icon'
 export default function BloqueoModal({
   defaultRoomId,
   defaultArrival,
+  defaultDeparture,
   onClose,
   onSave
 }: Readonly<{
   defaultRoomId: string
   defaultArrival: Date
+  defaultDeparture?: Date
   onClose: () => void
   onSave: () => void
 }>) {
   const [arrival, setArrival] = useState(format(defaultArrival, 'yyyy-MM-dd'))
-  const [departure, setDeparture] = useState(format(addDays(defaultArrival, 1), 'yyyy-MM-dd'))
+  const [departure, setDeparture] = useState(format(defaultDeparture || addDays(defaultArrival, 1), 'yyyy-MM-dd'))
   const [notes, setNotes] = useState('')
   const [loading, setLoading] = useState(false)
 

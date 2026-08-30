@@ -106,10 +106,10 @@
 .themeBtn:hover { background: var(--surface-3); }
 
 .narrator {
-  position: fixed;
-  left: 50%; bottom: 16px;
-  transform: translateX(-50%);
+  position: sticky;
+  bottom: 16px;
   width: min(980px, calc(100% - 32px));
+  margin: 16px auto 24px;
   background: var(--surface-1);
   border: 1px solid var(--border);
   border-radius: 14px;
@@ -250,7 +250,7 @@
 .notifScreen {
   min-height: 100vh;
   background: var(--bg);
-  padding: 40px 24px 140px;
+  padding: 40px 24px 32px;
 }
 .notifTitle {
   text-align: center;

@@ -108,8 +108,13 @@ export default function CalendarioClient({ rooms, reservas, fechaBase, todayStr 
   } | null>(null)
   const [selectedReservaId, setSelectedReservaId] = useState<number | null>(null)
   const [quickModalRsv, setQuickModalRsv] = useState<any>(null)
-  const [actionSelectModalOpen, setActionSelectModalOpen] = useState<{ roomId: string; date: Date } | null>(null)
-  const [bloqueoModalOpen, setBloqueoModalOpen] = useState<{ roomId: string; date: Date } | null>(null)
+  const [actionSelectModalOpen, setActionSelectModalOpen] = useState<{ roomId: string; arrival: Date; departure: Date } | null>(null)
+  const [bloqueoModalOpen, setBloqueoModalOpen] = useState<{ roomId: string; arrival: Date; departure: Date } | null>(null)
+  const [dragSelection, setDragSelection] = useState<{
+    roomId: string
+    startDate: Date
+    currentDate: Date
+  } | null>(null)
   
   // Pan states
   const [panStart, setPanStart] = useState<{ x: number; date: Date } | null>(null)
@@ -232,6 +237,17 @@ export default function CalendarioClient({ rooms, reservas, fechaBase, todayStr 
     return count
   }
 
+  // Check collision between a proposed date range and existing reservations
+  const checkCollision = useCallback((reservaId: number, roomId: string, arrival: Date, departure: Date) => {
+    return reservas.some(r => {
+      if (r.reservationId === reservaId) return false
+      if (r.roomId !== roomId) return false
+      const arr = parseUTCDate(r.arrival)
+      const dep = parseUTCDate(r.departure)
+      return arrival < dep && departure > arr
+    })
+  }, [reservas])
+
   // ── Navigation ────────────────────────────────────────────────
   const goToPrev = () => {
     const newDate = viewMode === 'month' ? addMonths(currentDate, -1) : addDays(currentDate, -7)
@@ -244,7 +260,7 @@ export default function CalendarioClient({ rooms, reservas, fechaBase, todayStr 
     router.push(`/calendario?fecha=${format(newDate, 'yyyy-MM-dd')}`)
   }
   const goToToday = () => {
-    const today = new Date()
+    const today = parseUTCDate(todayStr)
     setCurrentDate(today)
     router.push(`/calendario?fecha=${format(today, 'yyyy-MM-dd')}`)
   }
@@ -255,20 +271,20 @@ export default function CalendarioClient({ rooms, reservas, fechaBase, todayStr 
     setTimeout(() => setRefreshing(false), 800)
   }
 
-  // ── Cell click → Open Action Selector ─────────────────────────────
-  const handleCellClick = (roomId: string, day: Date, existingRsv: ReservationRoom | null) => {
-    // Si estábamos haciendo pan y movimos el mouse, no hacemos clic
-    if (panStart && Math.abs(panAccumulator.current) > 5) return;
-    
-    if (existingRsv) {
-      setQuickModalRsv(existingRsv.reservation)
-    } else {
-      setActionSelectModalOpen({ roomId, date: day })
-    }
+  // ── Cell Drag Selection ───────────────────────────────────────────
+  const handleCellMouseDown = (e: React.MouseEvent, roomId: string, day: Date, rsv: ReservationRoom | null) => {
+    if (e.button !== 0) return // Left click only
+    if (rsv || activeDrag || rescheduling) return
+    e.preventDefault()
+    setDragSelection({
+      roomId,
+      startDate: day,
+      currentDate: day,
+    })
   }
 
-  // ── Pan/Drag to scroll ──────────────────────────────────────
-  const handleMouseDown = (e: React.MouseEvent, roomId: string, day: Date) => {
+  // ── Pan/Drag to scroll (Day Headers) ──────────────────────────────
+  const handleMouseDown = (e: React.MouseEvent) => {
     // Only if left click
     if (e.button !== 0) return
     setPanStart({ x: e.clientX, date: currentDate })
@@ -286,7 +302,52 @@ export default function CalendarioClient({ rooms, reservas, fechaBase, todayStr 
         }
       })
     }
+    if (dragSelection) {
+      if (dragSelection.roomId === roomId) {
+        setDragSelection(prev => {
+          if (!prev) return null
+          return {
+            ...prev,
+            currentDate: day
+          }
+        })
+      }
+    }
   }
+
+  // Global mouseup listener for multi-cell drag selection
+  useEffect(() => {
+    if (!dragSelection) return
+
+    const handleSelectionMouseUp = () => {
+      const { roomId, startDate, currentDate: endPointDate } = dragSelection
+      const start = startDate <= endPointDate ? startDate : endPointDate
+      const end = startDate <= endPointDate ? endPointDate : startDate
+
+      const arrival = new Date(start)
+      arrival.setHours(0, 0, 0, 0)
+
+      const departure = addDays(new Date(end), 1)
+      departure.setHours(0, 0, 0, 0)
+
+      const hasCollision = checkCollision(0, roomId, arrival, departure)
+      if (hasCollision) {
+        toast.error('¡El rango seleccionado coincide con una reserva existente!')
+      } else {
+        setActionSelectModalOpen({
+          roomId,
+          arrival,
+          departure,
+        })
+      }
+      setDragSelection(null)
+    }
+
+    globalThis.addEventListener('mouseup', handleSelectionMouseUp)
+    return () => {
+      globalThis.removeEventListener('mouseup', handleSelectionMouseUp)
+    }
+  }, [dragSelection, checkCollision])
 
   useEffect(() => {
     const handleGlobalMouseMove = (e: MouseEvent) => {
@@ -344,16 +405,6 @@ export default function CalendarioClient({ rooms, reservas, fechaBase, todayStr 
   }
 
   // Rescheduling/Resizing handlers
-  const checkCollision = useCallback((reservaId: number, roomId: string, arrival: Date, departure: Date) => {
-    return reservas.some(r => {
-      if (r.reservationId === reservaId) return false
-      if (r.roomId !== roomId) return false
-      const arr = parseUTCDate(r.arrival)
-      const dep = parseUTCDate(r.departure)
-      return arrival < dep && departure > arr
-    })
-  }, [reservas])
-
   const handleRsvMouseDown = (
     e: React.MouseEvent,
     rsv: ReservationRoom,
@@ -633,6 +684,40 @@ export default function CalendarioClient({ rooms, reservas, fechaBase, todayStr 
       }
     }
 
+    // Determine if this cell is part of dragSelection
+    let isSelectionStart = false
+    let selectionWidth = 1
+    let selectionNights = 1
+    let isSelectionCell = false
+    let isSelectionCollision = false
+
+    if (dragSelection && dragSelection.roomId === room.id) {
+      const start = dragSelection.startDate <= dragSelection.currentDate ? dragSelection.startDate : dragSelection.currentDate
+      const end = dragSelection.startDate <= dragSelection.currentDate ? dragSelection.currentDate : dragSelection.startDate
+      const s = new Date(start); s.setHours(0, 0, 0, 0)
+      const e = new Date(end); e.setHours(0, 0, 0, 0)
+      const dayStart = new Date(day); dayStart.setHours(0, 0, 0, 0)
+
+      if (dayStart >= s && dayStart <= e) {
+        isSelectionCell = true
+        if (isSameDay(s, dayStart)) {
+          isSelectionStart = true
+          selectionNights = differenceInDays(e, s) + 1
+          let count = 0
+          for (const d of days) {
+            const dn = new Date(d); dn.setHours(0, 0, 0, 0)
+            if (dn >= s && dn <= e) count++
+            else if (dn > e) break
+          }
+          selectionWidth = count
+
+          const selArrival = new Date(s)
+          const selDeparture = addDays(new Date(e), 1)
+          isSelectionCollision = checkCollision(0, room.id, selArrival, selDeparture)
+        }
+      }
+    }
+
     return (
       <div
         role="gridcell" // NOSONAR
@@ -642,18 +727,23 @@ export default function CalendarioClient({ rooms, reservas, fechaBase, todayStr 
           ${styles.cell}
           ${isTodaySantiago(day) ? styles.todayCell : ''}
           ${isWeekend(day) ? styles.weekendCell : ''}
-          ${isDragSel ? styles.dragSelected : ''}
+          ${isSelectionCell ? styles.dragSelected : ''}
           ${rsv ? styles.hasReservation : ''}
           ${isPreviewCell ? styles.dragSelected : ''}
         `}
-        onClick={() => !activeDrag && handleCellClick(room.id, day, rsv)}
         onKeyDown={(e) => {
           if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault();
-            if (!activeDrag) handleCellClick(room.id, day, rsv);
+            if (rsv) {
+              setQuickModalRsv(rsv.reservation);
+            } else if (!activeDrag) {
+              const arrival = new Date(day); arrival.setHours(0, 0, 0, 0);
+              const departure = addDays(arrival, 1);
+              setActionSelectModalOpen({ roomId: room.id, arrival, departure });
+            }
           }
         }}
-        onMouseDown={(e) => !rsv && !activeDrag && handleMouseDown(e, room.id, day)}
+        onMouseDown={(e) => !rsv && !activeDrag && handleCellMouseDown(e, room.id, day, rsv)}
         onMouseEnter={() => handleMouseEnter(room.id, day)}
       >
         {/* Original Reservation Block (hide if being dragged/resized) */}
@@ -735,6 +825,30 @@ export default function CalendarioClient({ rooms, reservas, fechaBase, todayStr 
                 ? `${activeDrag.rsv.reservation.guest.firstName} ${activeDrag.rsv.reservation.guest.lastName} (Soltar para reubicar)` 
                 : '¡Conflicto de fechas!'
               }
+            </span>
+          </div>
+        )}
+
+        {/* Multi-day Selection Preview Block */}
+        {dragSelection && isSelectionStart && (
+          <div
+            className={`${styles.reservationBlock} ${styles.dragSelectionBlock}`}
+            style={{
+              backgroundColor: isSelectionCollision ? 'var(--danger)' : 'var(--brand-600)',
+              color: '#ffffff',
+              border: '2px dashed rgba(255, 255, 255, 0.9)',
+              width: `calc(${selectionWidth * 100}% + ${selectionWidth - 1}px)`,
+              pointerEvents: 'none',
+              zIndex: 75,
+            }}
+          >
+            <span className={styles.rsvGuest} style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 600 }}>
+              <Icon icon={Plus} size="xs" />
+              <span>
+                {isSelectionCollision
+                  ? '¡Conflicto con otra reserva!'
+                  : `${selectionNights} ${selectionNights === 1 ? 'noche' : 'noches'} (Soltar para elegir acción)`}
+              </span>
             </span>
           </div>
         )}
@@ -859,6 +973,7 @@ export default function CalendarioClient({ rooms, reservas, fechaBase, todayStr 
             <div
               key={day.toISOString()}
               className={`${styles.dayHeader} ${isTodaySantiago(day) ? styles.todayHeader : ''} ${isWeekend(day) ? styles.weekendHeader : ''}`}
+              onMouseDown={handleMouseDown}
             >
               <span className={styles.dayNum}>{format(day, 'd')}</span>
               <span className={styles.dayName}>{format(day, 'EEE', { locale: es })}</span>
@@ -937,21 +1052,48 @@ export default function CalendarioClient({ rooms, reservas, fechaBase, todayStr 
 
       {/* ── Modals ── */}
       {actionSelectModalOpen && (
-        <div aria-hidden="true" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => setActionSelectModalOpen(null)}>
-          <div aria-hidden="true" style={{ background: 'var(--surface-1)', padding: 24, borderRadius: 12, width: 320, boxShadow: '0 10px 25px rgba(0,0,0,0.2)' }} onClick={e => e.stopPropagation()}>
-            <h3 style={{ marginTop: 0, marginBottom: 16 }}>¿Qué deseas hacer?</h3>
-            <p style={{ color: 'var(--text-secondary)', fontSize: 14, marginBottom: 20 }}>Selecciona la acción para el {format(actionSelectModalOpen.date, 'dd/MM/yyyy')}.</p>
+        <div 
+          aria-hidden="true" 
+          style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center' }} 
+          onClick={() => setActionSelectModalOpen(null)}
+        >
+          <div 
+            aria-hidden="true" 
+            style={{ background: 'var(--surface-1)', padding: 24, borderRadius: 12, width: 340, boxShadow: '0 10px 25px rgba(0,0,0,0.2)' }} 
+            onClick={e => e.stopPropagation()}
+          >
+            <h3 style={{ marginTop: 0, marginBottom: 12 }}>¿Qué deseas hacer?</h3>
+            <p style={{ color: 'var(--text-secondary)', fontSize: 13, marginBottom: 20 }}>
+              {differenceInDays(actionSelectModalOpen.departure, actionSelectModalOpen.arrival) === 1
+                ? `Selecciona la acción para el ${format(actionSelectModalOpen.arrival, 'dd/MM/yyyy')}.`
+                : `Selecciona la acción del ${format(actionSelectModalOpen.arrival, 'dd/MM/yyyy')} al ${format(actionSelectModalOpen.departure, 'dd/MM/yyyy')} (${differenceInDays(actionSelectModalOpen.departure, actionSelectModalOpen.arrival)} noches).`}
+            </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              <button className="btn btn-primary" onClick={() => {
-                setSelectedCell({ roomId: actionSelectModalOpen.roomId, arrival: actionSelectModalOpen.date, departure: addDays(actionSelectModalOpen.date, 1) })
-                setSelectedReservaId(null)
-                setModalOpen(true)
-                setActionSelectModalOpen(null)
-              }}>Hacer Reserva</button>
-              <button className="btn btn-secondary" onClick={() => {
-                setBloqueoModalOpen(actionSelectModalOpen)
-                setActionSelectModalOpen(null)
-              }} style={{ borderColor: 'var(--border)' }}>Bloquear Fecha</button>
+              <button 
+                className="btn btn-primary" 
+                onClick={() => {
+                  setSelectedCell({ 
+                    roomId: actionSelectModalOpen.roomId, 
+                    arrival: actionSelectModalOpen.arrival, 
+                    departure: actionSelectModalOpen.departure 
+                  })
+                  setSelectedReservaId(null)
+                  setModalOpen(true)
+                  setActionSelectModalOpen(null)
+                }}
+              >
+                Hacer Reserva
+              </button>
+              <button 
+                className="btn btn-secondary" 
+                onClick={() => {
+                  setBloqueoModalOpen(actionSelectModalOpen)
+                  setActionSelectModalOpen(null)
+                }} 
+                style={{ borderColor: 'var(--border)' }}
+              >
+                Bloquear Fechas
+              </button>
             </div>
           </div>
         </div>
@@ -960,7 +1102,8 @@ export default function CalendarioClient({ rooms, reservas, fechaBase, todayStr 
       {bloqueoModalOpen && (
         <BloqueoModal 
           defaultRoomId={bloqueoModalOpen.roomId}
-          defaultArrival={bloqueoModalOpen.date}
+          defaultArrival={bloqueoModalOpen.arrival}
+          defaultDeparture={bloqueoModalOpen.departure}
           onClose={() => setBloqueoModalOpen(null)}
           onSave={() => {
             setBloqueoModalOpen(null)

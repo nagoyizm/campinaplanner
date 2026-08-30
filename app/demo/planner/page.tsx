@@ -183,16 +183,14 @@ export default function DemoPlannerPage() {
   /* Pantalla final independiente: WhatsApp + Gmail */
   if (stage.tab === 'notificaciones') {
     return (
-      <>
-        <div className={styles.notifScreen}>
-          <p className={styles.notifTitle}>Notificaciones automáticas al huésped</p>
-          <div className={styles.notifCols}>
-            <PhoneMockup />
-            <GmailMockup />
-          </div>
+      <div className={styles.notifScreen}>
+        <p className={styles.notifTitle}>Notificaciones automáticas al huésped</p>
+        <div className={styles.notifCols}>
+          <PhoneMockup />
+          <GmailMockup />
         </div>
         <Narrator phase={phase} stages={stages} onBack={back} onAdvance={advance} />
-      </>
+      </div>
     )
   }
 
@@ -294,11 +292,10 @@ export default function DemoPlannerPage() {
             )}
             {stage.tab === 'huespedes' && <HuespedesScreen reserva={RESERVA} />}
             {stage.tab === 'habitaciones' && <HabitacionesScreen clean={stage.key === 'lista'} />}
+            <Narrator phase={phase} stages={stages} onBack={back} onAdvance={advance} />
           </main>
         </div>
       </div>
-
-      <Narrator phase={phase} stages={stages} onBack={back} onAdvance={advance} />
     </>
   )
 
@@ -310,7 +307,7 @@ export default function DemoPlannerPage() {
   }) {
     const st = status
     return (
-      <div className={calStyles.container} style={{ height: '100%' }}>
+      <div className={calStyles.container} style={{ flex: 1, minHeight: 0 }}>
         <div className={calStyles.toolbar}>
           <div className={calStyles.toolbarLeft}>
             <div className={calStyles.viewToggle}>

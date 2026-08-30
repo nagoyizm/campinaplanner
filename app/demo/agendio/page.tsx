@@ -255,7 +255,7 @@ export default function DemoAgendioPage() {
   /* ── Pantalla de éxito (idéntica a la real) ── */
   if (bookingSuccess) {
     return (
-      <div className={styles.container} data-theme={theme}>
+<div className={styles.container} data-theme={theme}>
         <div className={styles.bgDecor1} /><div className={styles.bgDecor2} />
         <header className={styles.header}>
           <div className={styles.headerContent}>
@@ -310,7 +310,7 @@ export default function DemoAgendioPage() {
 
   /* ── Página principal (idéntica a la real) ── */
   return (
-    <div className={styles.container} data-theme={theme}>
+    <div className={styles.container} data-theme={theme} style={{ paddingBottom: 200 }}>
       <div className={styles.bgDecor1} /><div className={styles.bgDecor2} />
 
       <header className={styles.header}>

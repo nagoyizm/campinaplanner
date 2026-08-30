@@ -130,6 +130,12 @@
   border-bottom: 1px solid var(--border);
   border-right: 1px solid var(--border);
   min-width: 46px;
+  cursor: grab;
+  user-select: none;
+}
+
+.dayHeader:active {
+  cursor: grabbing;
 }
 
 .todayHeader {
@@ -474,4 +480,12 @@
   box-shadow: 0 4px 15px rgba(0,0,0,0.3);
   animation: pulse 1.5s infinite;
   z-index: 100 !important;
+}
+
+/* ── Multi-day Selection Block ── */
+.dragSelectionBlock {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  border-radius: 6px;
+  z-index: 100 !important;
+  user-select: none;
 }
