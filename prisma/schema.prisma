@@ -38,6 +38,8 @@ model Organization {
   unitTypes    UnitType[]
   rooms        Room[]
   rates        Rate[]
+  seasons      Season[]
+  seasonRates  SeasonRate[]
   guests       Guest[]
   reservations Reservation[]
   amenities    Amenity[]
@@ -119,6 +121,7 @@ model UnitType {
   organization Organization @relation(fields: [organizationId], references: [id])
   rooms        Room[]
   rates        Rate[]
+  seasonRates  SeasonRate[]
 
   @@index([organizationId])
 }
@@ -171,6 +174,46 @@ model Rate {
   reservationRooms ReservationRoom[]
 
   @@index([organizationId])
+  @@index([unitTypeId])
+}
+
+model Season {
+  id             String       @id @default(cuid())
+  organizationId String       @default("seed-org-campina")
+  name           String       // "Temporada Alta", "Temporada Baja", "Feriados"
+  startDate      String       // "YYYY-MM-DD"
+  endDate        String       // "YYYY-MM-DD"
+  priority       Int          @default(0)
+  active         Boolean      @default(true)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  rates          SeasonRate[]
+
+  @@index([organizationId])
+}
+
+model SeasonRate {
+  id                String       @id @default(cuid())
+  organizationId    String       @default("seed-org-campina")
+  seasonId          String
+  unitTypeId        String
+  rackRate          Float        @default(0)
+  extraPersonAdult  Float        @default(0)
+  extraPersonChild  Float        @default(0)
+  weekendSurcharge  Float        @default(0)
+  includedOccupants Int          @default(2)
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  organization      Organization @relation(fields: [organizationId], references: [id])
+  season            Season       @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+  unitType          UnitType     @relation(fields: [unitTypeId], references: [id], onDelete: Cascade)
+
+  @@unique([seasonId, unitTypeId])
+  @@index([organizationId])
+  @@index([seasonId])
   @@index([unitTypeId])
 }
 

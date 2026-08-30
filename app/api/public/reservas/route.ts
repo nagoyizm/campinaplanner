@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { parseISO, differenceInDays, format } from 'date-fns'
 import { sendWhatsAppMessage } from '@/lib/whatsapp'
 import { sendEmail } from '@/lib/email'
+import { calculateStayPricing } from '@/lib/pricing'
 
 // Escapa contenido del huésped para evitar inyección HTML en el correo
 const escapeHtml = (value: unknown): string =>
@@ -212,19 +213,26 @@ export async function POST(req: NextRequest) {
     // Pick first available room
     const assignedRoom = availableRooms[0]
 
-    // 4. Rate calculation
-    const rate = unitType.rates[0]
-    const rackRate = rate?.rackRate || 0
-    const included = rate?.includedOccupants || 2
-    const extraAdultRate = rate?.extraPersonAdult || 0
-    const extraChildRate = rate?.extraPersonChild || 0
+    // 4. Rate calculation with dynamic seasons support
+    const seasons = await prisma.season.findMany({
+      where: { organizationId: org.id, active: true },
+      include: { rates: true },
+      orderBy: [{ startDate: 'asc' }, { priority: 'desc' }],
+    })
 
-    const extraAdults = Math.max(0, Number(adults) - included)
-    const extraChildren = extraAdults > 0 ? Number(children) : Math.max(0, (Number(adults) + Number(children)) - included)
+    const baseRate = unitType.rates[0] || null
+    const pricing = calculateStayPricing({
+      unitTypeId: unitType.id,
+      arrival: arrivalDate,
+      departure: departureDate,
+      adults: Number(adults) || 2,
+      children: Number(children) || 0,
+      seasons: seasons as any,
+      baseRate,
+    })
 
-    const nightExtraCharge = (extraAdults * extraAdultRate) + (extraChildren * extraChildRate)
-    const unitRate = rackRate + nightExtraCharge
-    const unitTotal = unitRate * nights
+    const unitRate = pricing.avgNightRate
+    const unitTotal = pricing.totalPrice
 
     // 5. Upsert Guest in this Organization
     let guestRecord
@@ -286,7 +294,7 @@ export async function POST(req: NextRequest) {
         rooms: {
           create: [{
             roomId: assignedRoom.id,
-            rateId: rate?.id || null,
+            rateId: baseRate?.id || null,
             arrival: arrivalDate,
             departure: departureDate,
             nights: nights,

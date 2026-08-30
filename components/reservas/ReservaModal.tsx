@@ -9,10 +9,18 @@ import {
 } from 'lucide-react'
 import Icon from '@/components/ui/Icon'
 import toast from 'react-hot-toast'
+import { calculateStayPricing, type SeasonItem } from '@/lib/pricing'
 import styles from './ReservaModal.module.css'
 
 // ── Types ────────────────────────────────────────────────────────
-interface Room { id: string; code: string; name: string; unitType: { name: string }; defaultRate?: { id: string; name: string; rackRate: number } | null }
+interface Room { 
+  id: string; 
+  code: string; 
+  name: string; 
+  unitTypeId?: string; 
+  unitType: { id?: string; name: string }; 
+  defaultRate?: { id: string; name: string; rackRate: number } | null 
+}
 interface Rate { id: string; name: string; rackRate: number; includedOccupants: number; extraPersonAdult: number; extraPersonChild: number }
 interface Guest { id: string; firstName: string; lastName: string; rut?: string; email?: string; phone?: string; nationality?: string; referral?: string }
 
@@ -159,6 +167,7 @@ export default function ReservaModal({
     accounts: ACCOUNT_CODES,
     dtes: DTE_OPTIONS,
   })
+  const [seasons, setSeasons] = useState<SeasonItem[]>([])
 
   // ── Load data ─────────────────────────────────────────────────
   const safeFetchJson = async (url: string, fallback: any) => {
@@ -170,12 +179,22 @@ export default function ReservaModal({
     }
   }
 
-  const setDefaultRoomLine = (roomsData: any[], ratesData: any[]) => {
+  const setDefaultRoomLine = (roomsData: any[], ratesData: any[], seasonsData: SeasonItem[] = []) => {
     const defaultRoom = roomsData.find((r: Room) => r.id === defaultRoomId) || roomsData[0]
     const defaultRate = defaultRoom?.defaultRate || ratesData[0]
     const arr = defaultArrival ? format(defaultArrival, 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd')
     const dep = defaultDeparture ? format(defaultDeparture, 'yyyy-MM-dd') : format(addDays(new Date(), 1), 'yyyy-MM-dd')
     const nights = differenceInDays(new Date(dep), new Date(arr)) || 1
+
+    const pricing = calculateStayPricing({
+      unitTypeId: defaultRoom?.unitTypeId || (defaultRoom?.unitType as any)?.id || '',
+      arrival: arr,
+      departure: dep,
+      adults: 2,
+      children: 0,
+      seasons: seasonsData,
+      baseRate: defaultRate,
+    })
 
     setRoomLines([{
       roomId: defaultRoom?.id || '',
@@ -185,8 +204,8 @@ export default function ReservaModal({
       nights,
       adults: 2,
       children: 0,
-      unitRate: defaultRate?.rackRate || 0,
-      unitTotal: (defaultRate?.rackRate || 0) * nights,
+      unitRate: pricing.avgNightRate || defaultRate?.rackRate || 0,
+      unitTotal: pricing.totalPrice || (defaultRate?.rackRate || 0) * nights,
     }])
   }
 
@@ -275,16 +294,18 @@ export default function ReservaModal({
     const loadData = async () => {
       setLoading(true)
       try {
-        const [roomsData, ratesData, invData, amData, pagosData] = await Promise.all([
+        const [roomsData, ratesData, invData, amData, pagosData, seasonsData] = await Promise.all([
           safeFetchJson('/api/rooms', []),
           safeFetchJson('/api/rates', []),
           safeFetchJson('/api/inventario', []),
           safeFetchJson('/api/setup/amenities', []),
           safeFetchJson('/api/setup/pagos', null),
+          safeFetchJson('/api/setup/temporadas', []),
         ])
         
         setRooms(roomsData)
         setRates(ratesData)
+        setSeasons(seasonsData)
 
         resolvePaymentOptions(pagosData)
         buildCatalog(invData, amData)
@@ -293,7 +314,7 @@ export default function ReservaModal({
           const data = await safeFetchJson(`/api/reservas/${currentResId}`, null)
           if (data) populateExistingReservation(data)
         } else {
-          setDefaultRoomLine(roomsData, ratesData)
+          setDefaultRoomLine(roomsData, ratesData, seasonsData)
         }
       } catch (e) {
         toast.error(e instanceof Error ? e.message : 'Error cargando datos')
@@ -318,7 +339,7 @@ export default function ReservaModal({
   useEffect(() => {
     const totalAdults = roomLines.reduce((sum, line) => sum + line.adults, 0)
     const totalChildren = roomLines.reduce((sum, line) => sum + line.children, 0)
-    setAdults(totalAdults)
+    if (totalAdults > 0) setAdults(totalAdults)
     setChildren(totalChildren)
   }, [roomLines])
 
@@ -340,16 +361,32 @@ export default function ReservaModal({
   // ── Room line management ──────────────────────────────────────
   const addRoomLine = () => {
     const firstLine = roomLines[0]
-    setRoomLines(prev => [...prev, {
-      roomId: rooms[0]?.id || '',
-      rateId: rates[0]?.id || '',
-      arrival: firstLine?.arrival || format(new Date(), 'yyyy-MM-dd'),
-      departure: firstLine?.departure || format(addDays(new Date(), 1), 'yyyy-MM-dd'),
-      nights: firstLine?.nights || 1,
+    const arr = firstLine?.arrival || format(new Date(), 'yyyy-MM-dd')
+    const dep = firstLine?.departure || format(addDays(new Date(), 1), 'yyyy-MM-dd')
+    const nights = firstLine?.nights || 1
+    const room = rooms[0]
+    const baseRate = room?.defaultRate || rates[0]
+
+    const pricing = calculateStayPricing({
+      unitTypeId: room?.unitTypeId || (room?.unitType as any)?.id || '',
+      arrival: arr,
+      departure: dep,
       adults: 2,
       children: 0,
-      unitRate: rates[0]?.rackRate || 0,
-      unitTotal: (rates[0]?.rackRate || 0) * (firstLine?.nights || 1),
+      seasons,
+      baseRate,
+    })
+
+    setRoomLines(prev => [...prev, {
+      roomId: room?.id || '',
+      rateId: baseRate?.id || '',
+      arrival: arr,
+      departure: dep,
+      nights,
+      adults: 2,
+      children: 0,
+      unitRate: pricing.avgNightRate || baseRate?.rackRate || 0,
+      unitTotal: pricing.totalPrice || (baseRate?.rackRate || 0) * nights,
     }])
   }
 
@@ -358,29 +395,32 @@ export default function ReservaModal({
       const updated = [...prev]
       updated[idx] = { ...updated[idx], [field]: value }
 
-      // Recalculate nights and total
-      if (field === 'arrival' || field === 'departure') {
-        const arr = new Date(field === 'arrival' ? value : updated[idx].arrival)
-        const dep = new Date(field === 'departure' ? value : updated[idx].departure)
-        const nights = Math.max(1, differenceInDays(dep, arr))
-        updated[idx].nights = nights
-        updated[idx].unitTotal = updated[idx].unitRate * nights
+      // Recalculate nights
+      const arr = new Date(updated[idx].arrival)
+      const dep = new Date(updated[idx].departure)
+      const nights = Math.max(1, differenceInDays(dep, arr))
+      updated[idx].nights = nights
+
+      const room = rooms.find(r => r.id === updated[idx].roomId)
+      const baseRate = rates.find(r => r.id === updated[idx].rateId) || room?.defaultRate || rates[0]
+
+      if (field === 'roomId' && room?.defaultRate) {
+        updated[idx].rateId = room.defaultRate.id
       }
-      if (field === 'rateId') {
-        const rate = rates.find(r => r.id === value)
-        if (rate) {
-          updated[idx].unitRate = rate.rackRate
-          updated[idx].unitTotal = rate.rackRate * updated[idx].nights
-        }
-      }
-      if (field === 'roomId') {
-        const room = rooms.find(r => r.id === value)
-        if (room?.defaultRate) {
-          updated[idx].rateId = room.defaultRate.id
-          updated[idx].unitRate = room.defaultRate.rackRate
-          updated[idx].unitTotal = room.defaultRate.rackRate * updated[idx].nights
-        }
-      }
+
+      const pricing = calculateStayPricing({
+        unitTypeId: room?.unitTypeId || (room?.unitType as any)?.id || '',
+        arrival: updated[idx].arrival,
+        departure: updated[idx].departure,
+        adults: updated[idx].adults,
+        children: updated[idx].children,
+        seasons,
+        baseRate,
+      })
+
+      updated[idx].unitRate = pricing.avgNightRate || baseRate?.rackRate || 0
+      updated[idx].unitTotal = pricing.totalPrice || (pricing.avgNightRate * nights)
+
       return updated
     })
   }

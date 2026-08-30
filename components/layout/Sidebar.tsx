@@ -96,7 +96,7 @@ const getHotelNavItems = (role: string, permissions: UserPermissions | null | un
 
   // Configuración sub-nav — filter each child
   const setupChildren = [
-    { href: '/setup/tarifas',   label: 'Tarifas' },
+    { href: '/setup/tarifas',   label: 'Tarifas y Temporadas' },
     { href: '/setup/unidades',  label: 'Unidades' },
     { href: '/setup/rooms',     label: 'Habitaciones' },
     { href: '/setup/amenities', label: 'Amenities' },

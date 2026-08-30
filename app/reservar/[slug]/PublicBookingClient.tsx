@@ -14,6 +14,7 @@ import {
 } from 'lucide-react'
 import Icon from '@/components/ui/Icon'
 import toast from 'react-hot-toast'
+import { calculateStayPricing, type SeasonItem } from '@/lib/pricing'
 import styles from './PublicBooking.module.css'
 
 const PLACEHOLDER_IMAGES = [
@@ -61,6 +62,7 @@ interface Organization {
   paymentMethods: string
   bankAccounts: string
   unitTypes: UnitType[]
+  seasons?: SeasonItem[]
 }
 
 interface PublicBookingClientProps {
@@ -338,31 +340,32 @@ export default function PublicBookingClient({ initialOrg }: PublicBookingClientP
   }, [arrivalDate, departureDate])
 
   const quotation = useMemo(() => {
-    if (!selectedUnitType || nights <= 0) return null
+    if (!selectedUnitType || !arrivalDate || !departureDate || nights <= 0) return null
 
-    const rate = selectedUnitType.rates[0]
-    const rackRate = rate?.rackRate || 0
-    const included = rate?.includedOccupants || 2
-    const extraAdultRate = rate?.extraPersonAdult || 0
-    const extraChildRate = rate?.extraPersonChild || 0
+    const baseRate = selectedUnitType.rates[0] || null
 
-    const extraAdults = Math.max(0, adults - included)
-    const extraChildren = extraAdults > 0 ? children : Math.max(0, (adults + children) - included)
-
-    const nightExtraCharge = (extraAdults * extraAdultRate) + (extraChildren * extraChildRate)
-    const unitRate = rackRate + nightExtraCharge
-    const total = unitRate * nights
+    const pricing = calculateStayPricing({
+      unitTypeId: selectedUnitType.id,
+      arrival: arrivalDate,
+      departure: departureDate,
+      adults,
+      children,
+      seasons: org.seasons || [],
+      baseRate,
+    })
 
     return {
-      rackRate,
-      extraAdults,
-      extraChildren,
-      nightExtraCharge,
-      unitRate,
-      totalNights: nights,
-      totalPrice: total
+      rackRate: pricing.avgNightRate,
+      extraAdults: Math.max(0, adults - (baseRate?.includedOccupants || 2)),
+      extraChildren: children,
+      nightExtraCharge: Math.round(pricing.extraChargesTotal / Math.max(1, pricing.totalNights)),
+      unitRate: pricing.avgNightRate,
+      totalNights: pricing.totalNights,
+      totalPrice: pricing.totalPrice,
+      primarySeasonName: pricing.primarySeasonName,
+      breakdown: pricing.breakdown,
     }
-  }, [selectedUnitType, nights, adults, children])
+  }, [selectedUnitType, arrivalDate, departureDate, nights, adults, children, org.seasons])
 
   // Handle Form Submission
   const handleSubmitBooking = async (e: React.FormEvent) => {
@@ -887,6 +890,11 @@ export default function PublicBookingClient({ initialOrg }: PublicBookingClientP
                         <div>
                           <span className={styles.quoteDetailsText}>
                             {selectedUnitType.name} • {nights} noche(s) ({format(arrivalDate!, 'dd/MM')} al {format(departureDate!, 'dd/MM')})
+                            {quotation.primarySeasonName && (
+                              <span style={{ marginLeft: 6, fontWeight: 700, color: 'var(--primary-color)' }}>
+                                · {quotation.primarySeasonName}
+                              </span>
+                            )}
                           </span>
                           <div className={styles.quoteMainAmount}>
                             {formatCurrency(quotation.totalPrice)}

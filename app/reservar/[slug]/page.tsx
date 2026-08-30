@@ -69,6 +69,29 @@ export default async function PublicBookingPage({ params }: PageProps) {
             }
           }
         }
+      },
+      seasons: {
+        where: { active: true },
+        orderBy: [{ startDate: 'asc' }, { priority: 'desc' }],
+        select: {
+          id: true,
+          name: true,
+          startDate: true,
+          endDate: true,
+          priority: true,
+          active: true,
+          rates: {
+            select: {
+              id: true,
+              unitTypeId: true,
+              rackRate: true,
+              extraPersonAdult: true,
+              extraPersonChild: true,
+              weekendSurcharge: true,
+              includedOccupants: true,
+            }
+          }
+        }
       }
     }
   })
