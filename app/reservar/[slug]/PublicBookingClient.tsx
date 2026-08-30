@@ -455,7 +455,7 @@ export default function PublicBookingClient({ initialOrg }: PublicBookingClientP
 
   if (bookingSuccess) {
     return (
-      <div className={styles.container} data-theme={theme}>
+      <div className={styles.container} data-theme={theme} suppressHydrationWarning>
         <div className={styles.bgDecor1} />
         <div className={styles.bgDecor2} />
         <header className={`${styles.header} ${scrolled ? styles.headerScrolled : ''}`}>
@@ -548,7 +548,7 @@ export default function PublicBookingClient({ initialOrg }: PublicBookingClientP
   }
 
   return (
-    <div className={styles.container} data-theme={theme}>
+    <div className={styles.container} data-theme={theme} suppressHydrationWarning>
       {/* Background Ambient orbs (estilo editorial) */}
       <div className={styles.bgDecor1} />
       <div className={styles.bgDecor2} />

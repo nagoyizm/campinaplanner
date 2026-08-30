@@ -54,6 +54,16 @@
   --dot-brand: #D99A2B;
   --dot-past: #D6D3D1;
   --drag-handle: rgba(255, 255, 255, 0.9);
+
+  min-height: 100vh;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: 'Outfit', var(--font-outfit), system-ui, sans-serif;
+  padding-bottom: 4rem;
+  font-size: 0.85rem;
+  position: relative;
+  overflow: clip;
+  transition: background 0.3s ease, color 0.3s ease;
 }
 
 /* ── Tokens: MODO OSCURO (unificado, WCAG AA) ─────────────────── */
@@ -102,18 +112,6 @@
   --dot-brand: #E5A63F;
   --dot-past: #3A4A3F;
   --drag-handle: rgba(255, 255, 255, 0.85);
-}
-
-.container {
-  min-height: 100vh;
-  background: var(--background);
-  color: var(--foreground);
-  font-family: 'Outfit', var(--font-outfit), system-ui, sans-serif;
-  padding-bottom: 4rem;
-  font-size: 0.85rem;
-  position: relative;
-  overflow: clip;
-  transition: background 0.3s ease, color 0.3s ease;
 }
 
 /* ── Fondos decorativos ambientales (muy sutiles, estilo editorial) ── */
@@ -366,18 +364,23 @@
 }
 
 .cardImageWrapper {
-  height: 130px;
   width: 100%;
+  aspect-ratio: 1 / 1;
+  height: auto;
+  min-height: 280px;
   position: relative;
   background: var(--card-image-bg);
   border-radius: 2px 2px 0 0;
   overflow: hidden;
+  flex-shrink: 0;
 }
 
 .cardImage {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center;
+  display: block;
   transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -509,8 +512,11 @@
 }
 
 .sidebarCardExpanded .cardImageWrapper {
-  height: 120px;
   width: 100%;
+  aspect-ratio: 1 / 1;
+  height: auto;
+  min-height: 240px;
+  flex-shrink: 0;
 }
 
 /* ── Tarjeta colapsada del sidebar ──────────────────────────────── */
