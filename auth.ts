@@ -13,6 +13,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       credentials: {
         email: { label: 'Email', type: 'email' },
         password: { label: 'Contraseña', type: 'password' },
+        remember: { label: 'Remember', type: 'text' },
       },
       async authorize(credentials, req) {
         if (!credentials?.email || !credentials?.password) return null
@@ -77,6 +78,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           orgName: user.organization.name,
           orgPlan: user.organization.plan,
           defaultHomePage: user.defaultHomePage,
+          rememberMe: credentials?.remember === 'true' || credentials?.remember === true,
         }
       },
     }),

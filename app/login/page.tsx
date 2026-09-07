@@ -22,6 +22,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [theme, setTheme] = useState<'light' | 'dark'>('light')
+  const [rememberMe, setRememberMe] = useState(true)
 
   // Cargar tema unificado de la app (misma clave localStorage que AppLayout)
   useEffect(() => {
@@ -45,6 +46,7 @@ export default function LoginPage() {
     const result = await signIn('credentials', {
       email,
       password,
+      remember: rememberMe ? 'true' : 'false',
       redirect: false,
     })
 
@@ -167,7 +169,12 @@ export default function LoginPage() {
 
             <div className={styles.row}>
               <label className={styles.remember}>
-                <input type="checkbox" className={styles.checkbox} />
+                <input
+                  type="checkbox"
+                  className={styles.checkbox}
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                />
                 Recuérdame
               </label>
               <a href="#" className={styles.forgot}>
