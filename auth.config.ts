@@ -45,6 +45,7 @@ export const authConfig = {
         ;(session.user as any).orgName = token.orgName
         ;(session.user as any).orgPlan = token.orgPlan
         ;(session.user as any).defaultHomePage = token.defaultHomePage
+        ;(session.user as any).rememberMe = token.rememberMe !== false
       }
       return session
     },
