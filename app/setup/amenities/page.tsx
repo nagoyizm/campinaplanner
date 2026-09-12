@@ -7,13 +7,17 @@ const formatCLP = (n: number) =>
   new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 }).format(n)
 
 const CATEGORIES = ['Alimentos', 'Servicios', 'Equipamiento', 'Otro']
-const UNITS = ['por noche', 'por persona', 'unidad', 'otro']
+const STANDARD_UNITS = ['por noche', 'por hora', 'por persona', 'por estadía', 'por día', 'unidad']
+const ALL_SELECT_UNITS = [...STANDARD_UNITS, 'otro']
 
 const empty = { name: '', category: 'Servicios', price: 0, unit: 'por noche', active: true }
 
 export default function AmenitiesPage() {
   const [form, setForm] = useState<any>({ ...empty })
   const onFormChange = (field: string, value: any) => setForm((f: any) => ({ ...f, [field]: value }))
+
+  const isCustomUnit = !STANDARD_UNITS.includes(form.unit)
+  const selectUnitValue = isCustomUnit ? 'otro' : form.unit
 
   const columns = [
     { key: 'name', label: 'Amenity / Servicio' },
@@ -53,9 +57,34 @@ export default function AmenitiesPage() {
           </div>
           <div className="form-group">
             <label className="form-label">Unidad</label>
-            <select className="select" value={form.unit} onChange={e => onFormChange('unit', e.target.value)}>
-              {UNITS.map(u => <option key={u} value={u}>{u}</option>)}
+            <select
+              className="select"
+              value={selectUnitValue}
+              onChange={e => {
+                const val = e.target.value
+                onFormChange('unit', val)
+              }}
+            >
+              {ALL_SELECT_UNITS.map(u => (
+                <option key={u} value={u}>
+                  {u}
+                </option>
+              ))}
             </select>
+            {selectUnitValue === 'otro' && (
+              <div style={{ marginTop: 8 }}>
+                <label className="form-label" style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+                  Especificar unidad personalizada
+                </label>
+                <input
+                  className="input"
+                  value={form.unit === 'otro' ? '' : form.unit}
+                  onChange={e => onFormChange('unit', e.target.value || 'otro')}
+                  placeholder="Ej: por bloque, por viaje, carga..."
+                  autoFocus
+                />
+              </div>
+            )}
           </div>
           <div className="form-group">
             <label className="form-label">Estado</label>
