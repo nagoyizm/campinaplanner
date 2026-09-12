@@ -17,7 +17,7 @@ export async function GET(
       rooms: {
         include: { room: { include: { unitType: true } }, rate: true },
       },
-      payments: { orderBy: { date: 'desc' } },
+      payments: { orderBy: { date: 'asc' } },
       extras: { include: { amenity: true } },
       auditLogs: {
         include: { user: { select: { name: true } } },
@@ -70,6 +70,7 @@ export async function PATCH(
   if (body.isNewPax !== undefined) data.isNewPax = body.isNewPax
   if (body.isRecurring !== undefined) data.isRecurring = body.isRecurring
   if (body.isWalkIn !== undefined) data.isWalkIn = body.isWalkIn
+  if (body.isDecentPax !== undefined) data.isDecentPax = body.isDecentPax
   if (body.guaranteeRsv !== undefined) data.guaranteeRsv = body.guaranteeRsv
   if (body.guaranteeGames !== undefined) data.guaranteeGames = body.guaranteeGames
 

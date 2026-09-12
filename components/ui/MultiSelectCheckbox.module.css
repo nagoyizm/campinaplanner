@@ -1,0 +1,219 @@
+.container {
+  position: relative;
+  width: 100%;
+  min-width: 200px;
+}
+
+.trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--surface-1, #0f172a);
+  border: 1px solid var(--border, #334155);
+  border-radius: var(--radius-md, 8px);
+  color: var(--text-primary, #f8fafc);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s ease;
+  min-height: 38px;
+}
+
+.trigger:hover {
+  border-color: var(--brand-500, #0284c7);
+  background: var(--surface-2, #1e293b);
+}
+
+.triggerOpen {
+  border-color: var(--brand-500, #0284c7);
+  box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.2);
+}
+
+.triggerContent {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1px 7px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  border-radius: 9999px;
+  background: var(--brand-500, #0284c7);
+  color: #ffffff;
+  line-height: 1.2;
+}
+
+.chevron {
+  transition: transform 0.2s ease;
+  color: var(--text-muted, #94a3b8);
+  flex-shrink: 0;
+}
+
+.chevronRotated {
+  transform: rotate(180deg);
+}
+
+.dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  min-width: 250px;
+  background: var(--surface-1, #0f172a);
+  border: 1px solid var(--border, #334155);
+  border-radius: var(--radius-md, 8px);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
+  z-index: 1000;
+  overflow: hidden;
+  animation: fadeIn 0.15s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.quickActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border, #334155);
+  background: rgba(15, 23, 42, 0.6);
+}
+
+.quickChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  border-radius: 4px;
+  border: 1px solid var(--border, #334155);
+  background: var(--surface-2, #1e293b);
+  color: var(--text-secondary, #cbd5e1);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.quickChip:hover {
+  background: var(--brand-600, #0369a1);
+  color: #ffffff;
+  border-color: var(--brand-500, #0284c7);
+}
+
+.quickChipActive {
+  background: var(--brand-500, #0284c7);
+  color: #ffffff;
+  border-color: var(--brand-400, #38bdf8);
+}
+
+.searchWrapper {
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--border, #334155);
+  position: relative;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 5px 8px;
+  font-size: 0.8rem;
+  background: var(--surface-2, #1e293b);
+  border: 1px solid var(--border, #334155);
+  border-radius: 4px;
+  color: var(--text-primary, #f8fafc);
+  outline: none;
+}
+
+.searchInput:focus {
+  border-color: var(--brand-500, #0284c7);
+}
+
+.optionsList {
+  max-height: 240px;
+  overflow-y: auto;
+  padding: 4px 0;
+}
+
+.optionItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 12px;
+  font-size: 0.82rem;
+  color: var(--text-secondary, #cbd5e1);
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.optionItem:hover {
+  background: var(--surface-2, #1e293b);
+  color: var(--text-primary, #ffffff);
+}
+
+.optionItemSelected {
+  background: rgba(2, 132, 199, 0.12);
+  color: var(--brand-400, #38bdf8);
+  font-weight: 600;
+}
+
+.checkbox {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--brand-500, #0284c7);
+  cursor: pointer;
+}
+
+.optionText {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.sublabel {
+  font-size: 0.7rem;
+  color: var(--text-muted, #94a3b8);
+  font-weight: 400;
+}
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  border-top: 1px solid var(--border, #334155);
+  background: rgba(15, 23, 42, 0.8);
+  font-size: 0.75rem;
+  color: var(--text-muted, #94a3b8);
+}
+
+.applyButton {
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 4px;
+  background: var(--brand-500, #0284c7);
+  color: #ffffff;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.applyButton:hover {
+  background: var(--brand-600, #0369a1);
+}

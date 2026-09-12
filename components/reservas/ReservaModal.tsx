@@ -21,7 +21,7 @@ interface Room {
   unitType: { id?: string; name: string }; 
   defaultRate?: { id: string; name: string; rackRate: number } | null 
 }
-interface Rate { id: string; name: string; rackRate: number; includedOccupants: number; extraPersonAdult: number; extraPersonChild: number }
+interface Rate { id: string; name: string; rackRate: number; includedOccupants: number; extraPersonAdult: number; extraPersonChild: number; unitTypeId?: string; active?: boolean }
 interface Guest { id: string; firstName: string; lastName: string; rut?: string; email?: string; phone?: string; nationality?: string; referral?: string }
 
 interface ReservationRoomLine {
@@ -84,15 +84,24 @@ function formatCLP(n: number) {
 interface ReservaModalProps {
   reservaId: number | null
   defaultRoomId?: string
+  defaultRoomIds?: string[]
   defaultArrival?: Date
   defaultDeparture?: Date
   onClose: () => void
   onSave: () => void
 }
 
+function fmtDate(dStr: string) {
+  if (!dStr) return '—'
+  const parts = dStr.split('T')[0].split('-')
+  if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`
+  return dStr
+}
+
 export default function ReservaModal({
   reservaId: initialReservaId,
   defaultRoomId,
+  defaultRoomIds,
   defaultArrival,
   defaultDeparture,
   onClose,
@@ -132,6 +141,7 @@ export default function ReservaModal({
   const [isNewPax, setIsNewPax] = useState(true)
   const [isRecurring, setIsRecurring] = useState(false)
   const [isWalkIn, setIsWalkIn] = useState(false)
+  const [isDecentPax, setIsDecentPax] = useState(false)
   const [lateCheckoutHrs, setLateCheckoutHrs] = useState<number | ''>('')
   const [earlyCheckinHrs, setEarlyCheckinHrs] = useState<number | ''>('')
 
@@ -144,6 +154,19 @@ export default function ReservaModal({
   const [paymentMethod, setPaymentMethod] = useState('')
   const [accountCode, setAccountCode] = useState('')
   const [totalPaid, setTotalPaid] = useState(0)
+  const [payments, setPayments] = useState<{
+    id?: string
+    amount: number
+    method: string
+    reference?: string
+    date: string
+    notes?: string
+  }[]>([])
+  const [newPaymentAmount, setNewPaymentAmount] = useState<number | ''>('')
+  const [newPaymentDate, setNewPaymentDate] = useState(format(new Date(), 'yyyy-MM-dd'))
+  const [newPaymentMethod, setNewPaymentMethod] = useState('')
+  const [newPaymentAccount, setNewPaymentAccount] = useState('')
+  const [newPaymentNotes, setNewPaymentNotes] = useState('')
 
   // Extra info
   const [lostItems, setLostItems] = useState('')
@@ -180,32 +203,57 @@ export default function ReservaModal({
   }
 
   const setDefaultRoomLine = (roomsData: any[], ratesData: any[], seasonsData: SeasonItem[] = []) => {
-    const defaultRoom = roomsData.find((r: Room) => r.id === defaultRoomId) || roomsData[0]
-    const defaultRate = defaultRoom?.defaultRate || ratesData[0]
     const arr = defaultArrival ? format(defaultArrival, 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd')
     const dep = defaultDeparture ? format(defaultDeparture, 'yyyy-MM-dd') : format(addDays(new Date(), 1), 'yyyy-MM-dd')
-    const nights = differenceInDays(new Date(dep), new Date(arr)) || 1
+    const nights = Math.max(1, differenceInDays(new Date(dep), new Date(arr)))
 
-    const pricing = calculateStayPricing({
-      unitTypeId: defaultRoom?.unitTypeId || (defaultRoom?.unitType as any)?.id || '',
-      arrival: arr,
-      departure: dep,
-      adults: 2,
-      children: 0,
-      seasons: seasonsData,
-      baseRate: defaultRate,
+    const targetRoomIds = (defaultRoomIds && defaultRoomIds.length > 0)
+      ? defaultRoomIds
+      : [defaultRoomId || roomsData[0]?.id].filter(Boolean)
+
+    const lines: ReservationRoomLine[] = []
+
+    targetRoomIds.forEach((rid) => {
+      const defaultRoom = roomsData.find((r: Room) => r.id === rid) || roomsData[0]
+      if (!defaultRoom) return
+
+      const defaultRate = defaultRoom.defaultRate 
+        || ratesData.find((r: any) => r.unitTypeId === defaultRoom.unitTypeId && r.active !== false)
+        || ratesData[0]
+
+      const pricing = calculateStayPricing({
+        unitTypeId: defaultRoom.unitTypeId || (defaultRoom.unitType as any)?.id || '',
+        arrival: arr,
+        departure: dep,
+        adults: 2,
+        children: 0,
+        seasons: seasonsData,
+        baseRate: defaultRate,
+      })
+
+      lines.push({
+        roomId: defaultRoom.id,
+        rateId: defaultRate?.id || '',
+        arrival: arr,
+        departure: dep,
+        nights,
+        adults: 2,
+        children: 0,
+        unitRate: pricing.avgNightRate || defaultRate?.rackRate || 0,
+        unitTotal: pricing.totalPrice || ((defaultRate?.rackRate || 0) * nights),
+      })
     })
 
-    setRoomLines([{
-      roomId: defaultRoom?.id || '',
-      rateId: defaultRate?.id || '',
+    setRoomLines(lines.length > 0 ? lines : [{
+      roomId: roomsData[0]?.id || '',
+      rateId: ratesData[0]?.id || '',
       arrival: arr,
       departure: dep,
       nights,
       adults: 2,
       children: 0,
-      unitRate: pricing.avgNightRate || defaultRate?.rackRate || 0,
-      unitTotal: pricing.totalPrice || (defaultRate?.rackRate || 0) * nights,
+      unitRate: ratesData[0]?.rackRate || 0,
+      unitTotal: (ratesData[0]?.rackRate || 0) * nights,
     }])
   }
 
@@ -230,6 +278,7 @@ export default function ReservaModal({
     setIsNewPax(data.isNewPax)
     setIsRecurring(data.isRecurring)
     setIsWalkIn(data.isWalkIn)
+    setIsDecentPax(Boolean(data.isDecentPax))
     setLateCheckoutHrs(data.lateCheckoutHrs || '')
     setEarlyCheckinHrs(data.earlyCheckinHrs || '')
     setAdults(data.adults)
@@ -237,7 +286,28 @@ export default function ReservaModal({
     setPets(data.pets)
     setPaymentMethod(data.paymentMethod || '')
     setAccountCode(data.accountCode || '')
-    setTotalPaid(data.totalPaid)
+    setTotalPaid(data.totalPaid || 0)
+
+    if (data.payments && data.payments.length > 0) {
+      setPayments(data.payments.map((p: any) => ({
+        id: p.id,
+        amount: p.amount,
+        method: p.method || '',
+        reference: p.reference || '',
+        date: p.date ? p.date.split('T')[0] : format(new Date(), 'yyyy-MM-dd'),
+        notes: p.notes || ''
+      })))
+    } else if (data.totalPaid > 0) {
+      setPayments([{
+        amount: data.totalPaid,
+        method: data.paymentMethod || 'Transferencia',
+        reference: data.accountCode || '',
+        date: data.createdAt ? data.createdAt.split('T')[0] : format(new Date(), 'yyyy-MM-dd'),
+        notes: 'Pago inicial registrado'
+      }])
+    } else {
+      setPayments([])
+    }
     setLostItems(data.lostItems || '')
     setNotes(data.notes || '')
     setDte(data.dte || '')
@@ -322,7 +392,7 @@ export default function ReservaModal({
       setLoading(false)
     }
     loadData()
-  }, [currentResId])
+  }, [currentResId, defaultRoomId, defaultRoomIds, defaultArrival, defaultDeparture])
 
   // ── Guest search ──────────────────────────────────────────────
   useEffect(() => {
@@ -402,10 +472,14 @@ export default function ReservaModal({
       updated[idx].nights = nights
 
       const room = rooms.find(r => r.id === updated[idx].roomId)
-      const baseRate = rates.find(r => r.id === updated[idx].rateId) || room?.defaultRate || rates[0]
+      let baseRate = rates.find(r => r.id === updated[idx].rateId) || room?.defaultRate || rates.find(r => r.unitTypeId === room?.unitTypeId && r.active !== false) || rates[0]
 
-      if (field === 'roomId' && room?.defaultRate) {
-        updated[idx].rateId = room.defaultRate.id
+      if (field === 'roomId' && room) {
+        const autoRate = room.defaultRate || rates.find(r => r.unitTypeId === room.unitTypeId && r.active !== false) || rates[0]
+        if (autoRate) {
+          updated[idx].rateId = autoRate.id
+          baseRate = autoRate
+        }
       }
 
       const pricing = calculateStayPricing({
@@ -479,7 +553,44 @@ export default function ReservaModal({
   const unitTotal = roomLines.reduce((sum, line) => sum + line.unitTotal, 0)
   const preTaxTotal = unitTotal + additionalServicesTotal - discounts
   const postTaxTotal = preTaxTotal + tax
-  const amountDue = postTaxTotal - totalPaid
+  const computedTotalPaid = payments.reduce((sum, p) => sum + (Number(p.amount) || 0), 0)
+  const amountDue = Math.max(0, postTaxTotal - computedTotalPaid)
+
+  const handleAddPayment = () => {
+    const amt = Number(newPaymentAmount)
+    if (!amt || amt <= 0) {
+      toast.error('Ingresa un monto válido para el abono')
+      return
+    }
+    const pRecord = {
+      amount: amt,
+      date: newPaymentDate || format(new Date(), 'yyyy-MM-dd'),
+      method: newPaymentMethod || paymentMethod || paymentOptions.methods[0] || 'Transferencia',
+      reference: newPaymentAccount || accountCode || '',
+      notes: newPaymentNotes || '',
+    }
+    setPayments(prev => [...prev, pRecord])
+    setNewPaymentAmount('')
+    setNewPaymentNotes('')
+    toast.success('Abono registrado')
+  }
+
+  const handleMarkAsPaid = () => {
+    if (amountDue <= 0) return
+    const pRecord = {
+      amount: amountDue,
+      date: format(new Date(), 'yyyy-MM-dd'),
+      method: paymentMethod || paymentOptions.methods[0] || 'Transferencia',
+      reference: accountCode || '',
+      notes: 'Saldo restante pagado completo',
+    }
+    setPayments(prev => [...prev, pRecord])
+    toast.success('Saldo marcado como pagado')
+  }
+
+  const handleRemovePayment = (idx: number) => {
+    setPayments(prev => prev.filter((_, i) => i !== idx))
+  }
 
   const handleDelete = async () => {
     if (!confirm('¿Estás seguro de que deseas eliminar esta reserva permanentemente?')) return
@@ -516,11 +627,18 @@ export default function ReservaModal({
         status: newStatus || status,
         source,
         guest: { id: guestId || null, firstName, lastName, rut, email, phone, nationality, address, notes: guestNotes, referral },
-        isVip, isNoisy, isDirty, isDifficult, isNewPax, isRecurring, isWalkIn,
+        isVip, isNoisy, isDirty, isDifficult, isNewPax, isRecurring, isWalkIn, isDecentPax,
         lateCheckoutHrs: lateCheckoutHrs || null,
         earlyCheckinHrs: earlyCheckinHrs || null,
         adults, children, pets,
-        paymentMethod, accountCode, totalPaid,
+        paymentMethod, accountCode, totalPaid: computedTotalPaid,
+        payments: payments.map(p => ({
+          amount: Number(p.amount) || 0,
+          method: p.method || paymentMethod || 'Transferencia',
+          reference: p.reference || accountCode || '',
+          date: p.date,
+          notes: p.notes || ''
+        })),
         lostItems, notes, dte, guaranteeRsv, guaranteeGames,
         unitTotal, additionalServices: additionalServicesTotal, discounts, tax,
         rooms: roomLines,
@@ -739,9 +857,23 @@ export default function ReservaModal({
                             value={line.rateId}
                             onChange={e => updateRoomLine(idx, 'rateId', e.target.value)}
                           >
-                            {rates.map(r => (
-                              <option key={r.id} value={r.id}>{r.name}</option>
-                            ))}
+                            {rates
+                              .slice()
+                              .sort((a, b) => {
+                                const room = rooms.find(r => r.id === line.roomId)
+                                const aMatch = a.unitTypeId === room?.unitTypeId ? -1 : 1
+                                const bMatch = b.unitTypeId === room?.unitTypeId ? -1 : 1
+                                return aMatch - bMatch
+                              })
+                              .map(r => {
+                                const room = rooms.find(rm => rm.id === line.roomId)
+                                const isMatch = r.unitTypeId === room?.unitTypeId
+                                return (
+                                  <option key={r.id} value={r.id}>
+                                    {r.name} {isMatch ? '★' : ''}
+                                  </option>
+                                )
+                              })}
                           </select>
                         </td>
                         <td>
@@ -852,6 +984,7 @@ export default function ReservaModal({
                       { label: '🧹 Sucio',       val: isDirty,     set: setIsDirty,     cls: 'chip-dirty' },
                       { label: '⚠️ Complicado',  val: isDifficult, set: setIsDifficult, cls: 'chip-difficult' },
                       { label: '✨ PAX Nuevo',   val: isNewPax,    set: setIsNewPax,    cls: 'chip-newpax' },
+                      { label: '👍 PAX Decente', val: isDecentPax, set: setIsDecentPax, cls: 'chip-decent' },
                       { label: '🔄 Cliente',     val: isRecurring, set: setIsRecurring, cls: 'chip-recurring' },
                       { label: '🚶 Walk-in',     val: isWalkIn,    set: setIsWalkIn,    cls: 'chip-walkin' },
                     ].map(tag => (
@@ -945,7 +1078,7 @@ export default function ReservaModal({
                       <label htmlFor="garantia-rsv" className="form-label" style={{ marginBottom: 0, cursor: 'pointer' }}>GARANTÍA RSV</label>
                     </div>
                     <div className="form-group">
-                      <label htmlFor="form-control-19" className="form-label">GARANTÍA JUEGOS</label>
+                      <label htmlFor="form-control-19" className="form-label">GARANTÍA ADICIONAL</label>
                       <input id="form-control-19" className="input" value={guaranteeGames} onChange={e => setGuaranteeGames(e.target.value)} placeholder="Ej: Efectivo $10.000..." />
                     </div>
                   </div>
@@ -980,22 +1113,84 @@ export default function ReservaModal({
                   </div>
                   <div className={styles.summaryRow}>
                     <span>Total Pagado</span>
-                    <input
-                      type="number"
-                      className="input"
-                      style={{ width: 120, textAlign: 'right' }}
-                      value={totalPaid}
-                      min={0}
-                      onChange={e => setTotalPaid(+e.target.value)}
-                    />
+                    <span className="currency" style={{ color: '#10b981', fontWeight: 600 }}>{formatCLP(computedTotalPaid)}</span>
                   </div>
                   <div className={`${styles.summaryRow} ${styles.summaryDue} ${amountDue > 0 ? styles.due : styles.paid}`}>
                     <span>Monto Adeudado</span>
                     <span className="currency">{formatCLP(amountDue)}</span>
                   </div>
+
+                  {/* Historial de Abonos */}
+                  {payments.length > 0 && (
+                    <div style={{ marginTop: 12, padding: 8, background: 'var(--surface-1)', borderRadius: 6, border: '1px solid var(--border-color)', fontSize: 12 }}>
+                      <div style={{ fontWeight: 600, marginBottom: 4, color: 'var(--text-secondary)' }}>Abonos Registrados ({payments.length}):</div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 4, maxHeight: 110, overflowY: 'auto' }}>
+                        {payments.map((p, pIdx) => (
+                          <div key={`p-sum-${pIdx}`} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 4 }}>
+                            <span>{fmtDate(p.date)} · {p.method}</span>
+                            <span style={{ fontWeight: 600, color: '#10b981' }}>
+                              {formatCLP(p.amount)}
+                              <button
+                                type="button"
+                                className="btn btn-ghost"
+                                style={{ padding: '0 4px', color: '#ef4444', marginLeft: 4 }}
+                                onClick={() => handleRemovePayment(pIdx)}
+                                title="Eliminar abono"
+                              >
+                                ×
+                              </button>
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Formulario rápido para abonar pago */}
+                  <div style={{ marginTop: 12, padding: 10, background: 'var(--surface-2)', borderRadius: 8, border: '1px dashed var(--border-color)' }}>
+                    <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 6, color: 'var(--brand-500)' }}>➕ Registrar Pago / Abono</div>
+                    <div style={{ display: 'flex', gap: 6, marginBottom: 6 }}>
+                      <input
+                        type="date"
+                        className="input"
+                        style={{ flex: 1, padding: '4px 6px', fontSize: 12 }}
+                        value={newPaymentDate}
+                        onChange={e => setNewPaymentDate(e.target.value)}
+                      />
+                      <input
+                        type="number"
+                        className="input"
+                        style={{ width: 110, padding: '4px 6px', fontSize: 12, textAlign: 'right' }}
+                        value={newPaymentAmount}
+                        placeholder={amountDue > 0 ? `${amountDue}` : 'Monto $'}
+                        min={1}
+                        onChange={e => setNewPaymentAmount(e.target.value === '' ? '' : +e.target.value)}
+                      />
+                    </div>
+                    <div style={{ display: 'flex', gap: 6, marginBottom: 6 }}>
+                      <select
+                        className="select"
+                        style={{ flex: 1, padding: '4px 6px', fontSize: 12 }}
+                        value={newPaymentMethod || paymentMethod}
+                        onChange={e => setNewPaymentMethod(e.target.value)}
+                      >
+                        <option value="">Medio de pago...</option>
+                        {paymentOptions.methods.map(m => <option key={m} value={m}>{m}</option>)}
+                      </select>
+                      <button
+                        type="button"
+                        className="btn btn-secondary"
+                        style={{ padding: '4px 10px', fontSize: 12, whiteSpace: 'nowrap' }}
+                        onClick={handleAddPayment}
+                      >
+                        Abonar
+                      </button>
+                    </div>
+                  </div>
+
                   {amountDue > 0 && (
-                    <button className="btn btn-primary w-full" style={{ marginTop: 12 }} onClick={() => setTotalPaid(postTaxTotal)}>
-                      Marcar como Pagado
+                    <button type="button" className="btn btn-primary w-full" style={{ marginTop: 10 }} onClick={handleMarkAsPaid}>
+                      Marcar como Pagado ({formatCLP(amountDue)})
                     </button>
                   )}
                 </div>
@@ -1152,25 +1347,40 @@ export default function ReservaModal({
                       </tr>
                     )}
 
-                    {/* Pagos */}
-                    {totalPaid > 0 && (
-                      <tr style={{ borderBottom: '1px solid var(--border-color)', backgroundColor: 'rgba(16, 185, 129, 0.05)' }}>
-                        <td style={{ padding: '12px 16px', fontWeight: 500 }}>-</td>
+                    {/* Pagos / Abonos individuales */}
+                    {payments.map((p, pIdx) => (
+                      <tr key={`payment-row-${p.id || pIdx}`} style={{ borderBottom: '1px solid var(--border-color)', backgroundColor: 'rgba(16, 185, 129, 0.05)' }}>
+                        <td style={{ padding: '12px 16px', fontWeight: 500 }}>Abono #{pIdx + 1}</td>
                         <td style={{ padding: '12px 16px' }}>
-                          Pago: {paymentMethod || 'No especificado'} {accountCode ? `(${accountCode})` : ''}
+                          <strong>Pago {p.method || 'Transferencia'}</strong>
+                          {p.reference ? ` · Ref: ${p.reference}` : ''}
+                          {p.notes ? ` · (${p.notes})` : ''}
+                          <span style={{ display: 'block', fontSize: '11px', color: 'var(--text-secondary)' }}>
+                            Fecha: {fmtDate(p.date)}
+                          </span>
                         </td>
                         <td style={{ padding: '12px 16px', textAlign: 'center' }}>1</td>
-                        <td style={{ padding: '12px 16px', textAlign: 'right' }}>{formatCLP(totalPaid)}</td>
+                        <td style={{ padding: '12px 16px', textAlign: 'right' }}>{formatCLP(p.amount)}</td>
                         <td style={{ padding: '12px 16px', textAlign: 'right' }}></td>
-                        <td style={{ padding: '12px 16px', textAlign: 'right', fontWeight: 600, color: '#10b981' }}>{formatCLP(totalPaid)}</td>
+                        <td style={{ padding: '12px 16px', textAlign: 'right', fontWeight: 600, color: '#10b981' }}>
+                          {formatCLP(p.amount)}
+                          <button 
+                            className="btn btn-ghost" 
+                            style={{ padding: '2px 4px', marginLeft: 8, color: '#ef4444', verticalAlign: 'middle' }}
+                            onClick={() => handleRemovePayment(pIdx)}
+                            title="Eliminar este abono"
+                          >
+                            <Icon icon={Trash2} size="xs" />
+                          </button>
+                        </td>
                       </tr>
-                    )}
+                    ))}
                   </tbody>
                   <tfoot>
                     <tr style={{ backgroundColor: 'var(--surface-2)', fontWeight: 600 }}>
                       <td colSpan={4} style={{ padding: '16px', textAlign: 'right' }}>Totales:</td>
                       <td style={{ padding: '16px', textAlign: 'right', color: 'var(--text-base)' }}>{formatCLP(postTaxTotal)}</td>
-                      <td style={{ padding: '16px', textAlign: 'right', color: '#10b981' }}>{formatCLP(totalPaid)}</td>
+                      <td style={{ padding: '16px', textAlign: 'right', color: '#10b981' }}>{formatCLP(computedTotalPaid)}</td>
                     </tr>
                     <tr>
                       <td colSpan={6} style={{ padding: '16px', textAlign: 'right', fontSize: '1.1rem' }}>

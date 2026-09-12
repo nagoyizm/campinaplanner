@@ -8,8 +8,11 @@ export async function GET(req: NextRequest) {
   const startDate = searchParams.get('startDate')
   const endDate = searchParams.get('endDate')
   const queryBy = searchParams.get('queryBy') || 'arrival' // arrival | departure | both
-  const unitTypeId = searchParams.get('unitTypeId') || 'all'
-  const roomId = searchParams.get('roomId') || 'all'
+  const rawUnitTypeIds = searchParams.get('unitTypeIds') || searchParams.get('unitTypeId') || 'all'
+  const unitTypeIds = rawUnitTypeIds === 'all' || !rawUnitTypeIds.trim() ? [] : rawUnitTypeIds.split(',').map(s => s.trim()).filter(Boolean)
+
+  const rawRoomIds = searchParams.get('roomIds') || searchParams.get('roomId') || 'all'
+  const roomIds = rawRoomIds === 'all' || !rawRoomIds.trim() ? [] : rawRoomIds.split(',').map(s => s.trim()).filter(Boolean)
 
   if (!startDate || !endDate) {
     return NextResponse.json({ error: 'startDate y endDate son requeridos' }, { status: 400 })
@@ -33,10 +36,14 @@ export async function GET(req: NextRequest) {
   }
 
   const roomFilter: any = { organizationId }
-  if (roomId !== 'all') {
-    roomFilter.id = roomId
-  } else if (unitTypeId !== 'all') {
-    roomFilter.unitTypeId = unitTypeId
+  if (roomIds.length === 1 && roomIds[0] !== 'all') {
+    roomFilter.id = roomIds[0]
+  } else if (roomIds.length > 1) {
+    roomFilter.id = { in: roomIds }
+  } else if (unitTypeIds.length === 1 && unitTypeIds[0] !== 'all') {
+    roomFilter.unitTypeId = unitTypeIds[0]
+  } else if (unitTypeIds.length > 1) {
+    roomFilter.unitTypeId = { in: unitTypeIds }
   }
 
   const rows = await prisma.reservationRoom.findMany({
@@ -48,7 +55,8 @@ export async function GET(req: NextRequest) {
             include: {
               _count: { select: { reservations: true } }
             }
-          } 
+          },
+          rooms: { select: { id: true, unitTotal: true } }
         } 
       },
       room: { include: { unitType: true } },
@@ -59,13 +67,29 @@ export async function GET(req: NextRequest) {
 
   const data = rows.map((r) => {
     const rsv = r.reservation
-    const total = rsv.unitTotal + rsv.additionalServices - rsv.discounts + rsv.tax
-    const amountDue = total - rsv.totalPaid
+    const rsvTotal = rsv.unitTotal + rsv.additionalServices - rsv.discounts + rsv.tax
+    const isMultiRoom = (rsv.rooms?.length || 1) > 1
+
+    const ratio = (rsv.unitTotal > 0 && rsv.rooms?.length > 1)
+      ? (r.unitTotal / rsv.unitTotal)
+      : (1 / (rsv.rooms?.length || 1))
+
+    const roomDiscounts = isMultiRoom ? Math.round(rsv.discounts * ratio) : rsv.discounts
+    const roomAdditionalServices = isMultiRoom ? Math.round(rsv.additionalServices * ratio) : rsv.additionalServices
+    const roomTax = isMultiRoom ? Math.round(rsv.tax * ratio) : rsv.tax
+    const roomTotal = isMultiRoom 
+      ? Math.round(r.unitTotal + roomAdditionalServices - roomDiscounts + roomTax)
+      : rsvTotal
+    const roomPaid = isMultiRoom ? Math.round(rsv.totalPaid * ratio) : rsv.totalPaid
+    const roomAmountDue = roomTotal - roomPaid
+
     return {
       reservationId: rsv.id,
       guestFirstName: rsv.guest.firstName,
       guestLastName: rsv.guest.lastName,
       isRecurring: rsv.guest._count.reservations > 1,
+      isMultiRoom,
+      reservationTotal: rsvTotal,
       roomCode: r.room.code,
       roomName: r.room.name.replace(/^[a-z]-/i, ''),
       unitType: r.room.unitType.name,
@@ -74,22 +98,26 @@ export async function GET(req: NextRequest) {
       departure: r.departure.toISOString(),
       nights: r.nights,
       unitTotal: r.unitTotal,
-      discounts: rsv.discounts,
-      additionalServices: rsv.additionalServices,
-      tax: rsv.tax,
-      total,
-      totalPaid: rsv.totalPaid,
-      amountDue,
+      discounts: roomDiscounts,
+      additionalServices: roomAdditionalServices,
+      tax: roomTax,
+      total: roomTotal,
+      totalPaid: roomPaid,
+      amountDue: roomAmountDue,
       status: rsv.status,
       paymentMethod: rsv.paymentMethod ?? '—',
     }
   })
 
   const countFilter: any = { organizationId, active: true }
-  if (roomId !== 'all') {
-    countFilter.id = roomId
-  } else if (unitTypeId !== 'all') {
-    countFilter.unitTypeId = unitTypeId
+  if (roomIds.length === 1 && roomIds[0] !== 'all') {
+    countFilter.id = roomIds[0]
+  } else if (roomIds.length > 1) {
+    countFilter.id = { in: roomIds }
+  } else if (unitTypeIds.length === 1 && unitTypeIds[0] !== 'all') {
+    countFilter.unitTypeId = unitTypeIds[0]
+  } else if (unitTypeIds.length > 1) {
+    countFilter.unitTypeId = { in: unitTypeIds }
   }
 
   const totalActiveRooms = await prisma.room.count({

@@ -39,7 +39,7 @@ async function main() {
     create: {
       email: 'admin@termasdelsur.cl',
       name: 'Administrador Termas',
-      password: hash,
+      password: hashedPassword,
       role: 'admin',
       roleName: 'Administrador',
       organizationId: ORG_ID,

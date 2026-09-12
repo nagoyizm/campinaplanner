@@ -104,14 +104,15 @@ export default function CalendarioClient({ rooms, reservas, fechaBase, todayStr 
   const [viewMode, setViewMode] = useState<'month' | 'week'>('month')
   const [modalOpen, setModalOpen] = useState(false)
   const [selectedCell, setSelectedCell] = useState<{
-    roomId: string; arrival: Date; departure: Date
+    roomId: string; roomIds?: string[]; arrival: Date; departure: Date
   } | null>(null)
   const [selectedReservaId, setSelectedReservaId] = useState<number | null>(null)
   const [quickModalRsv, setQuickModalRsv] = useState<any>(null)
-  const [actionSelectModalOpen, setActionSelectModalOpen] = useState<{ roomId: string; arrival: Date; departure: Date } | null>(null)
+  const [actionSelectModalOpen, setActionSelectModalOpen] = useState<{ roomId: string; roomIds?: string[]; arrival: Date; departure: Date } | null>(null)
   const [bloqueoModalOpen, setBloqueoModalOpen] = useState<{ roomId: string; arrival: Date; departure: Date } | null>(null)
   const [dragSelection, setDragSelection] = useState<{
-    roomId: string
+    startRoomId: string
+    currentRoomId: string
     startDate: Date
     currentDate: Date
   } | null>(null)
@@ -146,6 +147,25 @@ export default function CalendarioClient({ rooms, reservas, fechaBase, todayStr 
   ), [rooms])
   const [unitTypeFilter, setUnitTypeFilter] = useState<string[]>(() => unitTypes.map(u => u.id))
 
+  const visibleRooms = useMemo(() => {
+    const list: Room[] = []
+    unitTypes.filter(ut => unitTypeFilter.includes(ut.id)).forEach((ut) => {
+      const unitRooms = rooms.filter(r => r.unitTypeId === ut.id)
+      list.push(...unitRooms)
+    })
+    return list
+  }, [unitTypes, unitTypeFilter, rooms])
+
+  const selectedRoomIds = useMemo(() => {
+    if (!dragSelection) return []
+    const startIdx = visibleRooms.findIndex(r => r.id === dragSelection.startRoomId)
+    const currentIdx = visibleRooms.findIndex(r => r.id === dragSelection.currentRoomId)
+    if (startIdx === -1 || currentIdx === -1) return [dragSelection.startRoomId]
+    const minIdx = Math.min(startIdx, currentIdx)
+    const maxIdx = Math.max(startIdx, currentIdx)
+    return visibleRooms.slice(minIdx, maxIdx + 1).map(r => r.id)
+  }, [dragSelection, visibleRooms])
+
   const visibleReservas = useMemo(() => {
     let filtered = reservas
     if (statusFilter.length > 0) {
@@ -174,6 +194,11 @@ export default function CalendarioClient({ rooms, reservas, fechaBase, todayStr 
   const isTodaySantiago = useCallback((d: Date) => {
     return isSameDay(d, parseUTCDate(todayStr))
   }, [todayStr])
+
+  // Is Friday or Weekend (Fri/Sat/Sun)
+  const isWeekendOrFriday = useCallback((d: Date) => {
+    return isWeekend(d) || d.getDay() === 5
+  }, [])
 
   // Generate days array
   // Siempre 30 días, comenzando 3 días antes de la fecha base (currentDate)
@@ -277,7 +302,8 @@ export default function CalendarioClient({ rooms, reservas, fechaBase, todayStr 
     if (rsv || activeDrag || rescheduling) return
     e.preventDefault()
     setDragSelection({
-      roomId,
+      startRoomId: roomId,
+      currentRoomId: roomId,
       startDate: day,
       currentDate: day,
     })
@@ -303,15 +329,14 @@ export default function CalendarioClient({ rooms, reservas, fechaBase, todayStr 
       })
     }
     if (dragSelection) {
-      if (dragSelection.roomId === roomId) {
-        setDragSelection(prev => {
-          if (!prev) return null
-          return {
-            ...prev,
-            currentDate: day
-          }
-        })
-      }
+      setDragSelection(prev => {
+        if (!prev) return null
+        return {
+          ...prev,
+          currentRoomId: roomId,
+          currentDate: day
+        }
+      })
     }
   }
 
@@ -320,7 +345,7 @@ export default function CalendarioClient({ rooms, reservas, fechaBase, todayStr 
     if (!dragSelection) return
 
     const handleSelectionMouseUp = () => {
-      const { roomId, startDate, currentDate: endPointDate } = dragSelection
+      const { startRoomId, currentRoomId, startDate, currentDate: endPointDate } = dragSelection
       const start = startDate <= endPointDate ? startDate : endPointDate
       const end = startDate <= endPointDate ? endPointDate : startDate
 
@@ -330,12 +355,21 @@ export default function CalendarioClient({ rooms, reservas, fechaBase, todayStr 
       const departure = addDays(new Date(end), 1)
       departure.setHours(0, 0, 0, 0)
 
-      const hasCollision = checkCollision(0, roomId, arrival, departure)
-      if (hasCollision) {
-        toast.error('¡El rango seleccionado coincide con una reserva existente!')
+      const startIdx = visibleRooms.findIndex(r => r.id === startRoomId)
+      const currentIdx = visibleRooms.findIndex(r => r.id === currentRoomId)
+      const minIdx = startIdx === -1 ? 0 : Math.min(startIdx, currentIdx)
+      const maxIdx = currentIdx === -1 ? 0 : Math.max(startIdx, currentIdx)
+      const targetRooms = visibleRooms.slice(minIdx, maxIdx + 1)
+      const targetRoomIds = targetRooms.length > 0 ? targetRooms.map(r => r.id) : [startRoomId]
+
+      const collidingRooms = targetRooms.filter(r => checkCollision(0, r.id, arrival, departure))
+      if (collidingRooms.length > 0) {
+        const names = collidingRooms.map(r => r.name.replace(/^[a-z]-/i, '')).join(', ')
+        toast.error(`¡El rango seleccionado coincide con reservas en: ${names}!`)
       } else {
         setActionSelectModalOpen({
-          roomId,
+          roomId: targetRoomIds[0],
+          roomIds: targetRoomIds,
           arrival,
           departure,
         })
@@ -347,7 +381,7 @@ export default function CalendarioClient({ rooms, reservas, fechaBase, todayStr 
     return () => {
       globalThis.removeEventListener('mouseup', handleSelectionMouseUp)
     }
-  }, [dragSelection, checkCollision])
+  }, [dragSelection, checkCollision, visibleRooms])
 
   useEffect(() => {
     const handleGlobalMouseMove = (e: MouseEvent) => {
@@ -691,7 +725,7 @@ export default function CalendarioClient({ rooms, reservas, fechaBase, todayStr 
     let isSelectionCell = false
     let isSelectionCollision = false
 
-    if (dragSelection && dragSelection.roomId === room.id) {
+    if (dragSelection && selectedRoomIds.includes(room.id)) {
       const start = dragSelection.startDate <= dragSelection.currentDate ? dragSelection.startDate : dragSelection.currentDate
       const end = dragSelection.startDate <= dragSelection.currentDate ? dragSelection.currentDate : dragSelection.startDate
       const s = new Date(start); s.setHours(0, 0, 0, 0)
@@ -726,7 +760,7 @@ export default function CalendarioClient({ rooms, reservas, fechaBase, todayStr 
         className={`
           ${styles.cell}
           ${isTodaySantiago(day) ? styles.todayCell : ''}
-          ${isWeekend(day) ? styles.weekendCell : ''}
+          ${isWeekendOrFriday(day) ? styles.weekendCell : ''}
           ${isSelectionCell ? styles.dragSelected : ''}
           ${rsv ? styles.hasReservation : ''}
           ${isPreviewCell ? styles.dragSelected : ''}
@@ -783,9 +817,9 @@ export default function CalendarioClient({ rooms, reservas, fechaBase, todayStr 
               ) : (rsv as any)._isSaved ? (
                 <Icon icon={ShieldCheck} size="xs" color="var(--success)" />
               ) : rsv.reservation.guaranteeRsv === 'true' ? (
-                <Icon icon={ShieldCheck} size="xs" color="var(--success)" data-tooltip="Garantía Pagada" />
+                <Icon icon={ShieldAlert} size="xs" color="var(--danger)" data-tooltip="Con Garantía" />
               ) : (
-                <Icon icon={ShieldAlert} size="xs" color="var(--danger)" data-tooltip="Sin Garantía" />
+                <Icon icon={ShieldCheck} size="xs" color="var(--success)" data-tooltip="Sin Garantía" />
               )}
               <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {(rsv as any)._isSaving ? 'Guardando...' : (rsv as any)._isSaved ? '¡Actualizada!' : `${rsv.reservation.guest.firstName} ${rsv.reservation.guest.lastName}`}
@@ -972,7 +1006,7 @@ export default function CalendarioClient({ rooms, reservas, fechaBase, todayStr 
           {days.map((day) => (
             <div
               key={day.toISOString()}
-              className={`${styles.dayHeader} ${isTodaySantiago(day) ? styles.todayHeader : ''} ${isWeekend(day) ? styles.weekendHeader : ''}`}
+              className={`${styles.dayHeader} ${isTodaySantiago(day) ? styles.todayHeader : ''} ${isWeekendOrFriday(day) ? styles.weekendHeader : ''}`}
               onMouseDown={handleMouseDown}
             >
               <span className={styles.dayNum}>{format(day, 'd')}</span>
@@ -1046,8 +1080,8 @@ export default function CalendarioClient({ rooms, reservas, fechaBase, todayStr 
             )
           })}
           <div className={styles.legendSeparator} />
-          <div className={styles.legendItem}><Icon icon={ShieldCheck} size="xs" color="var(--success)" /><span>Garantía Pagada</span></div>
-          <div className={styles.legendItem}><Icon icon={ShieldAlert} size="xs" color="var(--danger)" /><span>Sin Garantía</span></div>
+          <div className={styles.legendItem}><Icon icon={ShieldAlert} size="xs" color="var(--danger)" /><span>Con Garantía</span></div>
+          <div className={styles.legendItem}><Icon icon={ShieldCheck} size="xs" color="var(--success)" /><span>Sin Garantía</span></div>
         </div>
 
       {/* ── Modals ── */}
@@ -1062,8 +1096,17 @@ export default function CalendarioClient({ rooms, reservas, fechaBase, todayStr 
             style={{ background: 'var(--surface-1)', padding: 24, borderRadius: 12, width: 340, boxShadow: '0 10px 25px rgba(0,0,0,0.2)' }} 
             onClick={e => e.stopPropagation()}
           >
-            <h3 style={{ marginTop: 0, marginBottom: 12 }}>¿Qué deseas hacer?</h3>
+            <h3 style={{ marginTop: 0, marginBottom: 12 }}>
+              {actionSelectModalOpen.roomIds && actionSelectModalOpen.roomIds.length > 1
+                ? `¿Qué deseas hacer para las ${actionSelectModalOpen.roomIds.length} cabañas?`
+                : '¿Qué deseas hacer?'}
+            </h3>
             <p style={{ color: 'var(--text-secondary)', fontSize: 13, marginBottom: 20 }}>
+              {actionSelectModalOpen.roomIds && actionSelectModalOpen.roomIds.length > 1 && (
+                <span style={{ display: 'block', fontWeight: 600, color: 'var(--brand-500)', marginBottom: 6 }}>
+                  Grupo: {actionSelectModalOpen.roomIds.map(rid => rooms.find(r => r.id === rid)?.name.replace(/^[a-z]-/i, '') || rid).join(', ')}
+                </span>
+              )}
               {differenceInDays(actionSelectModalOpen.departure, actionSelectModalOpen.arrival) === 1
                 ? `Selecciona la acción para el ${format(actionSelectModalOpen.arrival, 'dd/MM/yyyy')}.`
                 : `Selecciona la acción del ${format(actionSelectModalOpen.arrival, 'dd/MM/yyyy')} al ${format(actionSelectModalOpen.departure, 'dd/MM/yyyy')} (${differenceInDays(actionSelectModalOpen.departure, actionSelectModalOpen.arrival)} noches).`}
@@ -1074,6 +1117,7 @@ export default function CalendarioClient({ rooms, reservas, fechaBase, todayStr 
                 onClick={() => {
                   setSelectedCell({ 
                     roomId: actionSelectModalOpen.roomId, 
+                    roomIds: actionSelectModalOpen.roomIds || [actionSelectModalOpen.roomId],
                     arrival: actionSelectModalOpen.arrival, 
                     departure: actionSelectModalOpen.departure 
                   })
@@ -1082,7 +1126,9 @@ export default function CalendarioClient({ rooms, reservas, fechaBase, todayStr 
                   setActionSelectModalOpen(null)
                 }}
               >
-                Hacer Reserva
+                {actionSelectModalOpen.roomIds && actionSelectModalOpen.roomIds.length > 1
+                  ? `Hacer Reserva de Grupo (${actionSelectModalOpen.roomIds.length} cabañas)`
+                  : 'Hacer Reserva'}
               </button>
               <button 
                 className="btn btn-secondary" 
@@ -1116,6 +1162,7 @@ export default function CalendarioClient({ rooms, reservas, fechaBase, todayStr 
         <ReservaModal
           reservaId={selectedReservaId}
           defaultRoomId={selectedCell?.roomId}
+          defaultRoomIds={selectedCell?.roomIds}
           defaultArrival={selectedCell?.arrival}
           defaultDeparture={selectedCell?.departure}
           onClose={() => setModalOpen(false)}

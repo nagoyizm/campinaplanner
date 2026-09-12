@@ -9,7 +9,9 @@ async function main() {
     'Memo',
     'WhatsAppSession',
     'InventoryItem',
-    'SaasPayment'
+    'SaasPayment',
+    'Season',
+    'SeasonRate'
   ]
 
   for (const table of tables) {

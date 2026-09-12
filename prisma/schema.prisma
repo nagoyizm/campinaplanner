@@ -231,6 +231,7 @@ model Reservation {
   isNewPax          Boolean   @default(true)
   isRecurring       Boolean   @default(false)
   isWalkIn          Boolean   @default(false)
+  isDecentPax       Boolean   @default(false)
   lateCheckoutHrs   Int?
   earlyCheckinHrs   Int?
 

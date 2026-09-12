@@ -25,6 +25,7 @@ export default function QuickReservaModal({
   const [isNewPax, setIsNewPax] = useState(rsv.isNewPax)
   const [isRecurring, setIsRecurring] = useState(rsv.isRecurring)
   const [isWalkIn, setIsWalkIn] = useState(rsv.isWalkIn)
+  const [isDecentPax, setIsDecentPax] = useState(Boolean(rsv.isDecentPax))
   const [guaranteeRsv, setGuaranteeRsv] = useState(rsv.guaranteeRsv || '')
   const [guaranteeGames, setGuaranteeGames] = useState(rsv.guaranteeGames || '')
 
@@ -43,7 +44,7 @@ export default function QuickReservaModal({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           status,
-          isVip, isNoisy, isDirty, isDifficult, isNewPax, isRecurring, isWalkIn,
+          isVip, isNoisy, isDirty, isDifficult, isNewPax, isRecurring, isWalkIn, isDecentPax,
           guaranteeRsv, guaranteeGames
         })
       })
@@ -196,6 +197,7 @@ export default function QuickReservaModal({
               { label: '🧹 Sucio',       val: isDirty,     set: setIsDirty,     cls: 'chip-dirty' },
               { label: '⚠️ Complicado',  val: isDifficult, set: setIsDifficult, cls: 'chip-difficult' },
               { label: '✨ PAX Nuevo',   val: isNewPax,    set: setIsNewPax,    cls: 'chip-newpax' },
+              { label: '👍 PAX Decente', val: isDecentPax, set: setIsDecentPax, cls: 'chip-decent' },
               { label: '🔄 Cliente',     val: isRecurring, set: setIsRecurring, cls: 'chip-recurring' },
               { label: '🚶 Walk-in',     val: isWalkIn,    set: setIsWalkIn,    cls: 'chip-walkin' },
             ].map(tag => (
@@ -232,7 +234,7 @@ export default function QuickReservaModal({
               <label htmlFor="garantia-rsv-quick" style={{ color: 'var(--text-secondary)', fontSize: '10px', fontWeight: 600, cursor: 'pointer' }}>GARANTÍA RSV</label>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', marginTop: '4px' }}>
-              <span style={{ color: 'var(--text-secondary)', fontSize: '10px', fontWeight: 600 }}>GARANTÍA JUEGOS</span>
+              <span style={{ color: 'var(--text-secondary)', fontSize: '10px', fontWeight: 600 }}>GARANTÍA ADICIONAL</span>
               <input className="input" style={{ padding: '4px 6px', fontSize: '12px', height: 'auto' }} value={guaranteeGames} onChange={e => setGuaranteeGames(e.target.value)} placeholder="-" />
             </div>
           </div>

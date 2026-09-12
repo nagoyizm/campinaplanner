@@ -19,6 +19,11 @@ export async function GET(req: NextRequest) {
   const startDate = searchParams.get('startDate')
   const endDate = searchParams.get('endDate')
   const queryBy = searchParams.get('queryBy') || 'arrival'
+  const rawUnitTypeIds = searchParams.get('unitTypeIds') || searchParams.get('unitTypeId') || 'all'
+  const unitTypeIds = rawUnitTypeIds === 'all' || !rawUnitTypeIds.trim() ? [] : rawUnitTypeIds.split(',').map(s => s.trim()).filter(Boolean)
+
+  const rawRoomIds = searchParams.get('roomIds') || searchParams.get('roomId') || 'all'
+  const roomIds = rawRoomIds === 'all' || !rawRoomIds.trim() ? [] : rawRoomIds.split(',').map(s => s.trim()).filter(Boolean)
 
   if (!startDate || !endDate) {
     return NextResponse.json({ error: 'Fechas requeridas' }, { status: 400 })
@@ -32,9 +37,33 @@ export async function GET(req: NextRequest) {
   else if (queryBy === 'departure') where = { departure: { gte: start, lte: end } }
   else where = { OR: [{ arrival: { gte: start, lte: end } }, { departure: { gte: start, lte: end } }] }
 
+  const roomFilter: any = {}
+  if (roomIds.length === 1 && roomIds[0] !== 'all') {
+    roomFilter.id = roomIds[0]
+  } else if (roomIds.length > 1) {
+    roomFilter.id = { in: roomIds }
+  } else if (unitTypeIds.length === 1 && unitTypeIds[0] !== 'all') {
+    roomFilter.unitTypeId = unitTypeIds[0]
+  } else if (unitTypeIds.length > 1) {
+    roomFilter.unitTypeId = { in: unitTypeIds }
+  }
+
+  if (Object.keys(roomFilter).length > 0) {
+    where.room = roomFilter
+  }
+
   const rows = await prisma.reservationRoom.findMany({
     where,
-    include: { reservation: { include: { guest: true } }, room: true, rate: true },
+    include: { 
+      reservation: { 
+        include: { 
+          guest: true,
+          rooms: { select: { id: true, unitTotal: true } }
+        } 
+      }, 
+      room: true, 
+      rate: true 
+    },
     orderBy: { arrival: 'asc' },
   })
 
@@ -76,16 +105,29 @@ export async function GET(req: NextRequest) {
 
   for (const r of rows) {
     const rsv = r.reservation
-    const total = rsv.unitTotal + rsv.additionalServices - rsv.discounts + rsv.tax
-    const amountDue = total - rsv.totalPaid
+    const rsvTotal = rsv.unitTotal + rsv.additionalServices - rsv.discounts + rsv.tax
+    const isMultiRoom = (rsv.rooms?.length || 1) > 1
+
+    const ratio = (rsv.unitTotal > 0 && rsv.rooms?.length > 1)
+      ? (r.unitTotal / rsv.unitTotal)
+      : (1 / (rsv.rooms?.length || 1))
+
+    const roomDiscounts = isMultiRoom ? Math.round(rsv.discounts * ratio) : rsv.discounts
+    const roomAdditionalServices = isMultiRoom ? Math.round(rsv.additionalServices * ratio) : rsv.additionalServices
+    const roomTax = isMultiRoom ? Math.round(rsv.tax * ratio) : rsv.tax
+    const roomTotal = isMultiRoom 
+      ? Math.round(r.unitTotal + roomAdditionalServices - roomDiscounts + roomTax)
+      : rsvTotal
+    const roomPaid = isMultiRoom ? Math.round(rsv.totalPaid * ratio) : rsv.totalPaid
+    const roomAmountDue = roomTotal - roomPaid
 
     totals.unitTotal += r.unitTotal
-    totals.discounts += rsv.discounts
-    totals.additionalServices += rsv.additionalServices
-    totals.tax += rsv.tax
-    totals.total += total
-    totals.totalPaid += rsv.totalPaid
-    totals.amountDue += amountDue
+    totals.discounts += roomDiscounts
+    totals.additionalServices += roomAdditionalServices
+    totals.tax += roomTax
+    totals.total += roomTotal
+    totals.totalPaid += roomPaid
+    totals.amountDue += roomAmountDue
 
     const row = sheet.addRow([
       rsv.id, rsv.guest.firstName, rsv.guest.lastName,
@@ -94,8 +136,8 @@ export async function GET(req: NextRequest) {
       new Date(r.arrival.getUTCFullYear(), r.arrival.getUTCMonth(), r.arrival.getUTCDate()),
       new Date(r.departure.getUTCFullYear(), r.departure.getUTCMonth(), r.departure.getUTCDate()),
       r.nights,
-      r.unitTotal, rsv.discounts, rsv.additionalServices, rsv.tax,
-      total, rsv.totalPaid, amountDue,
+      r.unitTotal, roomDiscounts, roomAdditionalServices, roomTax,
+      roomTotal, roomPaid, roomAmountDue,
       STATUS_LABELS[rsv.status] ?? rsv.status,
       rsv.paymentMethod ?? '—',
     ])

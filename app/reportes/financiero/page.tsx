@@ -13,6 +13,7 @@ import Icon from '@/components/ui/Icon'
 import toast from 'react-hot-toast'
 import styles from './financiero.module.css'
 import FinancialCharts from '@/components/reportes/FinancialCharts'
+import MultiSelectCheckbox, { MultiSelectOption } from '@/components/ui/MultiSelectCheckbox'
 
 // ── Types ────────────────────────────────────────────────────────
 interface ReportRow {
@@ -36,6 +37,8 @@ interface ReportRow {
   status: string
   paymentMethod: string
   isRecurring: boolean
+  isMultiRoom?: boolean
+  reservationTotal?: number
 }
 
 // ── Helpers ───────────────────────────────────────────────────────
@@ -82,8 +85,46 @@ export default function ReporteFinancieroPage() {
 
   const [setupRooms, setSetupRooms] = useState<any[]>([])
   const [setupUnitTypes, setSetupUnitTypes] = useState<any[]>([])
-  const [selectedUnitType, setSelectedUnitType] = useState('all')
-  const [selectedRoom, setSelectedRoom] = useState('all')
+  const [selectedUnitTypes, setSelectedUnitTypes] = useState<string[]>([])
+  const [selectedRooms, setSelectedRooms] = useState<string[]>([])
+
+  const unitTypeOptions: MultiSelectOption[] = useMemo(() => {
+    return setupUnitTypes.map(ut => ({
+      id: ut.id,
+      label: ut.name,
+    }))
+  }, [setupUnitTypes])
+
+  const availableRooms = useMemo(() => {
+    if (selectedUnitTypes.length === 0 || selectedUnitTypes.length === setupUnitTypes.length) {
+      return setupRooms
+    }
+    return setupRooms.filter(r => selectedUnitTypes.includes(r.unitTypeId))
+  }, [setupRooms, selectedUnitTypes, setupUnitTypes])
+
+  const roomOptions: MultiSelectOption[] = useMemo(() => {
+    return availableRooms.map(r => ({
+      id: r.id,
+      label: `${r.name} (${r.code})`,
+      sublabel: r.unitType?.name,
+    }))
+  }, [availableRooms])
+
+  const unitTypeQuickFilters = useMemo(() => [
+    {
+      label: '🏡 Solo Cabañas',
+      filterFn: (opt: MultiSelectOption) =>
+        opt.label.toLowerCase().includes('cabaña') || opt.label.toLowerCase().includes('cabana')
+    },
+    {
+      label: '✨ Solo Suites',
+      filterFn: (opt: MultiSelectOption) => opt.label.toLowerCase().includes('suite')
+    },
+    {
+      label: '🍢 Quinchos',
+      filterFn: (opt: MultiSelectOption) => opt.label.toLowerCase().includes('quincho')
+    }
+  ], [])
 
   useEffect(() => {
     fetch('/api/setup/rooms').then(r => r.json()).then(data => {
@@ -108,10 +149,18 @@ export default function ReporteFinancieroPage() {
     setLoading(true)
     setSearched(true)
     try {
+      const unitTypeParam = (selectedUnitTypes.length === 0 || selectedUnitTypes.length === setupUnitTypes.length)
+        ? 'all'
+        : selectedUnitTypes.join(',')
+
+      const roomParam = (selectedRooms.length === 0 || selectedRooms.length === availableRooms.length)
+        ? 'all'
+        : selectedRooms.join(',')
+
       const params = new URLSearchParams({ 
         startDate, endDate, queryBy, 
-        unitTypeId: selectedUnitType, 
-        roomId: selectedRoom 
+        unitTypeIds: unitTypeParam, 
+        roomIds: roomParam 
       })
       const res = await fetch(`/api/reportes/financiero?${params}`)
       if (!res.ok) throw new Error('Error cargando reporte')
@@ -130,11 +179,19 @@ export default function ReporteFinancieroPage() {
   }, [])
 
   const handleExcelExport = () => {
+    const unitTypeParam = (selectedUnitTypes.length === 0 || selectedUnitTypes.length === setupUnitTypes.length)
+      ? 'all'
+      : selectedUnitTypes.join(',')
+
+    const roomParam = (selectedRooms.length === 0 || selectedRooms.length === availableRooms.length)
+      ? 'all'
+      : selectedRooms.join(',')
+
     const params = new URLSearchParams({ 
-        startDate, endDate, queryBy, 
-        unitTypeId: selectedUnitType, 
-        roomId: selectedRoom 
-      })
+      startDate, endDate, queryBy, 
+      unitTypeIds: unitTypeParam, 
+      roomIds: roomParam 
+    })
     window.open(`/api/reportes/financiero/excel?${params}`, '_blank')
   }
 
@@ -294,35 +351,30 @@ export default function ReporteFinancieroPage() {
             </div>
 
             {/* Room Filters */}
-            <div className={styles.filterGroup}>
+            <div className={styles.filterGroup} style={{ minWidth: 230 }}>
               <p className="form-label">Grupo de Habitaciones</p>
-              <select 
-                className="input" 
-                value={selectedUnitType} 
-                onChange={e => { setSelectedUnitType(e.target.value); setSelectedRoom('all'); }}
-              >
-                <option value="all">Todos los grupos</option>
-                {setupUnitTypes.map(ut => (
-                  <option key={ut.id} value={ut.id}>{ut.name}</option>
-                ))}
-              </select>
+              <MultiSelectCheckbox
+                options={unitTypeOptions}
+                selectedIds={selectedUnitTypes}
+                onChange={(ids) => {
+                  setSelectedUnitTypes(ids)
+                  setSelectedRooms([])
+                }}
+                labelAll="Todos los grupos"
+                placeholder="Todos los grupos"
+                quickFilters={unitTypeQuickFilters}
+              />
             </div>
 
-            <div className={styles.filterGroup}>
+            <div className={styles.filterGroup} style={{ minWidth: 230 }}>
               <p className="form-label">Habitación Específica</p>
-              <select 
-                className="input" 
-                value={selectedRoom} 
-                onChange={e => setSelectedRoom(e.target.value)}
-                disabled={selectedUnitType !== 'all'}
-              >
-                <option value="all">Todas</option>
-                {setupRooms
-                  .filter(r => selectedUnitType === 'all' || r.unitTypeId === selectedUnitType)
-                  .map(r => (
-                    <option key={r.id} value={r.id}>{r.name} ({r.code})</option>
-                  ))}
-              </select>
+              <MultiSelectCheckbox
+                options={roomOptions}
+                selectedIds={selectedRooms}
+                onChange={(ids) => setSelectedRooms(ids)}
+                labelAll="Todas las cabañas"
+                placeholder="Todas las cabañas"
+              />
             </div>
 
             {/* Date range */}
@@ -535,7 +587,27 @@ export default function ReporteFinancieroPage() {
                       const st = STATUS_CONFIG[r.status]
                       return (
                         <tr key={`${r.reservationId}-${i}`}>
-                          <td className={styles.rsvNum}>#{r.reservationId}</td>
+                          <td className={styles.rsvNum}>
+                            #{r.reservationId}
+                            {r.isMultiRoom && (
+                              <span
+                                title={`Reserva grupal prorrateada (Total reserva: ${formatCLP(r.reservationTotal || 0)})`}
+                                style={{
+                                  display: 'inline-block',
+                                  marginLeft: 6,
+                                  fontSize: '0.68rem',
+                                  padding: '1px 5px',
+                                  borderRadius: '4px',
+                                  background: 'var(--primary-light, #e0f2fe)',
+                                  color: 'var(--primary-dark, #0369a1)',
+                                  fontWeight: 600,
+                                  verticalAlign: 'middle',
+                                }}
+                              >
+                                Grupo
+                              </span>
+                            )}
+                          </td>
                           <td>{r.guestFirstName}</td>
                           <td>{r.guestLastName}</td>
                           <td>

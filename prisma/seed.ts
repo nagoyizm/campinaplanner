@@ -271,7 +271,7 @@ async function main() {
     create: {
       email: 'admin@capiña.cl',
       name: 'Administrador',
-      password: hashedPassword,
+      password: hashedSuperPassword,
       role: 'admin',
       roleName: 'Administrador',
     },
@@ -280,12 +280,12 @@ async function main() {
   await prisma.user.upsert({
     where: { email: 'admin@campina.cl' },
     update: {
-      password: hashedPassword,
+      password: hashedSuperPassword,
     },
     create: {
       email: 'admin@campina.cl',
       name: 'Administrador ASCII',
-      password: hashedPassword,
+      password: hashedSuperPassword,
       role: 'admin',
       roleName: 'Administrador',
     },

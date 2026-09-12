@@ -94,6 +94,7 @@ export async function POST(req: NextRequest) {
       isNewPax: body.isNewPax,
       isRecurring: body.isRecurring,
       isWalkIn: body.isWalkIn,
+      isDecentPax: body.isDecentPax ?? false,
       lateCheckoutHrs: body.lateCheckoutHrs || null,
       earlyCheckinHrs: body.earlyCheckinHrs || null,
       adults: body.adults,
@@ -138,6 +139,15 @@ export async function POST(req: NextRequest) {
           quantity: e.quantity,
           unitPrice: e.unitPrice,
           total: e.total,
+        })),
+      },
+      payments: {
+        create: (body.payments || []).map((p: any) => ({
+          amount: Number(p.amount) || 0,
+          method: p.method || body.paymentMethod || 'Transferencia',
+          reference: p.reference || body.accountCode || null,
+          date: p.date ? new Date(p.date) : new Date(),
+          notes: p.notes || null,
         })),
       },
     },
@@ -218,6 +228,7 @@ export async function PUT(req: NextRequest) {
       isNewPax: body.isNewPax,
       isRecurring: body.isRecurring,
       isWalkIn: body.isWalkIn,
+      isDecentPax: body.isDecentPax ?? undefined,
       lateCheckoutHrs: body.lateCheckoutHrs || null,
       earlyCheckinHrs: body.earlyCheckinHrs || null,
       adults: body.adults,
@@ -265,6 +276,22 @@ export async function PUT(req: NextRequest) {
         total: e.total,
       }))
     })
+  }
+
+  if (body.payments !== undefined) {
+    await prisma.payment.deleteMany({ where: { reservationId: reservaId } })
+    if (body.payments.length > 0) {
+      await prisma.payment.createMany({
+        data: body.payments.map((p: any) => ({
+          reservationId: reservaId,
+          amount: Number(p.amount) || 0,
+          method: p.method || body.paymentMethod || 'Transferencia',
+          reference: p.reference || body.accountCode || null,
+          date: p.date ? new Date(p.date) : new Date(),
+          notes: p.notes || null,
+        }))
+      })
+    }
   }
 
   const changes: string[] = []

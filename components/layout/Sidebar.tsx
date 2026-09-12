@@ -83,8 +83,8 @@ const getHotelNavItems = (role: string, permissions: UserPermissions | null | un
   // Filter based on permissions
   const filteredNav = allNav.filter(item => hasAccess(item.href, permissions, role))
 
-  // Reportes sub-nav — check if module has access
   const reportesItems = [
+    { href: '/reportes/reservas',     label: 'Reservas' },
     { href: '/reportes/financiero',   label: 'Financiero' },
     { href: '/reportes/habitaciones', label: 'Habitaciones' },
     { href: '/reportes/huespedes',    label: 'Huéspedes' },
