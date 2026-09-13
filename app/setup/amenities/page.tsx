@@ -7,7 +7,7 @@ const formatCLP = (n: number) =>
   new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 }).format(n)
 
 const CATEGORIES = ['Alimentos', 'Servicios', 'Equipamiento', 'Otro']
-const STANDARD_UNITS = ['por noche', 'por hora', 'por persona', 'por estadía', 'por día', 'unidad']
+const STANDARD_UNITS = new Set(['por noche', 'por hora', 'por persona', 'por estadía', 'por día', 'unidad'])
 const ALL_SELECT_UNITS = [...STANDARD_UNITS, 'otro']
 
 const empty = { name: '', category: 'Servicios', price: 0, unit: 'por noche', active: true }
@@ -16,7 +16,7 @@ export default function AmenitiesPage() {
   const [form, setForm] = useState<any>({ ...empty })
   const onFormChange = (field: string, value: any) => setForm((f: any) => ({ ...f, [field]: value }))
 
-  const isCustomUnit = !STANDARD_UNITS.includes(form.unit)
+  const isCustomUnit = !STANDARD_UNITS.has(form.unit)
   const selectUnitValue = isCustomUnit ? 'otro' : form.unit
 
   const columns = [
@@ -42,22 +42,23 @@ export default function AmenitiesPage() {
       formFields={
         <>
           <div className="form-group">
-            <label className="form-label required">Nombre</label>
-            <input className="input" value={form.name} onChange={e => onFormChange('name', e.target.value)} placeholder="Ej: Leña, Desayuno, Mascota..." />
+            <label htmlFor="amenity-name" className="form-label required">Nombre</label>
+            <input id="amenity-name" className="input" value={form.name} onChange={e => onFormChange('name', e.target.value)} placeholder="Ej: Leña, Desayuno, Mascota..." />
           </div>
           <div className="form-group">
-            <label className="form-label">Categoría</label>
-            <select className="select" value={form.category} onChange={e => onFormChange('category', e.target.value)}>
+            <label htmlFor="amenity-category" className="form-label">Categoría</label>
+            <select id="amenity-category" className="select" value={form.category} onChange={e => onFormChange('category', e.target.value)}>
               {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
             </select>
           </div>
           <div className="form-group">
-            <label className="form-label required">Precio (CLP)</label>
-            <input className="input" type="number" value={form.price} onChange={e => onFormChange('price', +e.target.value)} min={0} />
+            <label htmlFor="amenity-price" className="form-label required">Precio (CLP)</label>
+            <input id="amenity-price" className="input" type="number" value={form.price} onChange={e => onFormChange('price', +e.target.value)} min={0} />
           </div>
           <div className="form-group">
-            <label className="form-label">Unidad</label>
+            <label htmlFor="amenity-unit" className="form-label">Unidad</label>
             <select
+              id="amenity-unit"
               className="select"
               value={selectUnitValue}
               onChange={e => {
@@ -73,10 +74,11 @@ export default function AmenitiesPage() {
             </select>
             {selectUnitValue === 'otro' && (
               <div style={{ marginTop: 8 }}>
-                <label className="form-label" style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+                <label htmlFor="amenity-custom-unit" className="form-label" style={{ fontSize: 12, color: 'var(--text-muted)' }}>
                   Especificar unidad personalizada
                 </label>
                 <input
+                  id="amenity-custom-unit"
                   className="input"
                   value={form.unit === 'otro' ? '' : form.unit}
                   onChange={e => onFormChange('unit', e.target.value || 'otro')}
@@ -87,10 +89,10 @@ export default function AmenitiesPage() {
             )}
           </div>
           <div className="form-group">
-            <label className="form-label">Estado</label>
-            <label style={{ display: 'flex', alignItems: 'center', gap: 8, paddingTop: 8, fontSize: 13 }}>
-              <input type="checkbox" checked={form.active} onChange={e => onFormChange('active', e.target.checked)} style={{ accentColor: 'var(--brand-500)' }} />
-              Amenity activo
+            <span className="form-label">Estado</span>
+            <label htmlFor="amenity-active" style={{ display: 'flex', alignItems: 'center', gap: 8, paddingTop: 8, fontSize: 13 }}>
+              <input id="amenity-active" type="checkbox" checked={form.active} onChange={e => onFormChange('active', e.target.checked)} style={{ accentColor: 'var(--brand-500)' }} />
+              <span>Amenity activo</span>
             </label>
           </div>
         </>

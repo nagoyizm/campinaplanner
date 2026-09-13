@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import { requireOrg } from '@/lib/org'
 import CalendarioClient from './CalendarioClient'
-import { addDays } from 'date-fns'
+import { addDays, addMonths } from 'date-fns'
 
 export const dynamic = 'force-dynamic'
 
@@ -29,6 +29,11 @@ export default async function CalendarioPage({
   const lastDayVal = new Date(Date.UTC(year, month, 0)).getUTCDate()
   const fin = new Date(Date.UTC(year, month - 1, lastDayVal, 23, 59, 59, 999))
 
+  // Ventana amplia (-3 meses a +6 meses) para permitir scroll horizontal fluido
+  // y garantizar que cualquier reserva reciente o próxima esté precargada
+  const queryInicio = addMonths(inicio, -3)
+  const queryFin = addMonths(fin, 6)
+
   const rooms = await prisma.room.findMany({
     where: { active: true, organizationId },
     include: { unitType: true },
@@ -42,8 +47,8 @@ export default async function CalendarioPage({
   const reservas = await prisma.reservationRoom.findMany({
     where: {
       room: { organizationId },
-      arrival: { lte: addDays(fin, 14) },
-      departure: { gte: addDays(inicio, -14) },
+      arrival: { lte: queryFin },
+      departure: { gte: queryInicio },
       reservation: { status: { notIn: ['cancelled', 'on_hold'] } },
     },
     include: {

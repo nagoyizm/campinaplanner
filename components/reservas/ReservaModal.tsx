@@ -88,7 +88,7 @@ interface ReservaModalProps {
   defaultArrival?: Date
   defaultDeparture?: Date
   onClose: () => void
-  onSave: () => void
+  onSave: (savedReservation?: any) => void
 }
 
 function fmtDate(dStr: string) {
@@ -673,7 +673,7 @@ export default function ReservaModal({
 
       toast.success(currentResId ? 'Reserva actualizada' : 'Reserva guardada exitosamente')
       if (closeOnSuccess) {
-        onSave()
+        onSave(savedData)
       } else {
         // Just trigger refresh in parent without closing if possible? 
         // Wait, parent's onSave might close it automatically if the parent is managing modal state!

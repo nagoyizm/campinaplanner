@@ -342,6 +342,18 @@ export default function ReservasPage() {
                           <div style={{ display: 'flex', justifyContent: 'center', gap: 6 }}>
                             <button 
                               className="btn btn-ghost btn-sm" 
+                              onClick={() => {
+                                const firstRoom = rsv.rooms?.[0]
+                                const fecha = firstRoom?.arrival ? firstRoom.arrival.split('T')[0] : ''
+                                router.push(`/calendario${fecha ? `?fecha=${fecha}` : ''}`)
+                              }}
+                              style={{ padding: '6px', height: 'auto', color: 'var(--brand-500)' }}
+                              title="Ver en Calendario Planner"
+                            >
+                              <Icon icon={Calendar} size="sm" />
+                            </button>
+                            <button 
+                              className="btn btn-ghost btn-sm" 
                               onClick={() => handleOpenEdit(rsv.id)}
                               style={{ padding: '6px', height: 'auto' }}
                               title="Editar/Ver Reserva"

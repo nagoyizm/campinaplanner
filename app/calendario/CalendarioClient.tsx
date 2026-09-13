@@ -190,6 +190,13 @@ export default function CalendarioClient({ rooms, reservas, fechaBase, todayStr 
     setOptimisticRsvs({})
   }, [reservas])
 
+  // Sync currentDate when fechaBase prop changes (e.g. navigation via URL)
+  useEffect(() => {
+    if (fechaBase) {
+      setCurrentDate(parseUTCDate(fechaBase))
+    }
+  }, [fechaBase])
+
   // Is this day "Today" in Santiago?
   const isTodaySantiago = useCallback((d: Date) => {
     return isSameDay(d, parseUTCDate(todayStr))
@@ -1166,9 +1173,19 @@ export default function CalendarioClient({ rooms, reservas, fechaBase, todayStr 
           defaultArrival={selectedCell?.arrival}
           defaultDeparture={selectedCell?.departure}
           onClose={() => setModalOpen(false)}
-          onSave={() => {
+          onSave={(savedRsv) => {
             setModalOpen(false)
-            router.refresh()
+            if (savedRsv?.rooms && savedRsv.rooms.length > 0) {
+              const firstArrival = savedRsv.rooms[0].arrival
+              const dateStr = typeof firstArrival === 'string'
+                ? firstArrival.split('T')[0]
+                : format(new Date(firstArrival), 'yyyy-MM-dd')
+              const targetDate = parseUTCDate(dateStr)
+              setCurrentDate(targetDate)
+              router.push(`/calendario?fecha=${dateStr}`)
+            } else {
+              router.refresh()
+            }
           }}
         />
       )}
