@@ -105,24 +105,24 @@ export const KNOWLEDGE_BASE: KnowledgeEntry[] = [
     routeLabel: 'Pizarra / Memo',
   },
 
-  // ── INVENTARIO ──────────────────────────────────────────────────
+  // ── INSUMOS ──────────────────────────────────────────────────
   {
-    keywords: ['inventario', 'stock', 'productos', 'insumos', 'limpieza', 'amenidades', 'compras'],
-    answer: 'El módulo de **Inventario** gestiona el stock de insumos (limpieza, amenidades, etc.) y sus costos. Puedes registrar compras, usar ítems y ver el historial de transacciones.',
+    keywords: ['inventario', 'insumos', 'stock', 'productos', 'limpieza', 'lavanderia', 'lavandería', 'compras'],
+    answer: 'El módulo de **Insumos** gestiona el stock interno de insumos (limpieza, lavandería, mantención, etc.) y sus costos. Puedes registrar compras, consumos y ver el historial de transacciones.',
     route: '/inventario',
-    routeLabel: 'Inventario',
+    routeLabel: 'Insumos',
   },
   {
-    keywords: ['agregar item inventario', 'nuevo item', 'crear producto', 'registrar compra'],
-    answer: 'Para agregar un ítem al inventario: ve a **Inventario** y usa el botón "+ Nuevo Ítem". Para registrar una compra o uso, selecciona el ítem y agrega una transacción.',
+    keywords: ['agregar item insumo', 'nuevo insumo', 'crear insumo', 'registrar compra', 'consumo'],
+    answer: 'Para agregar un insumo: ve a **Insumos** y usa el botón "+ Nuevo Insumo". Para registrar una compra o consumo, selecciona el ítem y agrega una transacción.',
     route: '/inventario',
-    routeLabel: 'Inventario',
+    routeLabel: 'Insumos',
   },
 
   // ── REPORTES ────────────────────────────────────────────────────
   {
     keywords: ['reporte', 'reportes', 'informe', 'estadisticas', 'estadísticas', 'analisis', 'análisis'],
-    answer: 'El módulo de **Reportes** tiene 5 sub-secciones: Financiero, Habitaciones, Huéspedes, Inventario y Fechas. Cada uno ofrece gráficos y tablas exportables.',
+    answer: 'El módulo de **Reportes** tiene 5 sub-secciones: Financiero, Habitaciones, Huéspedes, Insumos y Fechas. Cada uno ofrece gráficos y tablas exportables.',
     route: '/reportes/financiero',
     routeLabel: 'Reportes',
   },
@@ -145,10 +145,10 @@ export const KNOWLEDGE_BASE: KnowledgeEntry[] = [
     routeLabel: 'Reporte Huéspedes',
   },
   {
-    keywords: ['reporte inventario', 'gasto inventario', 'costo insumos'],
-    answer: 'El **Reporte de Inventario** muestra los gastos en insumos por categoría y período. Ve a Reportes → Inventario.',
+    keywords: ['reporte inventario', 'reporte insumos', 'gasto inventario', 'costo insumos'],
+    answer: 'El **Reporte de Insumos** muestra los gastos en compras y consumo de insumos por categoría y período. Ve a Reportes → Insumos.',
     route: '/reportes/inventario',
-    routeLabel: 'Reporte Inventario',
+    routeLabel: 'Reporte Insumos',
   },
   {
     keywords: ['exportar excel', 'descargar excel', 'exportar pdf', 'descargar reporte'],

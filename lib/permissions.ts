@@ -14,7 +14,7 @@ export const MODULES: ModuleDef[] = [
   { key: 'habitaciones', label: 'Estado de Habitaciones', category: 'operaciones' },
   { key: 'huespedes', label: 'Base de Huéspedes', category: 'operaciones' },
   { key: 'pizarra', label: 'Pizarra / Memos', category: 'operaciones' },
-  { key: 'inventario', label: 'Inventario', category: 'operaciones' },
+  { key: 'inventario', label: 'Insumos (Stock interno)', category: 'operaciones' },
   { key: 'administracion', label: 'Administración', category: 'operaciones' },
   
   { key: 'reportes', label: 'Reportes (Financiero, etc.)', category: 'reportes' },

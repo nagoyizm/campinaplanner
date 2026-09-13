@@ -34,7 +34,7 @@ export default function InventoryClient({ items: initialItems }: Readonly<Props>
 
   const categories = Array.from(new Set(items.map(i => i.category)))
   if (!categories.includes('Limpieza')) categories.push('Limpieza')
-  if (!categories.includes('Amenidades')) categories.push('Amenidades')
+  if (!categories.includes('Lavandería')) categories.push('Lavandería')
   if (!categories.includes('Mantenimiento')) categories.push('Mantenimiento')
   if (!categories.includes('Ropa de Cama')) categories.push('Ropa de Cama')
   if (!categories.includes('Alimentos y Bebidas')) categories.push('Alimentos y Bebidas')
@@ -55,12 +55,12 @@ export default function InventoryClient({ items: initialItems }: Readonly<Props>
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newItem)
       })
-      if (!res.ok) throw new Error('Error creando producto')
+      if (!res.ok) throw new Error('Error creando insumo')
       const created = await res.json()
       setItems([...items, created].sort((a, b) => a.name.localeCompare(b.name)))
       setShowNewModal(false)
       setNewItem({ name: '', category: 'Limpieza', unitCost: 0, minQuantity: 0 })
-      toast.success('Producto creado')
+      toast.success('Insumo creado')
     } catch (err: any) {
       toast.error(err.message)
     } finally {
@@ -78,12 +78,12 @@ export default function InventoryClient({ items: initialItems }: Readonly<Props>
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(editItem)
       })
-      if (!res.ok) throw new Error('Error actualizando producto')
+      if (!res.ok) throw new Error('Error actualizando insumo')
       const updated = await res.json()
       setItems(items.map(i => i.id === updated.id ? updated : i).sort((a, b) => a.name.localeCompare(b.name)))
       setShowEditModal(false)
       setEditItem(null)
-      toast.success('Producto actualizado')
+      toast.success('Insumo actualizado')
     } catch (err: any) {
       toast.error(err.message)
     } finally {
@@ -131,17 +131,17 @@ export default function InventoryClient({ items: initialItems }: Readonly<Props>
   }
 
   const handleDelete = async (id: string, name: string) => {
-    if (!globalThis.confirm(`¿Estás seguro de que deseas eliminar permanentemente "${name}" del inventario?`)) return
+    if (!globalThis.confirm(`¿Estás seguro de que deseas eliminar permanentemente "${name}" de los insumos?`)) return
     
     setUpdating(true)
     try {
       const res = await fetch(`/api/inventario/${id}`, {
         method: 'DELETE'
       })
-      if (!res.ok) throw new Error('Error al eliminar producto')
+      if (!res.ok) throw new Error('Error al eliminar insumo')
       
       setItems(items.filter(i => i.id !== id))
-      toast.success('Producto eliminado')
+      toast.success('Insumo eliminado')
     } catch (err: any) {
       toast.error(err.message)
     } finally {
@@ -160,7 +160,7 @@ export default function InventoryClient({ items: initialItems }: Readonly<Props>
             <Icon icon={Search} size="md" style={{ position: 'absolute', left: 12, top: 10, color: 'var(--text-muted)' }} />
             <input 
               type="text"
-              placeholder="Buscar producto..."
+              placeholder="Buscar insumo..."
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
               style={{ width: '100%', padding: '8px 12px 8px 36px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--surface-2)', color: 'var(--text-base)', fontSize: '0.9rem' }}
@@ -181,7 +181,7 @@ export default function InventoryClient({ items: initialItems }: Readonly<Props>
           style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', borderRadius: '8px', background: 'var(--brand-600)', color: 'white', border: 'none', fontWeight: 600, fontSize: '0.9rem', cursor: 'pointer' }}
         >
           <Icon icon={PackagePlus} size="lg" />
-          Nuevo Producto
+          Nuevo Insumo
         </button>
       </div>
 
@@ -190,7 +190,7 @@ export default function InventoryClient({ items: initialItems }: Readonly<Props>
         <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
           <thead>
             <tr style={{ borderBottom: '1px solid var(--border)', background: 'var(--surface-2)' }}>
-              <th style={{ padding: '12px 16px', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)' }}>Producto</th>
+              <th style={{ padding: '12px 16px', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)' }}>Insumo</th>
               <th style={{ padding: '12px 16px', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)' }}>Categoría</th>
               <th style={{ padding: '12px 16px', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)' }}>Costo Unitario</th>
               <th style={{ padding: '12px 16px', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)' }}>Stock</th>
@@ -228,7 +228,7 @@ export default function InventoryClient({ items: initialItems }: Readonly<Props>
                   <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
                     <button 
                       onClick={() => { setEditItem(item); setShowEditModal(true); }}
-                      title="Editar Producto"
+                      title="Editar Insumo"
                       style={{ padding: '6px', borderRadius: '6px', border: '1px solid color-mix(in srgb, var(--info) 35%, transparent)', background: 'var(--info-bg)', color: 'var(--info)', cursor: 'pointer' }}
                     >
                       Editar
@@ -250,7 +250,7 @@ export default function InventoryClient({ items: initialItems }: Readonly<Props>
                     <button 
                       onClick={() => handleDelete(item.id, item.name)}
                       disabled={updating}
-                      title="Eliminar Producto"
+                      title="Eliminar Insumo"
                       style={{ padding: '6px', borderRadius: '6px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-muted)', cursor: 'pointer' }}
                     >
                       <Icon icon={Trash2} size="md" />
@@ -262,7 +262,7 @@ export default function InventoryClient({ items: initialItems }: Readonly<Props>
             {filteredItems.length === 0 && (
               <tr>
                 <td colSpan={6} style={{ padding: '32px', textAlign: 'center', color: 'var(--text-muted)' }}>
-                  No se encontraron productos en el inventario.
+                  No se encontraron insumos en el registro.
                 </td>
               </tr>
             )}
@@ -274,7 +274,7 @@ export default function InventoryClient({ items: initialItems }: Readonly<Props>
       {showNewModal && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
           <form onSubmit={handleCreateItem} style={{ background: 'var(--surface-1)', padding: '24px', borderRadius: '12px', width: '100%', maxWidth: '400px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <h2 style={{ margin: 0, fontSize: '1.25rem', color: 'var(--text-base)' }}>Crear Producto</h2>
+            <h2 style={{ margin: 0, fontSize: '1.25rem', color: 'var(--text-base)' }}>Crear Insumo</h2>
             
             <label style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)' }}>
               <span>Nombre</span>
@@ -311,7 +311,7 @@ export default function InventoryClient({ items: initialItems }: Readonly<Props>
       {showEditModal && editItem && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
           <form onSubmit={handleUpdateItem} style={{ background: 'var(--surface-1)', padding: '24px', borderRadius: '12px', width: '100%', maxWidth: '400px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <h2 style={{ margin: 0, fontSize: '1.25rem', color: 'var(--text-base)' }}>Editar Producto</h2>
+            <h2 style={{ margin: 0, fontSize: '1.25rem', color: 'var(--text-base)' }}>Editar Insumo</h2>
             
             <label style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)' }}>
               <span>Nombre</span>
@@ -351,7 +351,7 @@ export default function InventoryClient({ items: initialItems }: Readonly<Props>
             <h2 style={{ margin: 0, fontSize: '1.25rem', color: transactionModal.type === 'purchase' ? 'var(--success)' : 'var(--danger)' }}>
               {transactionModal.type === 'purchase' ? 'Registrar Compra' : 'Registrar Consumo'}
             </h2>
-            <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-muted)' }}>Producto: <strong>{transactionModal.item.name}</strong></p>
+            <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-muted)' }}>Insumo: <strong>{transactionModal.item.name}</strong></p>
             
             <label style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)' }}>
               <span>Cantidad</span>

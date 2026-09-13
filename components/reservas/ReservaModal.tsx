@@ -352,11 +352,10 @@ export default function ReservaModal({
     })
   }
 
-  const buildCatalog = (invData: any, amData: any) => {
-    const catalog = [
-      ...((invData && !invData.error) ? invData.map((i: any) => ({ name: i.name, price: i.unitCost })) : []),
-      ...((amData && !amData.error) ? amData.map((a: any) => ({ name: a.name, price: a.price })) : []),
-    ]
+  const buildCatalog = (amData: any) => {
+    const catalog = (amData && !amData.error)
+      ? amData.map((a: any) => ({ name: a.name, price: a.price }))
+      : []
     setExtraCatalog(catalog)
   }
 
@@ -364,10 +363,9 @@ export default function ReservaModal({
     const loadData = async () => {
       setLoading(true)
       try {
-        const [roomsData, ratesData, invData, amData, pagosData, seasonsData] = await Promise.all([
+        const [roomsData, ratesData, amData, pagosData, seasonsData] = await Promise.all([
           safeFetchJson('/api/rooms', []),
           safeFetchJson('/api/rates', []),
-          safeFetchJson('/api/inventario', []),
           safeFetchJson('/api/setup/amenities', []),
           safeFetchJson('/api/setup/pagos', null),
           safeFetchJson('/api/setup/temporadas', []),
@@ -378,7 +376,7 @@ export default function ReservaModal({
         setSeasons(seasonsData)
 
         resolvePaymentOptions(pagosData)
-        buildCatalog(invData, amData)
+        buildCatalog(amData)
 
         if (currentResId) {
           const data = await safeFetchJson(`/api/reservas/${currentResId}`, null)

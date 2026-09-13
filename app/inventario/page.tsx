@@ -31,9 +31,9 @@ export default async function InventarioPage() {
           <Icon icon={Package} size="2xl" />
         </div>
         <div>
-          <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-base)', margin: 0 }}>Gestión de Inventario</h1>
+          <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-base)', margin: 0 }}>Gestión de Insumos</h1>
           <p style={{ color: 'var(--text-muted)', margin: 0, fontSize: '0.9rem' }}>
-            Control de productos, costos y existencias.
+            Control interno de insumos, materiales y existencias.
           </p>
         </div>
       </div>

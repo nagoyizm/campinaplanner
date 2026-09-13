@@ -76,7 +76,7 @@ const getHotelNavItems = (role: string, permissions: UserPermissions | null | un
     { href: '/habitaciones', label: 'Habitaciones',   icon: Hotel },
     { href: '/huespedes',    label: 'Huéspedes',      icon: Users },
     { href: '/pizarra',      label: 'Pizarra / Memo', icon: MessageSquare },
-    { href: '/inventario',   label: 'Inventario',     icon: Package },
+    { href: '/inventario',   label: 'Insumos',        icon: Package },
     { href: '/administracion', label: 'Administración', icon: Bell },
   ]
 
@@ -88,7 +88,7 @@ const getHotelNavItems = (role: string, permissions: UserPermissions | null | un
     { href: '/reportes/financiero',   label: 'Financiero' },
     { href: '/reportes/habitaciones', label: 'Habitaciones' },
     { href: '/reportes/huespedes',    label: 'Huéspedes' },
-    { href: '/reportes/inventario',   label: 'Inventario' },
+    { href: '/reportes/inventario',   label: 'Insumos' },
     { href: '/reportes/fechas',       label: 'Fechas' },
   ]
   const showReportes = role === 'superadmin' || role === 'admin' ||

@@ -41,7 +41,7 @@ export default function ReporteInventarioPage() {
       if (!res.ok) throw new Error('Error')
       setData(await res.json())
     } catch {
-      toast.error('Error al cargar el reporte de inventario')
+      toast.error('Error al cargar el reporte de insumos')
     }
     setLoading(false)
   }
@@ -55,8 +55,8 @@ export default function ReporteInventarioPage() {
     <div className="page-container">
       <div className="page-header">
         <div>
-          <h1 className="page-title">Reporte de Inventario</h1>
-          <p className="page-subtitle">Flujo de caja y consumo de existencias</p>
+          <h1 className="page-title">Reporte de Insumos</h1>
+          <p className="page-subtitle">Flujo de compras y consumo interno de insumos</p>
         </div>
       </div>
 
@@ -155,7 +155,7 @@ export default function ReporteInventarioPage() {
                 <table className="table">
                   <thead>
                     <tr>
-                      <th>Producto</th>
+                      <th>Insumo</th>
                       <th>Cambio Neto (Unds)</th>
                       <th>Costo Uso Total</th>
                     </tr>

@@ -192,7 +192,7 @@ export default function AdministracionPage() {
               </tr>
               <tr>
                 <td>
-                  <div style={{ fontWeight: 600 }}>Alerta de Inventario</div>
+                  <div style={{ fontWeight: 600 }}>Alerta de Insumos</div>
                   <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Cuando el consumo hace que el stock llegue a nivel crítico</div>
                 </td>
                 <td style={{ textAlign: 'center' }}>
